@@ -1,21 +1,15 @@
 package com.dminer.dminer.entities;
 
-import com.dminer.dminer.entities.abstracts.Archive;
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.dminer.dminer.entities.abstracts.Archive;
+
+import lombok.ToString;
 
 @Entity
 @Table(name = "PHOTO")
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
+@ToString(callSuper = true)
 public class Photo extends Archive {
-
+	
 }

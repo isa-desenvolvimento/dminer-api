@@ -5,17 +5,8 @@ import javax.persistence.Table;
 
 import com.dminer.dminer.entities.abstracts.Archive;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Entity
 @Table(name = "DOCUMENT")
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class Document extends Archive {
-
+	
 }
