@@ -28,7 +28,7 @@ public class FilesDatabaseRepositoryTest {
 	private static final String CONTENT_POST = "Loren Ipsum";
 	
 	
-	@Before
+	//@Before
 	public void setUp() throws Exception {
 		Post post = new Post();
 		post.setId(1);
@@ -36,7 +36,7 @@ public class FilesDatabaseRepositoryTest {
 		this.postRepository.save(post);
 	}
 	
-	@Test
+	//@Test
 	public void testFile() {
 		Optional<Post> post = this.postRepository.findById(1);
 		if (post.isPresent()) {

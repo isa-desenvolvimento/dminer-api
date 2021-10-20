@@ -18,7 +18,7 @@ import java.sql.SQLException;
 @ActiveProfiles("test")
 public class DatabaseTest {
     
-    @Test
+    //@Test
     public void testConnection() throws SQLException {
 
         String connectionUrl =

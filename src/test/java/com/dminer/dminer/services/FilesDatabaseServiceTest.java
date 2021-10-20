@@ -22,7 +22,7 @@ public class FilesDatabaseServiceTest {
 	@Autowired
 	private FileStorageService filesStorageService;
 	
-	@Before
+	//@Before
 	public void setUp() throws Exception {
 //		FileInfo p = new FileInfo();
 //		p.setPost(new Post(1, ""));
@@ -41,21 +41,21 @@ public class FilesDatabaseServiceTest {
 	}
 	
 	
-	@Test
+	//@Test
 	public void testBuscarArquivosPorPost() {
 //		Post post = new Post();
 //		Optional<List<Archive>> arquivos = this.filesStorageService.findByPost(post);		
 //		assertTrue(arquivos.isPresent());
 	}
 	
-	@Test
+	//@Test
 	public void testPersistirArquivos() {
 //		Photo p = new Photo(new Post(1));
 //		Photo p2 = (Photo) this.filesStorageService.persist(p);
 //		assertNotNull(p2);
 	}
 	
-	@Test
+	//@Test
 	public void testFindIdArquivos() {
 //		Photo p = new Photo(1);
 //		Optional<Archive> p2 = this.filesStorageService.findById(1);
