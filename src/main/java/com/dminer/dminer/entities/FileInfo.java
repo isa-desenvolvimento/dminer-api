@@ -1,18 +1,16 @@
-package com.dminer.dminer.entities.abstracts;
+package com.dminer.dminer.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-import com.dminer.dminer.entities.Post;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,24 +19,36 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Getter(AccessLevel.PUBLIC)
-@Setter(AccessLevel.PUBLIC)
+@Table(name = "FILE_INFO")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
+@Getter
+@Setter
 @ToString
-public abstract class Archive {
+public class FileInfo {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@EqualsAndHashCode.Exclude
-	protected Integer id;
+	private Integer id;
 
 	@Column
-	protected String path;
+	private String url;
 	
+	@JsonIgnore
 	@ManyToOne()
 	@JoinColumn(name = "post_id")
 	private Post post;
+	
+
+	
+	public FileInfo(String url) {
+		this.url = url;
+	}
+
+    public FileInfo(String url, Post post) {
+		this.url = url;
+		this.post = post;
+    }
 }

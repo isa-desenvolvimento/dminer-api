@@ -5,11 +5,13 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.dminer.dminer.entities.Post;
 import com.dminer.dminer.repository.PostRepository;
 import com.dminer.dminer.services.interfaces.IPostService;
 
+@Service
 public class PostService implements IPostService {
 
 	@Autowired
