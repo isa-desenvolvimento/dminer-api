@@ -7,6 +7,8 @@ public class Constantes {
     
     public static final String ROOT_UPLOADS = Paths.get("uploads") + "";
 
+//    public static final String ROOT_UPLOADS = Paths.get("uploads") + "";
+    
     public static String appendInRoot(String directory) {
         return ROOT_UPLOADS + "\\" + directory;
     }
