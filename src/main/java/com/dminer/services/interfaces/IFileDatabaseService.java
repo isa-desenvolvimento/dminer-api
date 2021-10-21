@@ -1,10 +1,10 @@
-package com.dminer.dminer.services.interfaces;
+package com.dminer.services.interfaces;
 
 import java.util.List;
 import java.util.Optional;
 
-import com.dminer.dminer.entities.FileInfo;
-import com.dminer.dminer.entities.Post;
+import com.dminer.entities.FileInfo;
+import com.dminer.entities.Post;
 
 public interface IFileDatabaseService {
 

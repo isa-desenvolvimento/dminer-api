@@ -1,4 +1,4 @@
-package com.dminer.dminer.services;
+package com.dminer.services;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,9 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.dminer.constantes.Constantes;
-import com.dminer.dminer.entities.Post;
-import com.dminer.dminer.services.interfaces.IFilesStorageService;
+import com.dminer.constantes.Constantes;
+import com.dminer.entities.Post;
+import com.dminer.services.interfaces.IFilesStorageService;
 
 @Service
 public class FileStorageService implements IFilesStorageService {

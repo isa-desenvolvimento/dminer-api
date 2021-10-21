@@ -1,4 +1,4 @@
-package com.dminer.dminer.utils;
+package com.dminer.utils;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;

@@ -1,8 +1,8 @@
-package com.dminer.dminer.services.interfaces;
+package com.dminer.services.interfaces;
 
 import java.util.Optional;
 
-import com.dminer.dminer.entities.Post;
+import com.dminer.entities.Post;
 
 public interface IPostService {
 	

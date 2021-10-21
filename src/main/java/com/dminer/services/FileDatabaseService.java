@@ -1,4 +1,4 @@
-package com.dminer.dminer.services;
+package com.dminer.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dminer.dminer.entities.FileInfo;
-import com.dminer.dminer.entities.Post;
-import com.dminer.dminer.repository.FilesDatabaseRepository;
-import com.dminer.dminer.services.interfaces.IFileDatabaseService;
+import com.dminer.entities.FileInfo;
+import com.dminer.entities.Post;
+import com.dminer.repository.FilesDatabaseRepository;
+import com.dminer.services.interfaces.IFileDatabaseService;
 
 @Service
 public class FileDatabaseService implements IFileDatabaseService {

@@ -1,4 +1,4 @@
-package com.dminer.dminer.dto;
+package com.dminer.dto;
 
 import java.util.ArrayList;
 import java.util.List;

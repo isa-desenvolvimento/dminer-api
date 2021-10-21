@@ -1,4 +1,4 @@
-package com.dminer.dminer.constantes;
+package com.dminer.constantes;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

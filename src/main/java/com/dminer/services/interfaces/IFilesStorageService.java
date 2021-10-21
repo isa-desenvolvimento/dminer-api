@@ -1,4 +1,4 @@
-package com.dminer.dminer.services.interfaces;
+package com.dminer.services.interfaces;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.dminer.entities.Post;
+import com.dminer.entities.Post;
 
 public interface IFilesStorageService {
 

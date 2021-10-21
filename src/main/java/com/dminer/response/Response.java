@@ -1,4 +1,4 @@
-package com.dminer.dminer.response;
+package com.dminer.response;
 
 import java.util.ArrayList;
 import java.util.List;

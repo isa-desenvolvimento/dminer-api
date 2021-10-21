@@ -1,7 +1,5 @@
-package com.dminer.dminer.controllers;
+package com.dminer.controllers;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,31 +13,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.dminer.constantes.Constantes;
-import com.dminer.dminer.dto.PostDTO;
-import com.dminer.dminer.entities.FileInfo;
-import com.dminer.dminer.entities.Post;
-import com.dminer.dminer.response.Response;
-import com.dminer.dminer.services.FileDatabaseService;
-import com.dminer.dminer.services.FileStorageService;
-import com.dminer.dminer.services.PostService;
+import com.dminer.constantes.Constantes;
+import com.dminer.dto.PostDTO;
+import com.dminer.entities.FileInfo;
+import com.dminer.entities.Post;
+import com.dminer.response.Response;
+import com.dminer.services.FileDatabaseService;
+import com.dminer.services.FileStorageService;
+import com.dminer.services.PostService;
 
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequestMapping("/post")
-@CrossOrigin
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -61,13 +58,13 @@ public class PostController {
 	
     @PostMapping
 	public ResponseEntity<Response<PostDTO>> create(@RequestParam MultipartFile[] files, @RequestParam String contentPost) {
-		log.error("----------------------------------------");
+		log.info("----------------------------------------");
 		log.info("Salvando um novo post {}", contentPost);
     	Response<PostDTO> response = new Response<>();
     	Post post = postService.persist(new Post());
 
 		if (contentPost != null) post.setContent(contentPost);
-		
+
 		String caminhoAbsoluto;
 		try {
 			caminhoAbsoluto = criarDiretorio(post.getId());
@@ -117,6 +114,38 @@ public class PostController {
     	}
 	}
     
+	
+	@DeleteMapping(value = "/delete/{id}")
+	public ResponseEntity<Response<String>> deletePost(@PathVariable("id") int id) {
+		
+		Response<String> response = new Response<>();
+
+		Optional<Post> post = postService.findById(id);
+		if (post.isPresent()) {
+			log.info("Deletando Post {}", post.get());
+
+			Optional<List<FileInfo>> findByPost = fileDatabaseService.findByPost(post.get());
+			if (findByPost.isPresent()) {
+				findByPost.get().forEach(anexo -> {
+					fileDatabaseService.delete(anexo.getId());
+					log.info("Deletando anexo {}", anexo.getUrl());
+				});
+			}
+			postService.delete(post.get().getId());
+			response.setData("Post deletado!");
+
+			fileStorageService.delete(Paths.get(Constantes.appendInRoot(post.get().getId() + "")));
+			if (fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS))) {		
+				response.getErrors().add("Diretório do Post não foi deletado corretamente");
+				return ResponseEntity.internalServerError().body(response);
+			}			
+		} else {
+			response.getErrors().add("Post não encontrado");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		return ResponseEntity.ok().body(response);
+	}
+
 
 	@PostMapping(value = "/drop-storage")
 	public boolean dropStorage() {
