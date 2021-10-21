@@ -1,5 +1,6 @@
 package com.dminer.dminer.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,6 @@ public class PostDTO {
     
     private int id;
     private String content;
-    private List<String> anexos;
+    private List<String> anexos = new ArrayList<>();
 
 }

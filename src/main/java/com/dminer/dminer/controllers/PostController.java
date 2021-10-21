@@ -66,10 +66,13 @@ public class PostController {
     	Response<PostDTO> response = new Response<>();
     	Post post = postService.persist(new Post());
 
+		if (contentPost != null) post.setContent(contentPost);
+		
 		String caminhoAbsoluto;
 		try {
 			caminhoAbsoluto = criarDiretorio(post.getId());
 		} catch(RuntimeException e) {
+			postService.delete(post.getId());
 			response.getErrors().add(e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
@@ -78,44 +81,49 @@ public class PostController {
 
     	try {
 			Path path = Paths.get(caminhoAbsoluto);
-    	    Arrays.asList(files).stream().forEach(file -> {
-				
-				String arquivoUrl = caminhoAbsoluto + "\\" + file.getOriginalFilename();
+			List<MultipartFile> array = Arrays.asList(files);
 
-				// se o storage já tem arquivos tenta atualizar o banco
-				Optional<FileInfo> info = Optional.empty();
-				if (fileStorageService.existsDirectory(path)) {
+			Optional<FileInfo> info = Optional.empty();
+
+			for (MultipartFile multipartFile : array) {				
+				String arquivoUrl = caminhoAbsoluto + "\\" + multipartFile.getOriginalFilename();
+
+				if (fileStorageService.existsDirectory(Paths.get(arquivoUrl))) {
+					log.info("Diretório já existe no storage = {}", arquivoUrl);
 					info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
+
 				} else {
-					if(fileStorageService.save(file, path)) {
-						log.info("Salvando arquivo {}", arquivoUrl);
+					if(fileStorageService.save(multipartFile, path)) {
+						log.info("Salvando novo arquivo no storage {}", arquivoUrl);
 						info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
 					}
 				}
-
-				if (info.isPresent()) {
-					log.info("info -> {}", info.get());
+				
+				if (info.isPresent()) {					
 					anexos.add(info.get());
 				}
-				
-    	    });
-    	    			
+			}
+    	    
 			Post temp = postService.persist(post);
+			log.info("Adicionando anexos ao post e atualizando. {}", temp);
 			
 			response.setData(toDto(temp, anexos));
 			return ResponseEntity.status(HttpStatus.OK).body(response);
 
-		} catch (Exception e) {			
+		} catch (Exception e) {
+			rollback(post, anexos);
 			response.getErrors().add("Erro ao salvar post. Erro: " + e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     	}
 	}
     
+
 	@PostMapping(value = "/drop-storage")
 	public boolean dropStorage() {
-		fileStorageService.deleteAll(Paths.get(ROOT_UPLOADS));
+		fileStorageService.delete(Paths.get(ROOT_UPLOADS));
 		return !fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS));
 	}
+
 
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Response<PostDTO>> getPost(@PathVariable("id") int id) {
@@ -135,6 +143,16 @@ public class PostController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+
+	private void rollback(Post post, List<FileInfo> anexos) {
+		anexos.forEach(anexo -> {
+			fileDatabaseService.delete(anexo.getId());
+		});
+		postService.delete(post.getId());
+		fileStorageService.delete(Paths.get(Constantes.appendInRoot(post.getId() + "")));
+	}
+
+
 	private PostDTO toDto(Post post, List<FileInfo> anexos) {
 		PostDTO dto = new PostDTO();
 		dto.setId(post.getId());
@@ -144,6 +162,8 @@ public class PostController {
 		});		
 		return dto;
 	}
+	
+
 	/**
 	 * Cria diretórios organizados pelo id do Post
 	 */

@@ -41,6 +41,6 @@ public interface IFilesStorageService {
 	 * Deleta um arquivo
 	 * @param int id
 	 */
-	void delete(int id, Path path);
+	void delete(Path path);
 	
 }

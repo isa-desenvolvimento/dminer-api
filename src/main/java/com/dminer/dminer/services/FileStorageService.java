@@ -76,13 +76,8 @@ public class FileStorageService implements IFilesStorageService {
 	}
 		
 	@Override
-	public void delete(int id, Path path) {
-		log.info("Excluindo um arquivo pelo id {}", id);	
-		FileSystemUtils.deleteRecursively(path.toFile());
-	}
-
-	public void deleteAll(Path path) {
-		log.info("Excluindo vários arquivos em {}", path);
+	public void delete(Path path) {
+		log.info("Excluindo um diretório/arquivo {}", path);
 		FileSystemUtils.deleteRecursively(path.toFile());
 	}
 
