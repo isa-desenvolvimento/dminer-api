@@ -14,14 +14,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class PostDTO { 
+public class PostRequestDTO { 
     
-    private int id;
-    private int idUsuario;
-    private int likes;
+    private Integer idUsuario;
+    private Integer likes;
     private String content;
     private String type;
-    private List<CommentDTO> comments = new ArrayList<>();
-    private List<String> anexos = new ArrayList<>();
-
+    private List<CommentRequestDTO> comments = new ArrayList<>();
 }

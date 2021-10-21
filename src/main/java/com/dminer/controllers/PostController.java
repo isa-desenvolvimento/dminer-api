@@ -7,34 +7,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.ws.rs.Consumes;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dminer.constantes.Constantes;
 import com.dminer.dto.PostDTO;
+import com.dminer.dto.PostRequestDTO;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.Post;
 import com.dminer.response.Response;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
 import com.dminer.services.PostService;
+import com.dminer.services.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +44,7 @@ import lombok.RequiredArgsConstructor;
 public class PostController {
 
 	private static final Logger log = LoggerFactory.getLogger(PostController.class);
+	private final String ROOT_UPLOADS = Constantes.ROOT_UPLOADS;
 	
 	@Autowired
 	private FileStorageService fileStorageService;
@@ -56,20 +55,32 @@ public class PostController {
 	@Autowired
 	private PostService postService;
 	
+	@Autowired
+	private UserService userService;
+
+	//@Autowired
+	//private CommentService commentService;
 	
-	private final String ROOT_UPLOADS = Constantes.ROOT_UPLOADS;
 
     
 	@PostMapping(consumes = {"multipart/form-data"})
-	public ResponseEntity<Response<PostDTO>> create(@RequestParam(value = "files", required = false) MultipartFile[] files, @RequestParam String contentPost) {
+	public ResponseEntity<Response<PostDTO>> create(
+		@RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestBody PostRequestDTO postRequestDTO) {
 		
 		log.info("----------------------------------------");
-		log.info("Salvando um novo post {}", contentPost);
+		log.info("Salvando um novo post {}", postRequestDTO);
 
 		Response<PostDTO> response = new Response<>();
-    	Post post = postService.persist(new Post());
-
-		if (contentPost != null) post.setContent(contentPost);
+		
+		log.info("Verificando se o usuário informado existe");
+		if (postRequestDTO.getIdUsuario() == null || !(userService.findById(postRequestDTO.getIdUsuario()).isPresent())) {
+			response.getErrors().add("Usuário não encontrado.");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		
+		Post post = postService.persist(new Post());
+		if (postRequestDTO.getContent() != null) 
+			post.setContent(postRequestDTO.getContent());
 
 		String caminhoAbsoluto;
 		try {
@@ -84,12 +95,11 @@ public class PostController {
 
     	try {
 			Path path = Paths.get(caminhoAbsoluto);
-			List<MultipartFile> array = Arrays.asList(files);
-			//List<MultipartFile> array = files;
+			List<MultipartFile> array = Arrays.asList(files);			
 
 			Optional<FileInfo> info = Optional.empty();
 
-			for (MultipartFile multipartFile : array) {				
+			for (MultipartFile multipartFile : array) {
 				String arquivoUrl = caminhoAbsoluto + "\\" + multipartFile.getOriginalFilename();
 
 				if (fileStorageService.existsDirectory(Paths.get(arquivoUrl))) {
@@ -103,7 +113,7 @@ public class PostController {
 					}
 				}
 				
-				if (info.isPresent()) {					
+				if (info.isPresent()) {
 					anexos.add(info.get());
 				}
 			}
@@ -195,7 +205,7 @@ public class PostController {
 		dto.setContent(post.getContent());
 		anexos.forEach(e -> {
 			dto.getAnexos().add(e.getUrl());
-		});		
+		});
 		return dto;
 	}
 	
