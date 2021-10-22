@@ -17,7 +17,7 @@ public class CommentDTO {
     
     private int id;
     private int idUsuario;
-    
+    private String content;
     private String date; //@Parameter(example = "01/01/2020")
     private String hours;
 

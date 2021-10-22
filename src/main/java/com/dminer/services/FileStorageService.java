@@ -31,7 +31,11 @@ public class FileStorageService implements IFilesStorageService {
 	@Override
 	public void init() {
 		log.info("Criando um diretório uploads");
-		createDirectory(root);
+		try {
+			createDirectory(root);
+		} catch (IOException e) {
+			log.error(e.getCause().getMessage());
+		}
 	}
 	
 	@Override
@@ -81,12 +85,13 @@ public class FileStorageService implements IFilesStorageService {
 		FileSystemUtils.deleteRecursively(path.toFile());
 	}
 
-	public void createDirectory(Path path) {
+	public void createDirectory(Path path) throws IOException {
 		try {			
 			if (! Files.exists(path))
-				Files.createDirectory(path);
+				Files.createDirectories(path);
 	    } catch (IOException e) {
-	    	throw new RuntimeException("Não foi possível criar um diretório em: " + path.toString());
+			e.printStackTrace();
+	    	throw e;
 	    }
 	}
 

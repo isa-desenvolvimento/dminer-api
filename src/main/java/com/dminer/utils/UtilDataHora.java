@@ -17,7 +17,7 @@ public class UtilDataHora {
      * @param date
      * @return Date
      */
-    public static Date toDate(String date) {
+    public static Date stringToDate(String date) {
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");        
         try {
             return df.parse(date);
@@ -32,7 +32,7 @@ public class UtilDataHora {
      * @param date
      * @return
      */
-    public static String toString(Date date) {
+    public static String dateToString(Date date) {
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         return df.format(date);
     }
@@ -42,7 +42,7 @@ public class UtilDataHora {
         return sdf.format(hora);
     }
 
-    public static Date toHour(String hora) {
+    public static Date stringToHour(String hora) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");        
         try {
             return sdf.parse(hora);
