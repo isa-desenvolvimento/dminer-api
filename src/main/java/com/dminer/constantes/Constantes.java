@@ -1,6 +1,5 @@
 package com.dminer.constantes;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Constantes {

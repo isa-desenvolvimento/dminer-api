@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
-import com.dminer.dto.CommentDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.entities.Comment;
