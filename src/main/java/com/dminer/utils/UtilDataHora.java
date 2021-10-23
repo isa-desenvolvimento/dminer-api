@@ -2,7 +2,7 @@ package com.dminer.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+//import java.util.Calendar;
 import java.util.Date;
 
 import org.slf4j.Logger;

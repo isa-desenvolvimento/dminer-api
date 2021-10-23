@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
+//import com.dminer.services.FileDatabaseService;
 import com.dminer.services.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,9 +45,12 @@ public class UserController {
     @Autowired
     private UserConverter userConverter;
 
+    //@Autowired
+    //private FileDatabaseService fileDatabaseService;
+
 
     @PostMapping
-    public ResponseEntity<Response<UserDTO>> create(@RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<Response<UserDTO>> create( @RequestBody UserRequestDTO userRequestDTO, BindingResult result) {
         
 		log.info("Salvando um novo usuário {}", userRequestDTO);
 
