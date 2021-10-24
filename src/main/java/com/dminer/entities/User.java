@@ -7,7 +7,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -39,11 +38,9 @@ public class User {
 	private Date dtBirthday;
 
 	@ManyToOne
-	@JoinColumn(name = "id_avatar")
 	private FileInfo avatar; 
 
 	@ManyToOne
-	@JoinColumn(name = "id_banner")
 	private FileInfo banner; 
 
 }

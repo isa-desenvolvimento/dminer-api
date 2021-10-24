@@ -51,9 +51,22 @@ public class EventsController {
 		Response<EventsDTO> response = new Response<>();
         // perguntar Andressa quais campos são obrigatórios
         if (eventsRequestDTO.getTitle() == null) {
-			response.getErrors().add("Descrição precisa estar preenchido.");            
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			response.getErrors().add("Titulo precisa estar preenchido.");            
 		}
+
+        if (eventsRequestDTO.getStartDate() == null) {
+			response.getErrors().add("Data de inicio precisa estar preenchido.");            
+		}
+
+        if (eventsRequestDTO.getEndDate() == null) {
+			eventsRequestDTO.setEndDate("00/00/0000");
+		}
+
+        if (eventsRequestDTO.getEndRepeat() == null) {
+			eventsRequestDTO.setEndRepeat("00/00/0000");
+		}
+
+        //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         
         Events events = eventService.persist(eventsTimeConverter.requestDtoToEntity(eventsRequestDTO));
         response.setData(eventsTimeConverter.entityToDto(events));
