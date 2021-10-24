@@ -3,6 +3,7 @@ package com.dminer.converters;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.User;
+import com.dminer.utils.UtilDataHora;
 
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,14 @@ public class UserConverter {
         User user = new User();
         user.setId(dto.getId());
         user.setName(dto.getName());
+        user.setDtBirthday(UtilDataHora.stringToDate(dto.getDtBirthday()));
         return user;
     }
     
     public User requestDtoToEntity(UserRequestDTO dto) {
         User user = new User();        
         user.setName(dto.getName());
+        user.setDtBirthday(UtilDataHora.stringToDate(dto.getDtBirthday()));
         return user;
     }
 
@@ -26,6 +29,9 @@ public class UserConverter {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
+        dto.setDtBirthday(UtilDataHora.dateToString(user.getDtBirthday()));
+        dto.setAvatar(user.getAvatar().getUrl());
+        dto.setBanner(user.getBanner().getUrl());
         return dto;
     }
 }

@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.dminer.converters.EventsTimeConverter;
 import com.dminer.dto.EventsDTO;
 import com.dminer.dto.EventsRequestDTO;
 import com.dminer.entities.Events;
+import com.dminer.enums.EventsTime;
 import com.dminer.response.Response;
 import com.dminer.services.EventsService;
 
@@ -15,8 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,30 +47,44 @@ public class EventsController {
     private EventsTimeConverter eventsTimeConverter;
 
 
+    private void validateRequestDto(EventsRequestDTO eventsRequestDTO, BindingResult result) {
+        if (eventsRequestDTO.getTitle() == null) {
+            result.addError(new ObjectError("eventsRequestDTO", "Titulo precisa estar preenchido."));			
+		}
+
+        if (eventsRequestDTO.getStartDate() == null) {
+            result.addError(new ObjectError("eventsRequestDTO", "Data de inicio precisa estar preenchido."));
+		}
+
+        if (eventsRequestDTO.getAllDay() == null) {
+			eventsRequestDTO.setAllDay(false);
+		}
+
+        if (eventsRequestDTO.getStartRepeat() == null) {
+			eventsRequestDTO.setStartRepeat(EventsTime.NO_REPEAT.name());
+		}
+
+        if (eventsRequestDTO.getEndRepeat() == null) {
+			eventsRequestDTO.setEndRepeat(EventsTime.NO_REPEAT.name());
+		}
+
+        if (eventsRequestDTO.getReminder() == null) {
+			eventsRequestDTO.setReminder(EventsTime.NO_REMINDER.name());
+		}
+    }
+
     @PostMapping
-    public ResponseEntity<Response<EventsDTO>> create(@RequestBody EventsRequestDTO eventsRequestDTO) {
+    public ResponseEntity<Response<EventsDTO>> create(@Valid @RequestBody EventsRequestDTO eventsRequestDTO, BindingResult result) {
         
 		log.info("Salvando um novo evento {}", eventsRequestDTO);
 
 		Response<EventsDTO> response = new Response<>();
-        // perguntar Andressa quais campos são obrigatórios
-        if (eventsRequestDTO.getTitle() == null) {
-			response.getErrors().add("Titulo precisa estar preenchido.");            
-		}
-
-        if (eventsRequestDTO.getStartDate() == null) {
-			response.getErrors().add("Data de inicio precisa estar preenchido.");            
-		}
-
-        if (eventsRequestDTO.getEndDate() == null) {
-			eventsRequestDTO.setEndDate("00/00/0000");
-		}
-
-        if (eventsRequestDTO.getEndRepeat() == null) {
-			eventsRequestDTO.setEndRepeat("00/00/0000");
-		}
-
-        //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        validateRequestDto(eventsRequestDTO, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando eventsRequestDTO: {}", eventsRequestDTO);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
         
         Events events = eventService.persist(eventsTimeConverter.requestDtoToEntity(eventsRequestDTO));
         response.setData(eventsTimeConverter.entityToDto(events));

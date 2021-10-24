@@ -40,7 +40,7 @@ public class FileStorageService implements IFilesStorageService {
 	
 	@Override
 	public boolean save(MultipartFile file, Path path) {
-		try {
+		try {			
 			Path path2 = path.resolve(file.getOriginalFilename());
 			if (! Files.exists(path2)) {
 				log.info("Salvando arquivo no diretório: {}", path2.toString());

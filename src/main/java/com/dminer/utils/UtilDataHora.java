@@ -12,6 +12,17 @@ public class UtilDataHora {
     
     private static final Logger log = LoggerFactory.getLogger(UtilDataHora.class);
 
+    public static boolean isValid(String date) {
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");        
+        try {
+            df.parse(date);
+            return true;
+        } catch (ParseException e) {
+            log.error("Falha ao converter data: {}", date);
+        }
+        return false;
+    }
+
     /**
      * Recebe uma data no formato dd/MM/yyyy e retorna um objeto Date
      * @param date

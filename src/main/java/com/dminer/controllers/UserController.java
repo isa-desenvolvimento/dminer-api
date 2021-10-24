@@ -1,16 +1,22 @@
 package com.dminer.controllers;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,15 +24,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.dminer.constantes.Constantes;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
+import com.dminer.entities.FileInfo;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
+import com.dminer.services.FileDatabaseService;
+import com.dminer.services.FileStorageService;
 //import com.dminer.services.FileDatabaseService;
 import com.dminer.services.UserService;
+import com.dminer.utils.UtilFilesStorage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,30 +56,109 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
+    private static final String USER_BANNER = "\\user\\banner";
+    private static final String USER_AVATAR = "\\user\\avatar";
+
     @Autowired
     private UserService userService;
 
     @Autowired
     private UserConverter userConverter;
 
-    //@Autowired
-    //private FileDatabaseService fileDatabaseService;
+    @Autowired
+    private FileDatabaseService fileDatabaseService;
 
+    @Autowired
+    private FileStorageService fileStorageService;
 
-    @PostMapping
-    public ResponseEntity<Response<UserDTO>> create( @RequestBody UserRequestDTO userRequestDTO, BindingResult result) {
-        
-		log.info("Salvando um novo usuário {}", userRequestDTO);
+    
+    
 
-		Response<UserDTO> response = new Response<>();
+    private void validateRequestDto(UserRequestDTO userRequestDTO, BindingResult result) {
         if (userRequestDTO.getName() == null) {
-			response.getErrors().add("Nome precisa estar preenchido.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            result.addError(new ObjectError("userRequestDTO", "Nome precisa estar preenchido."));			
 		}
+        if (userRequestDTO.getDtBirthday() == null) {
+            result.addError(new ObjectError("userRequestDTO", "Data de aniversário precisa estar preenchido."));
+		}
+    }
+    
+    private FileInfo salvarImagem(MultipartFile multipartFile, String directory, BindingResult result) {
+        try {
+            fileStorageService.createDirectory(Paths.get(directory));
+            fileStorageService.save(multipartFile, Paths.get(directory));
+        } catch (IOException e) {
+            result.addError(new ObjectError("multipartFile", "Falha ao criar diretório para este usuário em: " + directory));
+            log.info("Falha ao criar diretório para este usuário em: {} ", directory);
+        }
 
+        FileInfo info = new FileInfo();
+        info.setUrl(directory + "\\" + multipartFile.getOriginalFilename());
+        Optional<FileInfo> optinfo = fileDatabaseService.persist(info);
+        if (!optinfo.isPresent()) {
+            result.addError(new ObjectError("multipartFile", "Falha ao salvar arquivo para este usuário em: " + directory));
+            log.info("Falha ao salvar arquivo para este usuário em: {} ", directory);
+        }
+
+        if (result.hasErrors()) return null;
+        return optinfo.get();
+    }
+
+
+
+    @PostMapping(consumes = {"multipart/form-data", "multipart/form-data", "application/json"})
+    public ResponseEntity<Response<UserDTO>> create( 
+        @RequestPart(value = "avatar", required = false) MultipartFile avatar, 
+        @RequestPart(value = "banner", required = false) MultipartFile banner, 
+        @Valid @RequestPart("user") String userRequestJson, 
+        BindingResult result
+    ) {        
+
+		log.info("Salvando um novo usuário {}", userRequestJson);
+
+        Response<UserDTO> response = new Response<>();
+
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        try {
+            ObjectMapper obj = new ObjectMapper();
+            userRequestDTO = obj.readValue(userRequestJson, UserRequestDTO.class);
+        } catch (IOException e) {
+            response.getErrors().add("Erro ao converter objeto UserRequestDTO, verifique se a string está correta no formato Json!");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        validateRequestDto(userRequestDTO, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando userRequestDTO: {}", userRequestDTO);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // salvando usuario para pegar o id
         User user = userService.persist(userConverter.requestDtoToEntity(userRequestDTO));
-        response.setData(userConverter.entityToDto(user));      
-
+        
+        if (avatar != null) {
+            FileInfo file = salvarImagem(avatar, Constantes.ROOT_UPLOADS + USER_AVATAR + user.getId(), result);
+            if (result.hasErrors()) {
+                rollback(user);
+                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+                return ResponseEntity.internalServerError().body(response);
+            }
+            user.setAvatar(file);
+        }
+        
+        if (banner != null) {
+            FileInfo file = salvarImagem(banner, Constantes.ROOT_UPLOADS + USER_BANNER + user.getId(), result);
+            if (result.hasErrors()) {
+                rollback(user);
+                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+                return ResponseEntity.internalServerError().body(response);
+            }
+            user.setBanner(file);
+        }        
+        
+        user = userService.persist(user);
+        response.setData(userConverter.entityToDto(user));
         return ResponseEntity.ok().body(response);
     }
 
@@ -125,6 +221,10 @@ public class UserController {
 
         response.setData(true);
         return ResponseEntity.ok().body(response);
+    }
+
+    private void rollback(User user) {
+        deleteUser(user.getId());
     }
 
 }

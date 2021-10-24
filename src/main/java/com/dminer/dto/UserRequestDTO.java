@@ -17,6 +17,5 @@ public class UserRequestDTO {
     
     private String name;
     private String dtBirthday;
-    private Integer avatar;
-    private Integer banner;    
+
 }

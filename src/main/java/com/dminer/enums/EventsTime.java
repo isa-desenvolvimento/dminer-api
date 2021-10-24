@@ -1,7 +1,8 @@
 package com.dminer.enums;
 
 public enum EventsTime {
-    NO_REPEAT("No Repeat"), 
+    NO_REPEAT("No Repeat"),
+    NO_REMINDER("No Reminder"), 
     DAILY("Daily"), WEEKLY("Weekly"), MONTHLY("Monthly"), YEARLY("Yearly"), FOREVER("Forever"),
     DAYS30("30 days"), DAYS15("15 days"), DAYS7("7 days"),
     MINUTES5("5 minutes"), MINUTES10("10 minutes"), MINUTES30("30 minutes"),
@@ -17,4 +18,5 @@ public enum EventsTime {
     public String getEventTime() {
         return this.eventTime;
     }
+
 }
