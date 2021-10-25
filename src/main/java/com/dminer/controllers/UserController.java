@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -22,12 +20,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,9 +35,8 @@ import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
-//import com.dminer.services.FileDatabaseService;
 import com.dminer.services.UserService;
-import com.dminer.utils.UtilFilesStorage;
+import com.dminer.utils.UtilDataHora;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -80,6 +74,25 @@ public class UserController {
 		}
         if (userRequestDTO.getDtBirthday() == null) {
             result.addError(new ObjectError("userRequestDTO", "Data de aniversário precisa estar preenchido."));
+		}
+    }
+
+    private void validateDto(UserDTO userDTO, BindingResult result) {
+        if (userDTO.getId() == null) {
+            result.addError(new ObjectError("userDTO", "Id precisa estar preenchido."));
+		}
+        if (userDTO.getName() == null) {
+            result.addError(new ObjectError("userDTO", "Nome precisa estar preenchido."));			
+		}
+        if (userDTO.getDtBirthday() == null) {
+            result.addError(new ObjectError("userDTO", "Data de aniversário precisa estar preenchido."));
+		}
+        if (userDTO.getId() != null) {
+            Optional<User> optUser = userService.findById(userDTO.getId());
+            if (!optUser.isPresent()) {
+                log.info("Usuário não encontrado: {}", userDTO);
+                result.addError(new ObjectError("userDTO", "Usuário não encontrado."));
+            }            
 		}
     }
     
@@ -160,6 +173,64 @@ public class UserController {
         user = userService.persist(user);
         response.setData(userConverter.entityToDto(user));
         return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping()
+    public ResponseEntity<Response<UserDTO>> putUser(
+        @RequestPart(value = "avatar", required = false) MultipartFile avatar, 
+        @RequestPart(value = "banner", required = false) MultipartFile banner, 
+        @Valid @RequestPart("user") String userJson, 
+        BindingResult result
+    ) {
+
+        log.info("Alterando um usuário {}", userJson);
+
+        Response<UserDTO> response = new Response<>();
+
+        UserDTO userDTO = new UserDTO();
+        try {
+            ObjectMapper obj = new ObjectMapper();
+            userDTO = obj.readValue(userJson, UserDTO.class);
+        } catch (IOException e) {
+            response.getErrors().add("Erro ao converter objeto UserDTO, verifique se a string está correta no formato Json!");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        validateDto(userDTO, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando userDTO: {}", userDTO);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<User> optUser = userService.findById(userDTO.getId());
+        optUser.get().setName(userDTO.getName());
+        optUser.get().setDtBirthday(UtilDataHora.stringToDate(userDTO.getDtBirthday()));
+
+        if (avatar != null) {
+            FileInfo file = salvarImagem(avatar, Constantes.ROOT_UPLOADS + USER_AVATAR + optUser.get().getId(), result);
+            if (result.hasErrors()) {
+                rollback(optUser.get());
+                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+                return ResponseEntity.internalServerError().body(response);
+            }
+            optUser.get().setAvatar(file);
+        }
+        
+        if (banner != null) {
+            FileInfo file = salvarImagem(banner, Constantes.ROOT_UPLOADS + USER_BANNER + optUser.get().getId(), result);
+            if (result.hasErrors()) {
+                rollback(optUser.get());
+                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+                return ResponseEntity.internalServerError().body(response);
+            }
+            optUser.get().setBanner(file);
+        }
+
+        User user = userService.persist(optUser.get());
+        response.setData(userConverter.entityToDto(user));
+        return ResponseEntity.ok().body(response);        
     }
 
 
