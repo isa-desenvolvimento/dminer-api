@@ -7,9 +7,11 @@ import com.dminer.entities.Events;
 import com.dminer.repository.EventsTimeRepository;
 import com.dminer.services.interfaces.IEventsService;
 
+import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
@@ -68,8 +70,10 @@ public class EventsService implements IEventsService {
     }
 
 
+    @Profile("dev")
     public Optional<List<Events>> fetchEventsInBetween(String dtInicio, String dtFim) {
         log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);
         return Optional.ofNullable(eventsTimeRepository.fetchEventsInBetween(dtInicio, dtFim));
     }
+
 }
