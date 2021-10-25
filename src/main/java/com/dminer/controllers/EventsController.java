@@ -2,6 +2,7 @@ package com.dminer.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -112,7 +114,26 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping()
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<Boolean>> deleteEvent(@PathVariable("id") Integer id) {
+        
+        Response<Boolean> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {eventService.delete(id);}
+        catch (EmptyResultDataAccessException e) {
+            response.getErrors().add("Evento não encontrado");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        response.setData(true);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/fetchEvents")
     public ResponseEntity<Response<List<EventsDTO>>> getAllEvents() {
         
         Response<List<EventsDTO>> response = new Response<>();
@@ -131,22 +152,82 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> deleteEvent(@PathVariable("id") Integer id) {
-        
-        Response<Boolean> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
 
-        try {eventService.delete(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Evento não encontrado");
+    @GetMapping(value = "/fetchEventsByYear")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByYear(@RequestParam("year") String year) {
+        
+        Response<List<EventsDTO>> response = new Response<>();
+
+        Optional<List<Events>> user = eventService.fetchEventsByYear(year);
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
-        response.setData(true);
+        List<EventsDTO> eventos = new ArrayList<>();
+        user.get().forEach(u -> {
+            eventos.add(eventsTimeConverter.entityToDto(u));
+        });
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/fetchEventsByMonth")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByMonth(@RequestParam String year, @RequestParam String month) {
+        Response<List<EventsDTO>> response = new Response<>();
+
+        Optional<List<Events>> user = eventService.fetchEventsByMonth(year, month);
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        List<EventsDTO> eventos = new ArrayList<>();
+        user.get().forEach(u -> {
+            eventos.add(eventsTimeConverter.entityToDto(u));
+        });
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/fetchEventsByDate")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByDate(@RequestParam("date") String date) {
+        
+        Response<List<EventsDTO>> response = new Response<>();
+
+        Optional<List<Events>> user = eventService.fetchEventsByDate(date);
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        List<EventsDTO> eventos = new ArrayList<>();
+        user.get().forEach(u -> {
+            eventos.add(eventsTimeConverter.entityToDto(u));
+        });
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/fetchEventsInBetween")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsInBetween(@RequestParam("dtInicio") String dtInicio, @RequestParam("dtFim") String dtFim) {
+        
+        Response<List<EventsDTO>> response = new Response<>();
+
+        Optional<List<Events>> user = eventService.fetchEventsInBetween(dtInicio, dtFim);
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        List<EventsDTO> eventos = new ArrayList<>();
+        user.get().forEach(u -> {
+            eventos.add(eventsTimeConverter.entityToDto(u));
+        });
+        response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
 }

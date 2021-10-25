@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -44,15 +46,18 @@ public class Events {
     @Column
     private Boolean allDay;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private EventsTime startRepeat;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private EventsTime endRepeat;
 
     @Column
     private String location;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private EventsTime reminder;
 
