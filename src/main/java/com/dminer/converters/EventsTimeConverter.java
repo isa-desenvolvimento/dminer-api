@@ -17,9 +17,9 @@ public class EventsTimeConverter {
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
         if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
-            e.setEndDate(UtilDataHora.stringToDate(dto.getEndDate()));
+            e.setEndDate(UtilDataHora.stringToTimestamp(dto.getEndDate()));
         
-        e.setStartDate(UtilDataHora.stringToDate(dto.getStartDate()));
+        e.setStartDate(UtilDataHora.stringToTimestamp(dto.getStartDate()));
         EventsTime repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
         e.setEndRepeat(repeat);
         repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
@@ -35,9 +35,9 @@ public class EventsTimeConverter {
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
         if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
-            e.setEndDate(UtilDataHora.stringToDate(dto.getEndDate()));
+            e.setEndDate(UtilDataHora.stringToTimestamp(dto.getEndDate()));
 
-        e.setStartDate(UtilDataHora.stringToDate(dto.getStartDate()));
+        e.setStartDate(UtilDataHora.stringToTimestamp(dto.getStartDate()));
         EventsTime repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
         e.setEndRepeat(repeat);
         repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;

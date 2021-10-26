@@ -1,7 +1,8 @@
 package com.dminer.entities;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -38,27 +39,29 @@ public class Events {
 	private String title;
 
     @Column
-    private Date startDate;
+    @Basic
+    private Timestamp startDate;
 
     @Column
-    private Date endDate;
+    @Basic
+    private Timestamp endDate;
 
     @Column
     private Boolean allDay;
 
-    @Enumerated(EnumType.STRING)
     @Column
+    @Enumerated(EnumType.STRING)
     private EventsTime startRepeat;
 
-    @Enumerated(EnumType.STRING)
     @Column
+    @Enumerated(EnumType.STRING)
     private EventsTime endRepeat;
 
     @Column
     private String location;
 
-    @Enumerated(EnumType.STRING)
     @Column
+    @Enumerated(EnumType.STRING)
     private EventsTime reminder;
 
     @Column

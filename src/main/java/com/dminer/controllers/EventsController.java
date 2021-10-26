@@ -1,8 +1,8 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -18,6 +18,7 @@ import com.dminer.services.EventsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -47,6 +48,9 @@ public class EventsController {
 
     @Autowired
     private EventsTimeConverter eventsTimeConverter;
+
+    @Autowired
+    private Environment env;
 
 
     private void validateRequestDto(EventsRequestDTO eventsRequestDTO, BindingResult result) {
@@ -158,8 +162,14 @@ public class EventsController {
         
         Response<List<EventsDTO>> response = new Response<>();
 
-        Optional<List<Events>> user = eventService.fetchEventsByYear(year);
-        if (user.get().isEmpty()) {
+        Optional<List<Events>> user = Optional.empty();
+        if (isProd()) {
+            user = eventService.fetchEventsByYear(year);
+        } else {
+            user = eventService.fetchEventsByYearSqlServer(year);
+        }
+
+        if (user.isPresent() && user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
@@ -177,7 +187,13 @@ public class EventsController {
     public ResponseEntity<Response<List<EventsDTO>>> getEventsByMonth(@RequestParam String year, @RequestParam String month) {
         Response<List<EventsDTO>> response = new Response<>();
 
-        Optional<List<Events>> user = eventService.fetchEventsByMonth(year, month);
+        Optional<List<Events>> user = Optional.empty();
+        if (isProd()) {
+            user = eventService.fetchEventsByMonth(year, month);
+        } else {
+            user = eventService.fetchEventsByMonthSqlServer(year, month);
+        }
+
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
@@ -196,8 +212,14 @@ public class EventsController {
     public ResponseEntity<Response<List<EventsDTO>>> getEventsByDate(@RequestParam("date") String date) {
         
         Response<List<EventsDTO>> response = new Response<>();
+        
+        Optional<List<Events>> user = Optional.empty();
+        if (isProd()) {
+            user = eventService.fetchEventsByDate(date);
+        } else {
+            user = eventService.fetchEventsByDate2(date);
+        }
 
-        Optional<List<Events>> user = eventService.fetchEventsByDate(date);
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
@@ -217,17 +239,27 @@ public class EventsController {
         
         Response<List<EventsDTO>> response = new Response<>();
 
-        Optional<List<Events>> user = eventService.fetchEventsInBetween(dtInicio, dtFim);
+        Optional<List<Events>> user = Optional.empty();
+        if (isProd()) {
+            user = eventService.fetchEventsInBetween(dtInicio, dtFim);
+        } else {
+            user = eventService.fetchEventsInBetween2(dtInicio, dtFim);
+        }
+
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
-
+        
         List<EventsDTO> eventos = new ArrayList<>();
         user.get().forEach(u -> {
             eventos.add(eventsTimeConverter.entityToDto(u));
         });
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
+    }
+
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 }
