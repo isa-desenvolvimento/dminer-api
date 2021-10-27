@@ -98,7 +98,7 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping(value = "/find-id/{id}")
+    @GetMapping(value = "/find/{id}")
     public ResponseEntity<Response<EventsDTO>> getEvents(@PathVariable("id") Integer id) {
         log.info("Buscando evento {}", id);
         
@@ -137,7 +137,7 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/fetchEvents")
+    @GetMapping("/all")
     public ResponseEntity<Response<List<EventsDTO>>> getAllEvents() {
         
         Response<List<EventsDTO>> response = new Response<>();
@@ -169,7 +169,11 @@ public class EventsController {
         }
 
         Optional<List<Events>> user = Optional.empty();
-        user = eventService.fetchEventsByYear(year);
+        if (isProd()) {
+            user = eventService.fetchEventsByYearPostgres(year);    
+        } else {
+            user = eventService.fetchEventsByYear(year);
+        }
 
         if (user.isPresent() && user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -197,11 +201,17 @@ public class EventsController {
 
         Optional<List<Events>> user = Optional.empty();
         YearMonth ym = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
-        user = eventService.fetchEventsByMonth(
-            year + "-" + month + "-01 00:00:00", 
-            year + "-" + month + "-" + ym.lengthOfMonth() + " 23:59:59"
-        );
-        
+        if (isProd()) {
+            user = eventService.fetchEventsByMonth(
+                year + "-" + month + "-01 01:00:00", 
+                year + "-" + month + "-" + ym.lengthOfMonth() + " 23:59:59"
+            );
+        } else {            
+            user = eventService.fetchEventsByMonthPostgres(
+                year + "-" + month + "-01 01:00:00", 
+                year + "-" + month + "-" + ym.lengthOfMonth() + " 12:59:59"
+            );
+        }       
 
 
         if (user.get().isEmpty()) {
@@ -231,7 +241,12 @@ public class EventsController {
 
         String date = year + "-" + month + "-" + day;
         Optional<List<Events>> user = Optional.empty();
-        user = eventService.fetchEventsByDate(date);
+        
+        if (isProd()) {
+            user = eventService.fetchEventsByDate(date, date + " 23:59:59");
+        } else {            
+            user = eventService.fetchEventsByDatePostgres(date, date + " 12:59:59");
+        }   
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -264,9 +279,14 @@ public class EventsController {
         }
 
         Optional<List<Events>> user = Optional.empty();
-        String dtInicio = year1 + "-" + month1 + "-" + day1 + " 00:00:00";
-        String dtFim = year2 + "-" + month2 + "-" + day2 + " 23:59:59";
+        String dtInicio = year1 + "-" + month1 + "-" + day1 + " 01:00:00";
+        String dtFim = year2 + "-" + month2 + "-" + day2 + " 12:59:59";
         user = eventService.fetchEventsInBetween(dtInicio, dtFim);
+        if (isProd()) {
+            user = eventService.fetchEventsInBetween(dtInicio, dtFim);
+        } else {            
+            user = eventService.fetchEventsInBetweenPostgres(dtInicio, dtFim);
+        }   
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
