@@ -29,7 +29,8 @@ public class UserConverter {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
-        dto.setDtBirthday(UtilDataHora.dateToString(user.getDtBirthday()));
+        if (user.getDtBirthday() != null)
+            dto.setDtBirthday(UtilDataHora.dateToString(user.getDtBirthday()));
         dto.setAvatar(user.getAvatar().getUrl());
         dto.setBanner(user.getBanner().getUrl());
         return dto;
