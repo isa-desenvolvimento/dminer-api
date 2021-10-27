@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -98,7 +98,7 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/find-id/{id}")
     public ResponseEntity<Response<EventsDTO>> getEvents(@PathVariable("id") Integer id) {
         log.info("Buscando evento {}", id);
         
@@ -118,7 +118,7 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<Response<Boolean>> deleteEvent(@PathVariable("id") Integer id) {
         
         Response<Boolean> response = new Response<>();
@@ -157,17 +157,19 @@ public class EventsController {
     }
 
 
-    @GetMapping(value = "/fetchEventsByYear")
-    public ResponseEntity<Response<List<EventsDTO>>> getEventsByYear(@RequestParam("year") String year) {
+    @GetMapping(value = "/{year}")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByYear(@PathVariable String year) {
         
+        log.info("Parametro recebido: {}", year);
         Response<List<EventsDTO>> response = new Response<>();
+        validarEntradaDatas(year, "Informe um ano", response);        
+        if (!response.getErrors().isEmpty()) {
+            log.info("Erro validando getEventsByYear");            
+            return ResponseEntity.badRequest().body(response);
+        }
 
         Optional<List<Events>> user = Optional.empty();
-        if (isProd()) {
-            user = eventService.fetchEventsByYear(year);
-        } else {
-            user = eventService.fetchEventsByYearSqlServer(year);
-        }
+        user = eventService.fetchEventsByYear(year);
 
         if (user.isPresent() && user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -182,17 +184,25 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-
-    @GetMapping(value = "/fetchEventsByMonth")
-    public ResponseEntity<Response<List<EventsDTO>>> getEventsByMonth(@RequestParam String year, @RequestParam String month) {
+    
+    @GetMapping(value = "/{year}/{month}")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByMonth(@PathVariable("year") String year, @PathVariable("month") String month) {
+        
         Response<List<EventsDTO>> response = new Response<>();
+        validarEntradaDatas(year, month, "Informe um ano", "Informe um mês", response);
+        if (!response.getErrors().isEmpty()) {
+            log.info("Erro validando getEventsByMonth");
+            return ResponseEntity.badRequest().body(response);
+        }
 
         Optional<List<Events>> user = Optional.empty();
-        if (isProd()) {
-            user = eventService.fetchEventsByMonth(year, month);
-        } else {
-            user = eventService.fetchEventsByMonthSqlServer(year, month);
-        }
+        YearMonth ym = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
+        user = eventService.fetchEventsByMonth(
+            year + "-" + month + "-01 00:00:00", 
+            year + "-" + month + "-" + ym.lengthOfMonth() + " 23:59:59"
+        );
+        
+
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -208,17 +218,20 @@ public class EventsController {
     }
 
 
-    @GetMapping(value = "/fetchEventsByDate")
-    public ResponseEntity<Response<List<EventsDTO>>> getEventsByDate(@RequestParam("date") String date) {
+    @GetMapping(value = "/{year}/{month}/{day}")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsByDate(@PathVariable("year") String year, @PathVariable("month") String month, @PathVariable("day") String day) {
         
         Response<List<EventsDTO>> response = new Response<>();
+        validarEntradaDatas(year, month, day, "Informe um ano", "Informe um mês", "Informe um dia", response);
         
-        Optional<List<Events>> user = Optional.empty();
-        if (isProd()) {
-            user = eventService.fetchEventsByDate(date);
-        } else {
-            user = eventService.fetchEventsByDate2(date);
+        if (!response.getErrors().isEmpty()) {
+            log.info("Erro validando getEventsByMonth");
+            return ResponseEntity.badRequest().body(response);
         }
+
+        String date = year + "-" + month + "-" + day;
+        Optional<List<Events>> user = Optional.empty();
+        user = eventService.fetchEventsByDate(date);
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -234,17 +247,26 @@ public class EventsController {
     }
 
 
-    @GetMapping(value = "/fetchEventsInBetween")
-    public ResponseEntity<Response<List<EventsDTO>>> getEventsInBetween(@RequestParam("dtInicio") String dtInicio, @RequestParam("dtFim") String dtFim) {
-        
+    @GetMapping(value = "/{year1}/{month1}/{day1}/and/{year2}/{month2}/{day2}")
+    public ResponseEntity<Response<List<EventsDTO>>> getEventsInBetween(
+        @PathVariable("year1") String year1, @PathVariable("month1") String month1, @PathVariable("day1") String day1,
+        @PathVariable("year2") String year2, @PathVariable("month2") String month2, @PathVariable("day2") String day2
+    ) {
+
         Response<List<EventsDTO>> response = new Response<>();
 
-        Optional<List<Events>> user = Optional.empty();
-        if (isProd()) {
-            user = eventService.fetchEventsInBetween(dtInicio, dtFim);
-        } else {
-            user = eventService.fetchEventsInBetween2(dtInicio, dtFim);
+        validarEntradaDatas(year1, month1, day1, "Informe um ano", "Informe um mês", "Informe um dia", response);
+        validarEntradaDatas(year2, month2, day2, "Informe um ano", "Informe um mês", "Informe um dia", response);
+        
+        if (!response.getErrors().isEmpty()) {
+            log.info("Erro validando getEventsInBetween");
+            return ResponseEntity.badRequest().body(response);
         }
+
+        Optional<List<Events>> user = Optional.empty();
+        String dtInicio = year1 + "-" + month1 + "-" + day1 + " 00:00:00";
+        String dtFim = year2 + "-" + month2 + "-" + day2 + " 23:59:59";
+        user = eventService.fetchEventsInBetween(dtInicio, dtFim);
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
@@ -257,6 +279,24 @@ public class EventsController {
         });
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
+    }
+
+
+    private void validarEntradaDatas(String v1, String msg, Response result) {
+        if (v1 == null || v1.isEmpty()) {
+            result.getErrors().add(msg);
+        }
+    }
+
+    private void validarEntradaDatas(String v1, String v2, String msg1, String msg2, Response result) {
+        validarEntradaDatas(v1, msg1, result);
+        validarEntradaDatas(v2, msg2, result);
+    }
+
+    private void validarEntradaDatas(String v1, String v2, String v3, String msg1, String msg2, String msg3, Response result) {
+        validarEntradaDatas(v1, msg1, result);
+        validarEntradaDatas(v2, msg2, result);
+        validarEntradaDatas(v3, msg3, result);
     }
 
     public boolean isProd() {

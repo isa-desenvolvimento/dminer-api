@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import com.dminer.entities.Events;
 import com.dminer.repository.EventsTimeRepository;
-import com.dminer.repository.EventsTimeRepository2;
+import com.dminer.repository.EventsTimeRepositoryPostgres;
+import com.dminer.repository.EventsTimeRepositorySqlServer;
 import com.dminer.services.interfaces.IEventsService;
 
 import org.slf4j.Logger;
@@ -21,7 +22,10 @@ public class EventsService implements IEventsService {
     private EventsTimeRepository eventsTimeRepository;
 
     @Autowired
-    private EventsTimeRepository2 eventsTimeRepository2;
+    private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServe;
+    
+    @Autowired
+    private EventsTimeRepositoryPostgres eventsTimeRepositoryPostgres;
     
     private static final Logger log = LoggerFactory.getLogger(EventsService.class);
 
@@ -56,53 +60,27 @@ public class EventsService implements IEventsService {
     
     public Optional<List<Events>> fetchEventsByYear(String year) {
         log.info("Buscando todos os eventos por ano: {}", year);
-        return Optional.ofNullable(eventsTimeRepository.fetchEventsByYear(Integer.parseInt(year)));
+        return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByYear(year + "-01-01 00:00:00", year + "-12-31 23:59:59"));
     }
 
 
     public Optional<List<Events>> fetchEventsByMonth(String year, String month) {
         log.info("Buscando todos os eventos por ano/mês: {} - {}", year, month);
-        return Optional.ofNullable(eventsTimeRepository.fetchEventsByMonth(Integer.parseInt(year), Integer.parseInt(month)));
-    }
-
-
-    public Optional<List<Events>> fetchEventsByYearSqlServer(String year) {
-        log.info("Buscando todos os eventos por ano: {}", year);
-        return Optional.ofNullable(eventsTimeRepository.fetchEventsByYearSqlServer(year));
+        return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByMonth(year, month));
     }
 
 
     public Optional<List<Events>> fetchEventsByDate(@Param("date") String date) {
         log.info("Buscando todos os eventos por date: {}", date);
-        return Optional.ofNullable(eventsTimeRepository2.fetchEventsByDate(date));
-        // return Optional.empty();
+        return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByDate(date, date + " 23:59:59"));        
     }
 
 
     
     public Optional<List<Events>> fetchEventsInBetween(String dtInicio, String dtFim) {
-        log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);
-        // return Optional.ofNullable(eventsTimeRepository.fetchEventsInBetween(dtInicio, dtFim));
-        return Optional.ofNullable(eventsTimeRepository2.fetchEventsInBetween(dtInicio, dtFim));
-        // return Optional.empty();
+        log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);        
+        return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsInBetween(dtInicio, dtFim));        
     }
 
-
-    public Optional<List<Events>> fetchEventsByMonthSqlServer(String year, String month) {
-        log.info("Buscando todos os eventos por ano/mês: {} - {}", year, month);
-        return Optional.ofNullable(eventsTimeRepository.fetchEventsByMonthSqlServer(year, month));
-    }
-
-
-    public Optional<List<Events>> fetchEventsByDate2(@Param("date") String date) {
-        log.info("Buscando todos os eventos por date: {}", date);
-        return Optional.ofNullable(eventsTimeRepository2.fetchEventsByDate(date));
-    }
-
-    
-    public Optional<List<Events>> fetchEventsInBetween2(String dtInicio, String dtFim) {
-        log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);
-        return Optional.ofNullable(eventsTimeRepository2.fetchEventsInBetween(dtInicio, dtFim));
-    }
     
 }

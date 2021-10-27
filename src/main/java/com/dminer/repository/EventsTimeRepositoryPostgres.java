@@ -12,12 +12,12 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class EventsTimeRepository2 {
+public class EventsTimeRepositoryPostgres {
     
     @Autowired
     private JdbcOperations jdbcOperations;
 
-    private static final Logger log = LoggerFactory.getLogger(EventsTimeRepository2.class);
+    private static final Logger log = LoggerFactory.getLogger(EventsTimeRepositoryPostgres.class);
 
     
     public List<Events> fetchEventsByDate(String date) {
