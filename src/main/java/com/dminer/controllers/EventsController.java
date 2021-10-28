@@ -202,14 +202,14 @@ public class EventsController {
         Optional<List<Events>> user = Optional.empty();
         YearMonth ym = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         if (isProd()) {
-            user = eventService.fetchEventsByMonth(
-                year + "-" + month + "-01 01:00:00", 
-                year + "-" + month + "-" + ym.lengthOfMonth() + " 23:59:59"
-            );
-        } else {            
             user = eventService.fetchEventsByMonthPostgres(
                 year + "-" + month + "-01 01:00:00", 
                 year + "-" + month + "-" + ym.lengthOfMonth() + " 12:59:59"
+                );
+        } else {            
+            user = eventService.fetchEventsByMonth(
+                year + "-" + month + "-01 01:00:00", 
+                year + "-" + month + "-" + ym.lengthOfMonth() + " 23:59:59"
             );
         }       
 
@@ -243,9 +243,9 @@ public class EventsController {
         Optional<List<Events>> user = Optional.empty();
         
         if (isProd()) {
-            user = eventService.fetchEventsByDate(date, date + " 23:59:59");
-        } else {            
             user = eventService.fetchEventsByDatePostgres(date, date + " 12:59:59");
+        } else {            
+            user = eventService.fetchEventsByDate(date, date + " 23:59:59");
         }   
 
         if (user.get().isEmpty()) {
@@ -283,9 +283,9 @@ public class EventsController {
         String dtFim = year2 + "-" + month2 + "-" + day2 + " 12:59:59";
         user = eventService.fetchEventsInBetween(dtInicio, dtFim);
         if (isProd()) {
-            user = eventService.fetchEventsInBetween(dtInicio, dtFim);
-        } else {            
             user = eventService.fetchEventsInBetweenPostgres(dtInicio, dtFim);
+        } else {            
+            user = eventService.fetchEventsInBetween(dtInicio, dtFim);
         }   
 
         if (user.get().isEmpty()) {
@@ -320,6 +320,7 @@ public class EventsController {
     }
 
     public boolean isProd() {
+        log.info("ambiente: " + env.getActiveProfiles()[0]);
         return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 }

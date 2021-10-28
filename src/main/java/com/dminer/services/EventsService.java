@@ -64,51 +64,51 @@ public class EventsService implements IEventsService {
 
     
     public Optional<List<Events>> fetchEventsByYear(String year) {
-        log.info("Buscando todos os eventos por ano: {}", year);
+        log.info("SqlServe - Buscando todos os eventos por ano: {}", year);
         return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByYear(year + "-01-01 00:00:00", year + "-12-31 23:59:59"));
     }
 
 
     public Optional<List<Events>> fetchEventsByMonth(String year, String month) {
-        log.info("Buscando todos os eventos por ano/mês: {} - {}", year, month);
+        log.info("SqlServe - Buscando todos os eventos por ano/mês: {} - {}", year, month);
         return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByMonth(year, month));
     }
 
 
     public Optional<List<Events>> fetchEventsByDate(String date, String date2) {
-        log.info("Buscando todos os eventos por date: {}", date);
+        log.info("SqlServe - Buscando todos os eventos por date: {}", date);
         return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsByDate(date, date + " 23:59:59"));  
     }
 
 
     
     public Optional<List<Events>> fetchEventsInBetween(String dtInicio, String dtFim) {
-        log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);        
+        log.info("SqlServe - Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);        
         return Optional.ofNullable(eventsTimeRepositorySqlServe.fetchEventsInBetween(dtInicio, dtFim)); 
     }
 
 
     public Optional<List<Events>> fetchEventsByYearPostgres(String year) {
-        log.info("Buscando todos os eventos por ano: {}", year);
+        log.info("Postgres - Buscando todos os eventos por ano: {}", year);
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsByYear(year + "-01-01 01:00:00", year + "-12-31 12:59:59"));
     }
 
 
     public Optional<List<Events>> fetchEventsByMonthPostgres(String year, String month) {
-        log.info("Buscando todos os eventos por ano/mês: {} - {}", year, month);
+        log.info("Postgres - Buscando todos os eventos por ano/mês: {} - {}", year, month);
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsByMonth(year, month));
     }
 
 
     public Optional<List<Events>> fetchEventsByDatePostgres(String date, String date2) {
-        log.info("Buscando todos os eventos por date: {}", date);
+        log.info("Postgres - Buscando todos os eventos por date: {}", date);
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsByDate(date, date2));      
     }
 
 
     
     public Optional<List<Events>> fetchEventsInBetweenPostgres(String dtInicio, String dtFim) {
-        log.info("Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);        
+        log.info("Postgres - Buscando todos os eventos que estejam entre {} e {}", dtInicio, dtFim);        
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsInBetween(dtInicio, dtFim));         
     }
 
