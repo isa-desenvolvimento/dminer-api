@@ -10,7 +10,9 @@ import com.dminer.entities.User;
 import com.dminer.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ReminderConverter {
     
     @Autowired
