@@ -4,6 +4,7 @@ package com.dminer.utils;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -13,18 +14,6 @@ import org.slf4j.LoggerFactory;
 public class UtilDataHora {
     
     private static final Logger log = LoggerFactory.getLogger(UtilDataHora.class);
-
-    public static boolean isValid(String date) {
-        return true;
-        // SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");        
-        // try {
-        //     df.parse(date);
-        //     return true;
-        // } catch (ParseException e) {
-        //     log.error("Falha ao validar data: {}", date);
-        // }
-        // return false;
-    }
 
     /**
      * Recebe uma data no formato dd/MM/yyyy e retorna um objeto Date
@@ -42,16 +31,29 @@ public class UtilDataHora {
     }
 
     /**
-     * Recebe uma data no formato dd/MM/yyyy e retorna um objeto Date
+     * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna um objeto Timestamp
      * @param date
-     * @return Date
+     * @return Timestamp
      */
-    public static Timestamp stringToTimestamp(String date) {
-        if (isValid(date)) {
+    public static Timestamp toTimestamp(String date) {
+        if (date != null)
             return Timestamp.valueOf(date);
-        }        
-        return null;
+        return Timestamp.from(Instant.now());
     }
+
+    /**
+     * Recebe uma data Timestamp e retorna uma string yyyy-MM-dd HH:mm:ss
+     * @param Timestamp date
+     * @return String
+     */
+    public static String timestampToString(Timestamp date) {        
+        if (date != null)
+            return date.toString().substring(0, date.toString().length() -2);
+
+        Timestamp timestamp = Timestamp.from(Instant.now());
+        return timestamp.toString().substring(0, timestamp.toString().length() -2);
+    }
+
 
      /**
      * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna um objeto Date
@@ -68,15 +70,6 @@ public class UtilDataHora {
         return null;
     }
 
-    // public static void main(String[] args) throws ParseException {
-    //     // System.out.println(
-    //     //     UtilDataHora.stringToFullDateHour("2021-10-25 19:00:00")
-    //     // );
-
-    //     Timestamp t = Timestamp.valueOf("2021-10-25 19:00:00");
-    //     System.out.println(t);
-
-    // }
 
     /**
      * Retorna uma string do objeto Date formatado em dd/MM/yyyy
@@ -85,6 +78,16 @@ public class UtilDataHora {
      */
     public static String dateToString(Date date) {
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        return df.format(date);
+    }
+
+    /**
+     * Retorna uma string do objeto Date formatado em yyyy-MM-dd
+     * @param date
+     * @return
+     */
+    public static String dateToStringUTC(Timestamp date) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         return df.format(date);
     }
 

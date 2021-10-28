@@ -27,7 +27,7 @@ public class CommentConverter {
     public CommentDTO entityToDTO(Comment comment) {
         CommentDTO dto = new CommentDTO();
         dto.setContent(comment.getContent() != null ? comment.getContent() : "");
-        dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToString(comment.getTimestamp()) : null);
+        dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
         dto.setHours(comment.getTimestamp() != null ? UtilDataHora.hourToString(comment.getTimestamp()) : null);
         dto.setId(comment.getId());
         dto.setIdUsuario(comment.getUser().getId());
@@ -38,7 +38,7 @@ public class CommentConverter {
         Comment c = new Comment();
         c.setId(UtilNumbers.isNumeric(commentDTO.getId()+"") ? commentDTO.getId() : null);
         c.setContent(commentDTO.getContent() != null ? commentDTO.getContent() : "");
-        c.setTimestamp(commentDTO.getDate() != null ? UtilDataHora.stringToDate(commentDTO.getDate()) : null);
+        c.setTimestamp(commentDTO.getDate() != null ? UtilDataHora.toTimestamp(commentDTO.getDate()) : null);
         Optional<User> user = userService.findById(commentDTO.getIdUsuario());
         if (user.isPresent())
             c.setUser(user.get());
@@ -52,7 +52,7 @@ public class CommentConverter {
     public Comment requestDtoToEntity(CommentRequestDTO commentRequestDTO) {
         Comment c = new Comment();
         c.setContent(commentRequestDTO.getContent() != null ? commentRequestDTO.getContent() : "");
-        c.setTimestamp(commentRequestDTO.getDate() != null ? UtilDataHora.stringToDate(commentRequestDTO.getDate()) : null);
+        c.setTimestamp(commentRequestDTO.getDate() != null ? UtilDataHora.toTimestamp(commentRequestDTO.getDate()) : null);
         Optional<User> user = userService.findById(commentRequestDTO.getIdUsuario());
         if (user.isPresent())
             c.setUser(user.get());

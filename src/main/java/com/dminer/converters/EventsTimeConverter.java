@@ -17,9 +17,9 @@ public class EventsTimeConverter {
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
         if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
-            e.setEndDate(UtilDataHora.stringToTimestamp(dto.getEndDate()));
+            e.setEndDate(UtilDataHora.toTimestamp(dto.getEndDate()));
         
-        e.setStartDate(UtilDataHora.stringToTimestamp(dto.getStartDate()));
+        e.setStartDate(UtilDataHora.toTimestamp(dto.getStartDate()));
         EventsTime repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
         e.setEndRepeat(repeat);
         repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
@@ -35,9 +35,9 @@ public class EventsTimeConverter {
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
         if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
-            e.setEndDate(UtilDataHora.stringToTimestamp(dto.getEndDate()));
+            e.setEndDate(UtilDataHora.toTimestamp(dto.getEndDate()));
 
-        e.setStartDate(UtilDataHora.stringToTimestamp(dto.getStartDate()));
+        e.setStartDate(UtilDataHora.toTimestamp(dto.getStartDate()));
         EventsTime repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
         e.setEndRepeat(repeat);
         repeat = contains(dto.getEndRepeat()) ? EventsTime.valueOf(dto.getEndRepeat()) : EventsTime.NO_REPEAT;
@@ -54,12 +54,12 @@ public class EventsTimeConverter {
         dto.setAllDay(e.getAllDay());
         dto.setDescription(e.getDescription());
         if (e.getEndDate() != null) {
-            dto.setEndDate(UtilDataHora.dateToString(e.getEndDate()));
+            dto.setEndDate(UtilDataHora.timestampToString(e.getEndDate()));
             if (dto.getEndDate().equals("01/01/1970")) dto.setEndDate(null);
         }
         
         if (e.getStartDate() != null)
-            dto.setStartDate(UtilDataHora.dateToString(e.getStartDate()));
+            dto.setStartDate(UtilDataHora.timestampToString(e.getStartDate()));
         dto.setEndRepeat(e.getEndRepeat().getEventTime());
         dto.setStartRepeat(e.getStartRepeat().getEventTime());
         dto.setLocation(e.getLocation());

@@ -206,7 +206,7 @@ public class UserController {
 
         Optional<User> optUser = userService.findById(userDTO.getId());
         optUser.get().setName(userDTO.getName());
-        optUser.get().setDtBirthday(UtilDataHora.stringToDate(userDTO.getDtBirthday()));
+        optUser.get().setDtBirthday(UtilDataHora.toTimestamp(userDTO.getDtBirthday()));
 
         if (avatar != null) {
             FileInfo file = salvarImagem(avatar, Constantes.ROOT_UPLOADS + USER_AVATAR + optUser.get().getId(), result);
