@@ -16,7 +16,7 @@ public class EventsTimeConverter {
         e.setId(dto.getId());
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
-        if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
+        if (!dto.getEndDate().contains("1970") || !dto.getEndDate().contains("1969"))
             e.setEndDate(UtilDataHora.toTimestamp(dto.getEndDate()));
         
         e.setStartDate(UtilDataHora.toTimestamp(dto.getStartDate()));
@@ -34,7 +34,7 @@ public class EventsTimeConverter {
         Events e = new Events();        
         e.setAllDay(dto.getAllDay());
         e.setDescription(dto.getDescription());
-        if (!dto.getEndDate().equals("1970-01-01 00:00:00"))
+        if (!dto.getEndDate().contains("1970") || !dto.getEndDate().contains("1969"))
             e.setEndDate(UtilDataHora.toTimestamp(dto.getEndDate()));
 
         e.setStartDate(UtilDataHora.toTimestamp(dto.getStartDate()));
@@ -55,7 +55,7 @@ public class EventsTimeConverter {
         dto.setDescription(e.getDescription());
         if (e.getEndDate() != null) {
             dto.setEndDate(UtilDataHora.timestampToString(e.getEndDate()));
-            if (dto.getEndDate().equals("01/01/1970")) dto.setEndDate(null);
+            if (dto.getEndDate().contains("1970") || dto.getEndDate().contains("1969")) dto.setEndDate(null);
         }
         
         if (e.getStartDate() != null)
