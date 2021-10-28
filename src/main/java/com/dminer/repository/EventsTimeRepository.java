@@ -17,10 +17,6 @@ public interface EventsTimeRepository extends JpaRepository<Events, Integer> {
     @Query(value= "SELECT * FROM Events WHERE year(end_date) = :year or year(start_date) = :year", nativeQuery = true)
     public List<Events> fetchEventsByYearSqlServer(@Param("year") String year);
 
-    // @Query(value = "SELECT * FROM Events WHERE month(end_date) = :month or month(start_date) = :month " +
-    // "and year(end_date) = :year and year(start_date) = :year", nativeQuery = true)
-    // public List<Events> fetchEventsByMonthSqlServer(@Param("year") String year, @Param("month") String month);
-
     @Query(value = "SELECT * FROM Events WHERE start_date between :date and :dateHour", nativeQuery = true)
     public List<Events> fetchEventsByDateSqlServer(@Param("date") String date, @Param("dateHour") String dateHour);
     

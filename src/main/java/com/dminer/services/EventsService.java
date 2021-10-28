@@ -1,6 +1,5 @@
 package com.dminer.services;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,8 +12,6 @@ import com.dminer.services.interfaces.IEventsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,8 +26,6 @@ public class EventsService implements IEventsService {
     @Autowired
     private EventsTimeRepositoryPostgres eventsTimeRepositoryPostgres;
     
-    @Autowired
-    private Environment env;
 
     private static final Logger log = LoggerFactory.getLogger(EventsService.class);
 
@@ -112,8 +107,4 @@ public class EventsService implements IEventsService {
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsInBetween(dtInicio, dtFim));         
     }
 
-    private boolean isProd() {
-        return Arrays.asList(env.getActiveProfiles()).contains("prod");
-    }
-    
 }
