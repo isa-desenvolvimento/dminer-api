@@ -281,7 +281,6 @@ public class EventsController {
         Optional<List<Events>> user = Optional.empty();
         String dtInicio = year1 + "-" + month1 + "-" + day1 + " 01:00:00";
         String dtFim = year2 + "-" + month2 + "-" + day2 + " 12:59:59";
-        user = eventService.fetchEventsInBetween(dtInicio, dtFim);
         if (isProd()) {
             user = eventService.fetchEventsInBetweenPostgres(dtInicio, dtFim);
         } else {            
