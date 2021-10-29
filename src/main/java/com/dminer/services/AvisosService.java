@@ -9,7 +9,9 @@ import com.dminer.repository.AvisosRepository;
 import com.dminer.services.interfaces.IAvisosService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AvisosService implements IAvisosService {
 
     @Autowired
