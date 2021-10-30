@@ -52,10 +52,10 @@ public class NoticeController {
     
 
     private void validateRequestDto(NoticeRequestDTO avisosRequestDTO, BindingResult result) {
-        if (avisosRequestDTO.getUsuarios() == null) {
+        if (avisosRequestDTO.getUsers() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
 		} else {
-            avisosRequestDTO.getUsuarios().forEach(id -> {
+            avisosRequestDTO.getUsers().forEach(id -> {
                 Optional<User> findById = userService.findById(id);
                 if (!findById.isPresent()) {
                     result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+id+" não encontrado."));
@@ -63,15 +63,15 @@ public class NoticeController {
             });
         }
 
-        if (avisosRequestDTO.getPrioridade() == null || avisosRequestDTO.getPrioridade().isEmpty()) {
+        if (avisosRequestDTO.getPriority() == null || avisosRequestDTO.getPriority().isEmpty()) {
             result.addError(new ObjectError("NoticeRequestDTO", "Prioridade do aviso precisa estar preenchido."));			
 		}
 
-        if (avisosRequestDTO.getCriador() == null || avisosRequestDTO.getCriador().isEmpty()) {
+        if (avisosRequestDTO.getCreator() == null || avisosRequestDTO.getCreator().isEmpty()) {
             result.addError(new ObjectError("NoticeRequestDTO", "Criador do aviso precisa estar preenchido."));			
 		}
 
-        if (avisosRequestDTO.getData()== null || avisosRequestDTO.getData().isEmpty()) {
+        if (avisosRequestDTO.getDate()== null || avisosRequestDTO.getDate().isEmpty()) {
             result.addError(new ObjectError("NoticeRequestDTO", "Data do aviso precisa estar preenchido."));			
 		}
     }

@@ -36,17 +36,17 @@ public class Notice {
 	private Integer id;
 
     @Column
-    private String criador;
+    private String creator;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<User> usuarios = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
     @Column
-    private String aviso;
+    private String warning;
 
     @Column
-    private Timestamp data;
+    private Timestamp date;
 
     @Column
-    private String prioridade;
+    private String priority;
 }

@@ -21,42 +21,42 @@ public class NoticeConverter {
     public NoticeDTO entityToDTO(Notice aviso) {
         NoticeDTO dto = new NoticeDTO();
         dto.setId(aviso.getId());
-        aviso.getUsuarios().forEach(user -> {
-            dto.getUsuarios().add((user.getId()));     
+        aviso.getUsers().forEach(user -> {
+            dto.getUsers().add((user.getId()));     
         });
-        dto.setAviso(aviso.getAviso());
-        dto.setCriador(aviso.getCriador());
-        dto.setPrioridade(aviso.getPrioridade());
-        dto.setData(aviso.getData() != null ? UtilDataHora.hourToString(aviso.getData()) : null);
+        dto.setWarning(aviso.getWarning());
+        dto.setCreator(aviso.getCreator());
+        dto.setPriority(aviso.getPriority());
+        dto.setDate(aviso.getDate() != null ? UtilDataHora.hourToString(aviso.getDate()) : null);
         return dto;
     }
 
     public Notice dtoToEntity(NoticeDTO avisoDto) {
         Notice c = new Notice();
         c.setId(avisoDto.getId());
-        c.setData(avisoDto.getData() != null ? UtilDataHora.toTimestamp(avisoDto.getData()) : null);
-        avisoDto.getUsuarios().forEach(usuario -> {
+        c.setDate(avisoDto.getDate() != null ? UtilDataHora.toTimestamp(avisoDto.getDate()) : null);
+        avisoDto.getUsers().forEach(usuario -> {
             Optional<User> user = userService.findById(usuario);
             if (user.isPresent())
-                c.getUsuarios().add(user.get());
+                c.getUsers().add(user.get());
         });
-        c.setAviso(avisoDto.getAviso());
-        c.setCriador(avisoDto.getCriador());        
-        c.setPrioridade(avisoDto.getPrioridade());
+        c.setWarning(avisoDto.getWarning());
+        c.setCreator(avisoDto.getCreator());        
+        c.setPriority(avisoDto.getPriority());
         return c;
     }
 
     public Notice requestDtoToEntity(NoticeRequestDTO avisoDto) {
         Notice c = new Notice();
-        c.setData(avisoDto.getData() != null ? UtilDataHora.toTimestamp(avisoDto.getData()) : null);
-        avisoDto.getUsuarios().forEach(usuario -> {
+        c.setDate(avisoDto.getDate() != null ? UtilDataHora.toTimestamp(avisoDto.getDate()) : null);
+        avisoDto.getUsers().forEach(usuario -> {
             Optional<User> user = userService.findById(usuario);
             if (user.isPresent())
-                c.getUsuarios().add(user.get());
+                c.getUsers().add(user.get());
         });
-        c.setAviso(avisoDto.getAviso());
-        c.setCriador(avisoDto.getCriador());        
-        c.setPrioridade(avisoDto.getPrioridade());
+        c.setWarning(avisoDto.getWarning());
+        c.setCreator(avisoDto.getCreator());        
+        c.setPriority(avisoDto.getPriority());
         return c;
     }
 }
