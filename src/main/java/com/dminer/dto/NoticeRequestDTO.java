@@ -16,7 +16,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class AvisosRequestDTO {
+public class NoticeRequestDTO {
     
     private List<Integer> usuarios = new ArrayList<>();
     private String data;

@@ -22,14 +22,14 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "AVISOS")
+@Table(name = "NOTICE")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-public class Avisos {
+public class Notice {
     
     @Id
 	@GeneratedValue(strategy = GenerationType.AUTO)	

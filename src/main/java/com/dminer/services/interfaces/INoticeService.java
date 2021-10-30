@@ -3,31 +3,30 @@ package com.dminer.services.interfaces;
 import java.util.List;
 import java.util.Optional;
 
-import com.dminer.entities.Avisos;
-import com.dminer.entities.Post;
+import com.dminer.entities.Notice;
 
-public interface IAvisosService {
+public interface INoticeService {
     
     /**
 	 * Salva/Atualiza um comentário
-	 * @param Avisos comment
+	 * @param Notice comment
 	 * @return Optional<Avisos>
 	 */
-	Avisos persist(Avisos comment);
+	Notice persist(Notice comment);
 	
 	/**
 	 * Busca por id
 	 * @param int id
 	 * @return Optional<Avisos>
 	 */
-	Optional<Avisos> findById(int id);
+	Optional<Notice> findById(int id);
 	
     /**
 	 * Busca todos
 	 * @param Post post
 	 * @return Optional<Avisos>
 	 */
-	Optional<List<Avisos>> findAll();
+	Optional<List<Notice>> findAll();
 	
 	/**
 	 * Deleta um comentário

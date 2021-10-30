@@ -2,9 +2,9 @@ package com.dminer.converters;
 
 import java.util.Optional;
 
-import com.dminer.dto.AvisosDTO;
-import com.dminer.dto.AvisosRequestDTO;
-import com.dminer.entities.Avisos;
+import com.dminer.dto.NoticeDTO;
+import com.dminer.dto.NoticeRequestDTO;
+import com.dminer.entities.Notice;
 import com.dminer.entities.User;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
@@ -13,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AvisosConverter {
+public class NoticeConverter {
 
     @Autowired
     private UserService userService;
 
-    public AvisosDTO entityToDTO(Avisos aviso) {
-        AvisosDTO dto = new AvisosDTO();
+    public NoticeDTO entityToDTO(Notice aviso) {
+        NoticeDTO dto = new NoticeDTO();
         dto.setId(aviso.getId());
         aviso.getUsuarios().forEach(user -> {
             dto.getUsuarios().add((user.getId()));     
@@ -31,8 +31,8 @@ public class AvisosConverter {
         return dto;
     }
 
-    public Avisos dtoToEntity(AvisosDTO avisoDto) {
-        Avisos c = new Avisos();
+    public Notice dtoToEntity(NoticeDTO avisoDto) {
+        Notice c = new Notice();
         c.setId(avisoDto.getId());
         c.setData(avisoDto.getData() != null ? UtilDataHora.toTimestamp(avisoDto.getData()) : null);
         avisoDto.getUsuarios().forEach(usuario -> {
@@ -46,8 +46,8 @@ public class AvisosConverter {
         return c;
     }
 
-    public Avisos requestDtoToEntity(AvisosRequestDTO avisoDto) {
-        Avisos c = new Avisos();
+    public Notice requestDtoToEntity(NoticeRequestDTO avisoDto) {
+        Notice c = new Notice();
         c.setData(avisoDto.getData() != null ? UtilDataHora.toTimestamp(avisoDto.getData()) : null);
         avisoDto.getUsuarios().forEach(usuario -> {
             Optional<User> user = userService.findById(usuario);

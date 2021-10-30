@@ -6,13 +6,13 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
-import com.dminer.converters.AvisosConverter;
-import com.dminer.dto.AvisosDTO;
-import com.dminer.dto.AvisosRequestDTO;
-import com.dminer.entities.Avisos;
+import com.dminer.converters.NoticeConverter;
+import com.dminer.dto.NoticeDTO;
+import com.dminer.dto.NoticeRequestDTO;
+import com.dminer.entities.Notice;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
-import com.dminer.services.AvisosService;
+import com.dminer.services.NoticeService;
 import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
@@ -34,55 +34,55 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/avisos")
+@RequestMapping("/notice")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
-public class AvisosController {
+public class NoticeController {
     
-    private static final Logger log = LoggerFactory.getLogger(AvisosController.class);
+    private static final Logger log = LoggerFactory.getLogger(NoticeController.class);
 
     @Autowired 
-    private AvisosConverter avisosConverter;
+    private NoticeConverter avisosConverter;
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private AvisosService avisosService;
+    private NoticeService avisosService;
     
 
-    private void validateRequestDto(AvisosRequestDTO avisosRequestDTO, BindingResult result) {
+    private void validateRequestDto(NoticeRequestDTO avisosRequestDTO, BindingResult result) {
         if (avisosRequestDTO.getUsuarios() == null) {
-            result.addError(new ObjectError("AvisosRequestDTO", "Id do usuário precisa estar preenchido."));
+            result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
 		} else {
             avisosRequestDTO.getUsuarios().forEach(id -> {
                 Optional<User> findById = userService.findById(id);
                 if (!findById.isPresent()) {
-                    result.addError(new ObjectError("AvisosRequestDTO", "Usuário: "+id+" não encontrado."));
+                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+id+" não encontrado."));
                 }
             });
         }
 
         if (avisosRequestDTO.getPrioridade() == null || avisosRequestDTO.getPrioridade().isEmpty()) {
-            result.addError(new ObjectError("AvisosRequestDTO", "Prioridade do aviso precisa estar preenchido."));			
+            result.addError(new ObjectError("NoticeRequestDTO", "Prioridade do aviso precisa estar preenchido."));			
 		}
 
         if (avisosRequestDTO.getCriador() == null || avisosRequestDTO.getCriador().isEmpty()) {
-            result.addError(new ObjectError("AvisosRequestDTO", "Criador do aviso precisa estar preenchido."));			
+            result.addError(new ObjectError("NoticeRequestDTO", "Criador do aviso precisa estar preenchido."));			
 		}
 
         if (avisosRequestDTO.getData()== null || avisosRequestDTO.getData().isEmpty()) {
-            result.addError(new ObjectError("AvisosRequestDTO", "Data do aviso precisa estar preenchido."));			
+            result.addError(new ObjectError("NoticeRequestDTO", "Data do aviso precisa estar preenchido."));			
 		}
     }
     
 
     @PostMapping
-    public ResponseEntity<Response<AvisosDTO>> create(@Valid @RequestBody AvisosRequestDTO avisosRequest, BindingResult result) {
+    public ResponseEntity<Response<NoticeDTO>> create(@Valid @RequestBody NoticeRequestDTO avisosRequest, BindingResult result) {
     
-        log.info("Salvando um novo avisos {}", avisosRequest);
+        log.info("Salvando um novo aviso {}", avisosRequest);
 
-		Response<AvisosDTO> response = new Response<>();
+		Response<NoticeDTO> response = new Response<>();
         validateRequestDto(avisosRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando avisosRequest: {}", avisosRequest);
@@ -90,7 +90,7 @@ public class AvisosController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        Avisos events = avisosService.persist(avisosConverter.requestDtoToEntity(avisosRequest));
+        Notice events = avisosService.persist(avisosConverter.requestDtoToEntity(avisosRequest));
         response.setData(avisosConverter.entityToDTO(events));
 
         return ResponseEntity.ok().body(response);
@@ -98,16 +98,16 @@ public class AvisosController {
 
 
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<AvisosDTO>> getNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<NoticeDTO>> getNotice(@PathVariable("id") Integer id) {
         log.info("Buscando avisos {}", id);
         
-        Response<AvisosDTO> response = new Response<>();
+        Response<NoticeDTO> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Avisos> user = avisosService.findById(id);
+        Optional<Notice> user = avisosService.findById(id);
         if (!user.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
@@ -119,16 +119,16 @@ public class AvisosController {
 
 
     @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<AvisosDTO>> deleteNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<NoticeDTO>> deleteNotice(@PathVariable("id") Integer id) {
         log.info("Buscando avisos {}", id);
         
-        Response<AvisosDTO> response = new Response<>();
+        Response<NoticeDTO> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Avisos> not = avisosService.findById(id);
+        Optional<Notice> not = avisosService.findById(id);
         if (!not.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
@@ -136,7 +136,7 @@ public class AvisosController {
 
         try {avisosService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrado");
+            response.getErrors().add("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -146,17 +146,17 @@ public class AvisosController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<AvisosDTO>>> getAllEvents() {
+    public ResponseEntity<Response<List<NoticeDTO>>> getAllEvents() {
         
-        Response<List<AvisosDTO>> response = new Response<>();
+        Response<List<NoticeDTO>> response = new Response<>();
 
-        Optional<List<Avisos>> user = avisosService.findAll();
+        Optional<List<Notice>> user = avisosService.findAll();
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
-        List<AvisosDTO> eventos = new ArrayList<>();
+        List<NoticeDTO> eventos = new ArrayList<>();
         user.get().forEach(u -> {
             eventos.add(avisosConverter.entityToDTO(u));
         });
