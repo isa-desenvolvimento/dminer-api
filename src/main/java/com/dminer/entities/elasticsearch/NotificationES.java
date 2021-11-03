@@ -19,7 +19,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 public class NotificationES {
     
     @Id	
-	private String id;
+	private Integer id;
 
 	private String notificationDescrible; 
 }

@@ -7,7 +7,7 @@ import com.dminer.entities.elasticsearch.NotificationES;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 
-public interface NotificationESRepository extends ElasticsearchRepository<NotificationES, String> {
+public interface NotificationESRepository extends ElasticsearchRepository<NotificationES, Integer> {
     
     List<NotificationES> findByNotificationDescrible(String notificationDescrible);
 
