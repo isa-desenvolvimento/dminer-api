@@ -65,7 +65,8 @@ public class UserController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    
+    @Autowired
+    private ServerSendEvents serverSendEvents;
     
 
     private void validateRequestDto(UserRequestDTO userRequestDTO, BindingResult result) {
@@ -172,6 +173,7 @@ public class UserController {
         
         user = userService.persist(user);
         response.setData(userConverter.entityToDto(user));
+        serverSendEvents.streamSseMvc(response.toString());
         return ResponseEntity.ok().body(response);
     }
 

@@ -35,30 +35,34 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class ServerSendEvents {
     
-    @GetMapping(path = "/stream-flux")
-    public Flux<ServerSentEvent<String>> streamEvents() {
+    @GetMapping(path = "/stream-flux", produces = "text/event-stream")
+    public Flux<String> streamEvents() {
         return Flux.interval(Duration.ofSeconds(1))
           .map(sequence -> ServerSentEvent.<String> builder()
             .id(String.valueOf(sequence))
               .event("periodic-event")
               .data("SSE - " + LocalTime.now().toString())
-              .build());
+              .build().toString());
     }
 
     @GetMapping("/stream-sse-mvc")
-    public SseEmitter streamSseMvc() {
+    public SseEmitter streamSseMvc(String json) {
+        
+        System.out.println("disparando evento sse");
         SseEmitter emitter = new SseEmitter();
         ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
         sseMvcExecutor.execute(() -> {
             try {
-                for (int i = 0; true; i++) {
+                    System.out.println("executando evento sse");
+                // for (int i = 0; true; i++) {
                     SseEventBuilder event = SseEmitter.event()
-                    .data("SSE MVC - " + LocalTime.now().toString())
-                    .id(String.valueOf(i))
+                    //.data("SSE MVC - " + LocalTime.now().toString())
+                    .data(json)
+                    .id(String.valueOf(1))
                     .name("sse event - mvc");
                     emitter.send(event);
                     Thread.sleep(1000);
-                }
+                // }
             } catch (Exception ex) {
                 emitter.completeWithError(ex);
             }
