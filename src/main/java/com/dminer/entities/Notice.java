@@ -38,7 +38,7 @@ public class Notice {
     @Column
     private String creator;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<User> users = new ArrayList<>();
 
     @Column
