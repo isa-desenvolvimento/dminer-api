@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -14,6 +15,41 @@ import org.slf4j.LoggerFactory;
 public class UtilDataHora {
     
     private static final Logger log = LoggerFactory.getLogger(UtilDataHora.class);
+
+
+    /**
+     * Retorna data em string no formato yyyy-MM-dd HH:mm:ss do primeiro dia do mes
+     * @return String
+     */
+    public static String currentFirstDayFormat() {
+        return LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue() + "-01 00:00:00";
+    }
+
+    /**
+     * Retorna data em string no formato yyyy-MM-dd HH:mm:ss do ultimo dia do mes
+     * @return String
+     */
+    public static String currentLastDayFormat() {
+        return LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().lengthOfMonth() + " 00:00:00";
+    }
+
+
+    /**
+     * Retorna data timestamp no formato yyyy-MM-dd HH:mm:ss do primeiro dia do mes
+     * @return Timestamp
+     */
+    public static Timestamp currentFirstDayTimestamp() {
+        return Timestamp.valueOf(LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue() + "-01 00:00:00.000");
+    }
+
+    /**
+     * Retorna data timestamp no formato yyyy-MM-dd HH:mm:ss do ultimo dia do mes
+     * @return Timestamp
+     */
+    public static Timestamp currentLastDayTimestamp() {
+        return Timestamp.valueOf(LocalDate.now().getYear() + "-" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().lengthOfMonth() + " 00:00:00.000");
+    }
+
 
     /**
      * Recebe uma data no formato dd/MM/yyyy e retorna um objeto Date
