@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.dminer.entities.Notification;
+import com.dminer.entities.Reminder;
 import com.dminer.response.Response;
 import com.dminer.services.NotificationService;
+import com.dminer.services.ReminderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,23 +30,31 @@ public class SearchController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private ReminderService reminderService;
+
 
     @GetMapping(value = "/{keyword}")
     public ResponseEntity<Response<List<Object>>> getAllEvents(@PathVariable String keyword) {
         
         Response<List<Object>> response = new Response<>();
-
-        Optional<List<Notification>> search = notificationService.search(keyword);
-        if (search.get().isEmpty()) {
-            response.getErrors().add("Nenhum dado encontrado");
-            return ResponseEntity.status(404).body(response);
+        
+        List<Object> dados = new ArrayList<>();
+        Optional<List<Notification>> searchNotification = notificationService.search(keyword);
+        if (! searchNotification.get().isEmpty()) {
+            searchNotification.get().forEach(u -> {
+                dados.add(u);
+            });
         }
 
-        List<Object> eventos = new ArrayList<>();
-        search.get().forEach(u -> {
-            eventos.add(u);
-        });
-        response.setData(eventos);
+        Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
+        if (! searchReminder.get().isEmpty()) {
+            searchReminder.get().forEach(u -> {
+                dados.add(u);
+            });
+        }
+
+        response.setData(dados);
         return ResponseEntity.ok().body(response);
     }
 }
