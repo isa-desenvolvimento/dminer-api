@@ -154,7 +154,7 @@ public class EventsTimeRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.title, ' ', e.location, ' ', e.description, ' ', " +
            "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
-           "to_char(e.start_date, 'yyyy-mm-dd hh:mm:ss') " +
+           "to_char(e.start_date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
            "to_char(e.end_date , 'yyyy-mm-dd hh:mm:ss'))) " +
            "LIKE lower('%" +keyword+ "%')";
 
