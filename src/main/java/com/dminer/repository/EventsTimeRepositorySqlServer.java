@@ -146,4 +146,41 @@ public class EventsTimeRepositorySqlServer {
         });
     }
 
+
+    public List<Events> search(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM EVENTS e " +
+        "WHERE CONCAT( " +
+           "e.title, ' ', e.location, ' ', e.description, ' ', " +
+           "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
+           "' ', convert(varchar(100), e.start_date, 120), " +
+           "' ', convert(varchar(100), e.end_date, 120)) " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Events e = new Events();
+            e.setId(rs.getInt("ID"));
+            e.setTitle(rs.getString("TITLE"));
+            e.setStartDate(rs.getTimestamp("START_DATE"));
+            e.setEndDate(rs.getTimestamp("END_DATE"));
+            e.setAllDay(rs.getBoolean("ALL_DAY"));
+            e.setStartRepeat(
+                rs.getString("START_REPEAT") != null ? EventsTime.valueOf(rs.getString("START_REPEAT")) : null
+            );
+            e.setEndRepeat(
+                rs.getString("END_REPEAT") != null ? EventsTime.valueOf(rs.getString("END_REPEAT")) : null
+            );
+            e.setLocation(rs.getString("LOCATION"));
+            e.setReminder(
+                rs.getString("REMINDER") != null ? EventsTime.valueOf(rs.getString("REMINDER")) : null
+            );
+            return e;
+        });
+
+    }
+
+
 }
