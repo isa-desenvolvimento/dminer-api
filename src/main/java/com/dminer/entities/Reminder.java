@@ -41,4 +41,8 @@ public class Reminder {
 	@Column
     @Basic
     private Timestamp dataHora;
+
+    // flag pra informar se o lembrete ainda está na data vigente
+    @Column
+    private boolean status; 
 }

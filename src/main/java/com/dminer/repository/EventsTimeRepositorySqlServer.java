@@ -151,6 +151,7 @@ public class EventsTimeRepositorySqlServer {
     }
 
 
+
     public List<Events> search(String keyword) {
         String query =
         "SELECT * " +
@@ -196,6 +197,7 @@ public class EventsTimeRepositorySqlServer {
             "(select MONTH(u.dt_birthday)) BETWEEN (select MONTH (cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime))) and (select MONTH (cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)))" ;
 
         //"U.DT_BIRTHDAY BETWEEN cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime) "+ " AND " + "cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)" ;
+
         log.info("fetchEventsInBetween = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> {

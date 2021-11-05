@@ -49,4 +49,5 @@ public class Notice {
 
     @Column
     private String priority;
+    
 }

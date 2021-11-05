@@ -50,6 +50,8 @@ public class NotificationController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ServerSendEvents sendEvents;
 
     private void validateRequestDto(NotificationRequestDTO notificationRequestDTO, BindingResult result) {
         if (notificationRequestDTO.getIdUser() == null) {
@@ -82,7 +84,7 @@ public class NotificationController {
         
         Notification events = notificationService.persist(notificationConverter.requestDtoToEntity(notificationRequest));
         response.setData(notificationConverter.entityToDto(events));
-
+        sendEvents.streamSseNotification();
         return ResponseEntity.ok().body(response);
     }
 

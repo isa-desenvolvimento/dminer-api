@@ -31,6 +31,7 @@ public class FeedController {
     private PostService postService;
 
 
+
     @GetMapping("/all")
     public ResponseEntity<Response<List<PostDTO>>> getAll() {
         
