@@ -35,6 +35,35 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class ServerSendEvents {
     
+
+    @GetMapping("/notification")
+    public  SseEmitter streamSseNotification() {
+        
+        String json = "disparando evento sse de notificação";
+
+        System.out.println(json);
+        SseEmitter emitter = new SseEmitter(); 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                emitter.send(json);
+                emitter.complete();
+            }catch (Exception ex) {
+                emitter.completeWithError(ex);
+            } 
+        });
+        executor.shutdown();
+        return emitter;
+    }
+
+
+    void print(SseEventBuilder emitter) {
+        System.out.println(emitter.toString());
+    }
+
+
+
+
     @GetMapping(path = "/stream-flux", produces = "text/event-stream")
     public Flux<String> streamEvents() {
         return Flux.interval(Duration.ofSeconds(1))
