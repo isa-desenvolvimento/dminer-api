@@ -4,7 +4,9 @@ import java.util.Optional;
 
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.SurveyResponseDTO;
 import com.dminer.entities.Survey;
+import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
@@ -17,6 +19,19 @@ public class SurveyConverter {
 
     @Autowired
     private UserService userService;
+
+
+    public SurveyResponseDTO surveyResponseToDTO(SurveyResponses survey) { 
+        SurveyResponseDTO dto = new SurveyResponseDTO();
+        dto.setId(survey.getId());
+        dto.setIdSurvey(survey.getIdSurvey());
+        dto.setCountA(survey.getCountA());
+        dto.setCountB(survey.getCountB());
+        survey.getUsers().forEach(u -> {
+            dto.getUsers().add(u.getId());
+        });
+        return dto;
+    }
 
 
     public SurveyDTO entityToDTO(Survey survey) { 
@@ -34,7 +49,7 @@ public class SurveyConverter {
         Survey survey = new Survey();
         survey.setId(dto.getId());
         survey.setDate(survey.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        Optional<User> user = userService.findById(dto.getIdUser());
+        // Optional<User> user = userService.findById(dto.getIdUser());
         // if (user.isPresent())
         //     survey.setUser(user.get());
         survey.setOptionA(dto.getOptionA());        

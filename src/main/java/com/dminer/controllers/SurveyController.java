@@ -35,10 +35,12 @@ import com.dminer.converters.UserConverter;
 import com.dminer.dto.SurveyCounterDTO;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.SurveyResponseDTO;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.Survey;
+import com.dminer.entities.User;
 import com.dminer.entities.Survey;
 import com.dminer.response.Response;
 import com.dminer.services.FileDatabaseService;
@@ -59,6 +61,8 @@ public class SurveyController {
 
     private static final Logger log = LoggerFactory.getLogger(SurveyController.class);
 
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserConverter userConverter;
@@ -97,6 +101,30 @@ public class SurveyController {
         response.setData(surveyConverter.entityToDTO(survey));
         return ResponseEntity.ok().body(response);
     }
+
+
+    // @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
+    // public ResponseEntity<Response<SurveyDTO>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
+
+    //     Response<SurveyDTO> response = new Response<>();
+    //     Optional<Survey> survey = surveyService.findById(id);
+    //     Survey s = survey.get();
+
+    //     Optional<User> userOpt = userService.findById(id);
+    //     User user = userOpt.get();
+
+    //     SurveyResponseDTO surveyRequestDto = new SurveyResponseDTO();
+
+    //     s.getUsers().add(user);
+    //     if (option.equalsIgnoreCase("a")) {
+
+    //     }
+
+    //     Survey survey = surveyService.persist(surveyConverter.requestDtoToEntity(surveyRequestDto));
+        
+    //     response.setData(surveyConverter.entityToDTO(survey));
+    //     return ResponseEntity.ok().body(response);
+    // }
 
 
     @PutMapping()
@@ -155,7 +183,7 @@ public class SurveyController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> deleteUser(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {

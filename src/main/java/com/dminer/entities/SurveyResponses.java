@@ -21,29 +21,28 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "SURVEY")
+@Table(name = "SURVEY_RESPONSES")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-public class Survey {
+public class SurveyResponses {
     
     @Id
 	@GeneratedValue(strategy = GenerationType.AUTO)	
 	private Integer id;
 
-    @Column
-    private String question;
+    private Integer idSurvey;
 
     @Column
-    private String optionA;
+    private Integer countA;
 
     @Column
-    private String optionB;
+    private Integer countB;
 
-    @Column
-    private Timestamp date;
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<User> users;
 
 }

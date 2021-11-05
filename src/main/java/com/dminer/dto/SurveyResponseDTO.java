@@ -15,10 +15,10 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class SurveyDTO {    
+public class SurveyResponseDTO {
     private Integer id;
-	private String question;
-    private String optionA;
-    private String optionB;
-    private String date;
+    private Integer idSurvey;
+    private List<Integer> users;
+    private Integer countA;
+    private Integer countB;
 }

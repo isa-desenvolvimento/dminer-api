@@ -193,9 +193,7 @@ public class EventsTimeRepositoryPostgres {
         "WHERE " +
         "   EXTRACT( " +
         "       month from u.dt_birthday" +
-        ") = EXTRACT ( " +
-        "        MONTH FROM TIMESTAMP '" + UtilDataHora.currentFirstDayFormat() +
-        ")";
+        ") = EXTRACT ( MONTH FROM TIMESTAMP '" + UtilDataHora.currentFirstDayFormat() + "')";
         
         
 
