@@ -32,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.SurveyConverter;
 import com.dminer.converters.UserConverter;
-import com.dminer.dto.SurveyCounterDTO;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.SurveyResponseDTO;
@@ -40,7 +39,9 @@ import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.Survey;
+import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
+import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.entities.Survey;
 import com.dminer.response.Response;
 import com.dminer.services.FileDatabaseService;
@@ -71,6 +72,9 @@ public class SurveyController {
     private SurveyConverter surveyConverter;
 
     @Autowired
+    private SurveyResponseRepository surveyResponseRepository;
+
+    @Autowired
     private SurveyService surveyService;
 
     @Autowired
@@ -98,33 +102,53 @@ public class SurveyController {
 
         Survey survey = surveyService.persist(surveyConverter.requestDtoToEntity(surveyRequestDto));
         
+        SurveyResponses s = new SurveyResponses();
+        s.setIdSurvey(survey.getId());
+
+        surveyResponseRepository.save(s);
+
         response.setData(surveyConverter.entityToDTO(survey));
         return ResponseEntity.ok().body(response);
     }
 
 
-    // @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
-    // public ResponseEntity<Response<SurveyDTO>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
+    @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
+    public ResponseEntity<Boolean> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
 
-    //     Response<SurveyDTO> response = new Response<>();
-    //     Optional<Survey> survey = surveyService.findById(id);
-    //     Survey s = survey.get();
+        Optional<User> userOpt = userService.findById(id);
+        User user = userOpt.get();
 
-    //     Optional<User> userOpt = userService.findById(id);
-    //     User user = userOpt.get();
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        findByIdSurvey.getUsers().add(user);
 
-    //     SurveyResponseDTO surveyRequestDto = new SurveyResponseDTO();
+        if (option.equalsIgnoreCase("a")) {
+            findByIdSurvey.setCountA(
+                findByIdSurvey.getCountA() + 1
+            );
+        } else {
+            findByIdSurvey.setCountB(
+                findByIdSurvey.getCountB() + 1
+            );
+        }
 
-    //     s.getUsers().add(user);
-    //     if (option.equalsIgnoreCase("a")) {
+        surveyResponseRepository.save(findByIdSurvey);
+        return ResponseEntity.ok().body(true);
+    }
 
-    //     }
 
-    //     Survey survey = surveyService.persist(surveyConverter.requestDtoToEntity(surveyRequestDto));
+    @GetMapping(value = "/count/{idSurvey}")
+    public ResponseEntity<Response<SurveyResponseDTO>> getCount(@PathVariable("idSurvey") Integer id) {
         
-    //     response.setData(surveyConverter.entityToDTO(survey));
-    //     return ResponseEntity.ok().body(response);
-    // }
+        Response<SurveyResponseDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        response.setData(surveyConverter.surveyResponseToDTO(findByIdSurvey));
+        return ResponseEntity.ok().body(response);
+    }
 
 
     @PutMapping()
@@ -202,24 +226,7 @@ public class SurveyController {
     }
 
 
-    // @GetMapping(value = "/count/{idSurvey}")
-    // public ResponseEntity<Response<SurveyCounterDTO>> getCount(@PathVariable("id") Integer id) {
-        
-    //     Response<SurveyCounterDTO> response = new Response<>();
-    //     if (id == null) {
-    //         response.getErrors().add("Informe um id");
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-
-    //     Optional<Survey> user = surveyService.findById(id);
-    //     if (!user.isPresent()) {
-    //         response.getErrors().add("Questionário não encontrado");
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-
-    //     response.setData(surveyConverter.entityToDTO(user.get()));
-    //     return ResponseEntity.ok().body(response);
-    // }
+    
     
 
     public boolean isProd() {
