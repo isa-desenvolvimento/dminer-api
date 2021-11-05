@@ -1,9 +1,13 @@
 package com.dminer.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
+import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
+import com.dminer.utils.UtilDataHora;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,6 +147,28 @@ public class EventsTimeRepositorySqlServer {
                 rs.getString("REMINDER") != null ? EventsTime.valueOf(rs.getString("REMINDER")) : null
             );
             return e;
+        });
+    }
+
+
+    public List<UserDTO> getBirthDaysOfMonth(int month) {
+
+        String query = 
+        "SELECT * " + 
+        "FROM USERS U "+
+        "WHERE "+
+            "U.DT_BIRTHDAY BETWEEN cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime) "+ " AND " + "cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)" ;
+
+        log.info("fetchEventsInBetween = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> {
+            UserDTO u = new UserDTO();
+            
+            u.setId(rs.getInt("ID"));
+            u.setName(rs.getString("NAME"));
+            u.setDtBirthday(rs.getString("DT_BIRTHDAY"));
+            u.setAvatar(rs.getString("AVATAR_ID"));
+            return u;
         });
     }
 

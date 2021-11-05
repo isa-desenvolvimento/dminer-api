@@ -7,6 +7,8 @@ import java.time.LocalTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dminer.services.UserService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,10 @@ import reactor.core.publisher.Flux;
 public class ServerSendEvents {
     
 
+    @Autowired
+    private UserService userService;
+
+
     @GetMapping("/notification")
     public  SseEmitter streamSseNotification() {
         
@@ -57,6 +63,27 @@ public class ServerSendEvents {
     }
 
 
+    @GetMapping("/birthday")
+    public  SseEmitter streamSseBirthday() {
+        
+        
+        String json = "disparando evento sse de notificação";
+
+        System.out.println(json);
+        SseEmitter emitter = new SseEmitter(); 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                emitter.send(json);
+                emitter.complete();
+            }catch (Exception ex) {
+                emitter.completeWithError(ex);
+            } 
+        });
+        executor.shutdown();
+        return emitter;
+    }
+
     void print(SseEventBuilder emitter) {
         System.out.println(emitter.toString());
     }
@@ -73,6 +100,7 @@ public class ServerSendEvents {
               .data("SSE - " + LocalTime.now().toString())
               .build().toString());
     }
+
 
     @GetMapping("/stream-sse-mvc")
     public SseEmitter streamSseMvc(String json) {

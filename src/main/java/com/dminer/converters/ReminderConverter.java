@@ -38,6 +38,7 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
+        
         return reminder;
     }
 

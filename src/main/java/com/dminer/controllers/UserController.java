@@ -296,6 +296,28 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
+
+    @GetMapping("/birthdays/{month}")
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@PathVariable("month") Integer month) {
+        
+        Response<List<UserDTO>> response = new Response<>();
+
+        if (month > 12 || month < 1) {
+            response.getErrors().add("Informe um mês entre 1 e 12");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<List<UserDTO>> user = userService.getBirthDaysOfMonth(month);
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Nenhum aniversariante encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.setData(user.get());
+        return ResponseEntity.ok().body(response);
+    }
+
+
     private void rollback(User user) {
         deleteUser(user.getId());
     }
