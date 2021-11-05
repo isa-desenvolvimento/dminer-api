@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
+import com.dminer.repository.EventsTimeRepositoryPostgres;
 import com.dminer.repository.EventsTimeRepositorySqlServer;
 import com.dminer.repository.UserRepository;
 import com.dminer.services.interfaces.IUserService;
@@ -22,7 +23,10 @@ public class UserService implements IUserService {
 	private UserRepository userRepository;	
 	
     @Autowired
-	private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServer;	
+	private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServer;
+
+    @Autowired
+	private EventsTimeRepositoryPostgres eventsTimeRepositoryPostgres;
 
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
@@ -54,7 +58,12 @@ public class UserService implements IUserService {
 
     public Optional<List<UserDTO>> getBirthDaysOfMonth() {
         log.info("Buscando todos os usuários que fazem aniversário no mês");
-		    return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth());
+		return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth());
+    }
+    
+    public Optional<List<UserDTO>> getBirthDaysOfMonthPostgres() {
+        log.info("[Postgres] Buscando todos os usuários que fazem aniversário no mês");
+		return Optional.ofNullable(eventsTimeRepositoryPostgres.getBirthDaysOfMonth());
     } 
     
 }

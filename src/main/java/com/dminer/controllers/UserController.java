@@ -3,6 +3,7 @@ package com.dminer.controllers;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -69,6 +71,8 @@ public class UserController {
     @Autowired
     private ServerSendEvents serverSendEvents;
     
+    @Autowired
+    private Environment env;
 
     private void validateRequestDto(UserRequestDTO userRequestDTO, BindingResult result) {
         if (userRequestDTO.getName() == null) {
@@ -233,12 +237,18 @@ public class UserController {
     }
 
 
-    @GetMapping("/birthdays/{month}")
+    @GetMapping("/birthdays")
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        Optional<List<UserDTO>> user = userService.getBirthDaysOfMonth();
+        Optional<List<UserDTO>> user;
+        if (isProd()) {
+            user = userService.getBirthDaysOfMonthPostgres();    
+        } else {
+            user = userService.getBirthDaysOfMonth();
+        }
+        
         if (user.get().isEmpty()) {
             response.getErrors().add("Nenhum aniversariante encontrado");
             return ResponseEntity.badRequest().body(response);
@@ -253,4 +263,8 @@ public class UserController {
         deleteUser(user.getId());
     }
 
+    public boolean isProd() {
+        log.info("ambiente: " + env.getActiveProfiles()[0]);
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
+    }
 }
