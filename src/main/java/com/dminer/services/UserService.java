@@ -3,7 +3,9 @@ package com.dminer.services;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
+import com.dminer.repository.EventsTimeRepositorySqlServer;
 import com.dminer.repository.UserRepository;
 import com.dminer.services.interfaces.IUserService;
 
@@ -19,6 +21,9 @@ public class UserService implements IUserService {
     @Autowired
 	private UserRepository userRepository;	
 	
+    @Autowired
+	private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServer;	
+
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 
@@ -45,5 +50,10 @@ public class UserService implements IUserService {
         log.info("Excluindo um usuário pelo id {}", id);
 		userRepository.deleteById(id);
     }
+
+    public Optional<List<UserDTO>> getBirthDaysOfMonth() {
+        log.info("Buscando todos os usuários que fazem aniversário no mês");
+		return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth());
+    } 
     
 }

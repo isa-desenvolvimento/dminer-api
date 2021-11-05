@@ -18,6 +18,17 @@ public class UtilDataHora {
 
 
     /**
+     * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna
+     * true se for uma data igual ou menor que hoje
+     * @return boolean
+     */
+    public static boolean ehMenorQueHoje(String date) {
+        Timestamp date1 = Timestamp.valueOf(date);
+        Timestamp date2 = Timestamp.from(Instant.now());
+        return date2.after(date1);
+    }
+
+    /**
      * Retorna data em string no formato yyyy-MM-dd HH:mm:ss do primeiro dia do mes
      * @return String
      */

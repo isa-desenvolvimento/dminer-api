@@ -296,6 +296,23 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
+
+    @GetMapping("/birthdays/{month}")
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
+        
+        Response<List<UserDTO>> response = new Response<>();
+
+        Optional<List<UserDTO>> user = userService.getBirthDaysOfMonth();
+        if (user.get().isEmpty()) {
+            response.getErrors().add("Nenhum aniversariante encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.setData(user.get());
+        return ResponseEntity.ok().body(response);
+    }
+
+
     private void rollback(User user) {
         deleteUser(user.getId());
     }
