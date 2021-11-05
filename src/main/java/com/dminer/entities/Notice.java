@@ -1,15 +1,18 @@
 package com.dminer.entities;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,30 +22,32 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "REMINDER")
+@Table(name = "NOTICE")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-public class Reminder {
+public class Notice {
     
     @Id
 	@GeneratedValue(strategy = GenerationType.AUTO)	
 	private Integer id;
 
-    @ManyToOne
-    private User user;
-
-	@Column
-	private String reminderDescrible; 
-
-	@Column
-    @Basic
-    private Timestamp dataHora;
-
-    // flag pra informar se o lembrete ainda está na data vigente
     @Column
-    private boolean status; 
+    private String creator;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<User> users = new ArrayList<>();
+
+    @Column
+    private String warning;
+
+    @Column
+    private Timestamp date;
+
+    @Column
+    private String priority;
+    
 }

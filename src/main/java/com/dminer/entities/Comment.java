@@ -1,6 +1,6 @@
 package com.dminer.entities;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,7 +43,7 @@ public class Comment {
     private Post post;
 
     @Column
-    private Date timestamp;
+    private Timestamp timestamp;
     
 
 }

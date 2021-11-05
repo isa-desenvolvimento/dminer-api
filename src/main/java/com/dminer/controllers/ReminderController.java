@@ -99,7 +99,7 @@ public class ReminderController {
 
 
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<ReminderDTO>> getNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<ReminderDTO>> get(@PathVariable("id") Integer id) {
         log.info("Buscando notificação {}", id);
         
         Response<ReminderDTO> response = new Response<>();
@@ -120,7 +120,7 @@ public class ReminderController {
 
 
     @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<ReminderDTO>> deleteNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<ReminderDTO>> delete(@PathVariable("id") Integer id) {
         log.info("Buscando notificação {}", id);
         
         Response<ReminderDTO> response = new Response<>();
@@ -147,7 +147,7 @@ public class ReminderController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<ReminderDTO>>> getAllEvents() {
+    public ResponseEntity<Response<List<ReminderDTO>>> getAll() {
         
         Response<List<ReminderDTO>> response = new Response<>();
 

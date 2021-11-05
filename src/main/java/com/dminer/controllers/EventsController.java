@@ -199,6 +199,8 @@ public class EventsController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        month = corrigirDecimaisMesDia(month);
+        
         Optional<List<Events>> user = Optional.empty();
         YearMonth ym = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         if (isProd()) {
@@ -239,6 +241,9 @@ public class EventsController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        month = corrigirDecimaisMesDia(month);
+        day = corrigirDecimaisMesDia(day);
+
         String date = year + "-" + month + "-" + day;
         Optional<List<Events>> user = Optional.empty();
         
@@ -277,6 +282,11 @@ public class EventsController {
             log.info("Erro validando getEventsInBetween");
             return ResponseEntity.badRequest().body(response);
         }
+
+        month1 = corrigirDecimaisMesDia(month1);
+        month2 = corrigirDecimaisMesDia(month2);
+        day1 = corrigirDecimaisMesDia(day1);
+        day1 = corrigirDecimaisMesDia(day1);
 
         Optional<List<Events>> user = Optional.empty();
         String dtInicio = year1 + "-" + month1 + "-" + day1 + " 01:00:00";
@@ -318,6 +328,11 @@ public class EventsController {
         validarEntradaDatas(v3, msg3, result);
     }
 
+    public String corrigirDecimaisMesDia(String mesAno) {
+        if (Integer.parseInt(mesAno) < 10) return "0"+mesAno;
+        return mesAno;
+    } 
+    
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);
         return Arrays.asList(env.getActiveProfiles()).contains("prod");

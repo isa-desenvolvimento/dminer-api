@@ -1,6 +1,6 @@
 package com.dminer.entities;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +35,7 @@ public class User {
 	private String name; 
     
 	@Column
-	private Date dtBirthday;
+	private Timestamp dtBirthday;
 
 	@ManyToOne
 	private FileInfo avatar; 

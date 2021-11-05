@@ -14,14 +14,14 @@ public class UserConverter {
         User user = new User();
         user.setId(dto.getId());
         user.setName(dto.getName());
-        user.setDtBirthday(UtilDataHora.stringToDate(dto.getDtBirthday()));
+        user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         return user;
     }
     
     public User requestDtoToEntity(UserRequestDTO dto) {
         User user = new User();        
         user.setName(dto.getName());
-        user.setDtBirthday(UtilDataHora.stringToDate(dto.getDtBirthday()));
+        user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         return user;
     }
 
@@ -30,9 +30,11 @@ public class UserConverter {
         dto.setId(user.getId());
         dto.setName(user.getName());
         if (user.getDtBirthday() != null)
-            dto.setDtBirthday(UtilDataHora.dateToString(user.getDtBirthday()));
-        dto.setAvatar(user.getAvatar().getUrl());
-        dto.setBanner(user.getBanner().getUrl());
+            dto.setDtBirthday(UtilDataHora.timestampToString(user.getDtBirthday()));
+        if (user.getAvatar() != null)
+            dto.setAvatar(user.getAvatar().getUrl());
+        if (user.getBanner() != null)
+            dto.setBanner(user.getBanner().getUrl());
         return dto;
     }
 }

@@ -1,5 +1,6 @@
 package com.dminer.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -36,6 +37,11 @@ public class PostService implements IPostService {
 	public void delete(int id) {
 		log.info("Excluindo uma publicação pelo id {}", id);
 		postRepository.deleteById(id);		
+	}
+
+	public List<Post> findAll() {
+		log.info("Buscando todas as publicações ");
+		return postRepository.findAll();
 	}
 	
 }
