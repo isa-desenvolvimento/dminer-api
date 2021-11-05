@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -120,26 +121,15 @@ public class UserController {
 
 
 
-    @PostMapping(consumes = {"multipart/form-data", "multipart/form-data", "application/json"})
-    public ResponseEntity<Response<UserDTO>> create( 
-        @RequestPart(value = "avatar", required = false) MultipartFile avatar, 
-        @RequestPart(value = "banner", required = false) MultipartFile banner, 
-        @Valid @RequestPart("user") String userRequestJson, 
-        BindingResult result
-    ) {        
+    //@PostMapping(consumes = {"multipart/form-data", "multipart/form-data", "application/json"})
+    @PostMapping()
+    public ResponseEntity<Response<UserDTO>> create(@Valid @RequestBody UserRequestDTO userRequestDto, BindingResult result) {        
 
-		log.info("Salvando um novo usuário {}", userRequestJson);
+		log.info("Salvando um novo usuário {}", userRequestDto.getName());
 
         Response<UserDTO> response = new Response<>();
 
         UserRequestDTO userRequestDTO = new UserRequestDTO();
-        try {
-            ObjectMapper obj = new ObjectMapper();
-            userRequestDTO = obj.readValue(userRequestJson, UserRequestDTO.class);
-        } catch (IOException e) {
-            response.getErrors().add("Erro ao converter objeto UserRequestDTO, verifique se a string está correta no formato Json!");
-            return ResponseEntity.badRequest().body(response);
-        }
 
         validateRequestDto(userRequestDTO, result);
         if (result.hasErrors()) {
@@ -148,30 +138,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        // salvando usuario para pegar o id
         User user = userService.persist(userConverter.requestDtoToEntity(userRequestDTO));
         
-        if (avatar != null) {
-            FileInfo file = salvarImagem(avatar, Constantes.ROOT_UPLOADS + USER_AVATAR + user.getId(), result);
-            if (result.hasErrors()) {
-                rollback(user);
-                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-                return ResponseEntity.internalServerError().body(response);
-            }
-            user.setAvatar(file);
-        }
-        
-        if (banner != null) {
-            FileInfo file = salvarImagem(banner, Constantes.ROOT_UPLOADS + USER_BANNER + user.getId(), result);
-            if (result.hasErrors()) {
-                rollback(user);
-                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-                return ResponseEntity.internalServerError().body(response);
-            }
-            user.setBanner(file);
-        }        
-        
-        user = userService.persist(user);
         response.setData(userConverter.entityToDto(user));
         serverSendEvents.streamSseMvc(response.toString());
         return ResponseEntity.ok().body(response);
@@ -179,60 +147,28 @@ public class UserController {
 
 
     @PutMapping()
-    public ResponseEntity<Response<UserDTO>> putUser(
-        @RequestPart(value = "avatar", required = false) MultipartFile avatar, 
-        @RequestPart(value = "banner", required = false) MultipartFile banner, 
-        @Valid @RequestPart("user") String userJson, 
-        BindingResult result
-    ) {
+    public ResponseEntity<Response<UserDTO>> putUser( @Valid @RequestBody UserDTO userDto, BindingResult result) {
 
-        log.info("Alterando um usuário {}", userJson);
+        log.info("Alterando um usuário {}", userDto);
 
         Response<UserDTO> response = new Response<>();
 
-        UserDTO userDTO = new UserDTO();
-        try {
-            ObjectMapper obj = new ObjectMapper();
-            userDTO = obj.readValue(userJson, UserDTO.class);
-        } catch (IOException e) {
-            response.getErrors().add("Erro ao converter objeto UserDTO, verifique se a string está correta no formato Json!");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        validateDto(userDTO, result);
+        validateDto(userDto, result);
         if (result.hasErrors()) {
-            log.info("Erro validando userDTO: {}", userDTO);
+            log.info("Erro validando UserRequestDTO: {}", userDto);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> optUser = userService.findById(userDTO.getId());
-        optUser.get().setName(userDTO.getName());
-        optUser.get().setDtBirthday(UtilDataHora.toTimestamp(userDTO.getDtBirthday()));
-
-        if (avatar != null) {
-            FileInfo file = salvarImagem(avatar, Constantes.ROOT_UPLOADS + USER_AVATAR + optUser.get().getId(), result);
-            if (result.hasErrors()) {
-                rollback(optUser.get());
-                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-                return ResponseEntity.internalServerError().body(response);
-            }
-            optUser.get().setAvatar(file);
-        }
-        
-        if (banner != null) {
-            FileInfo file = salvarImagem(banner, Constantes.ROOT_UPLOADS + USER_BANNER + optUser.get().getId(), result);
-            if (result.hasErrors()) {
-                rollback(optUser.get());
-                result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-                return ResponseEntity.internalServerError().body(response);
-            }
-            optUser.get().setBanner(file);
-        }
+        Optional<User> optUser = userService.findById(userDto.getId());
+        optUser.get().setName(userDto.getName());
+        optUser.get().setDtBirthday(UtilDataHora.toTimestamp(userDto.getDtBirthday()));
+        optUser.get().setAvatar(userDto.getAvatar());
+        optUser.get().setBanner(userDto.getBanner());
 
         User user = userService.persist(optUser.get());
         response.setData(userConverter.entityToDto(user));
-        return ResponseEntity.ok().body(response);        
+        return ResponseEntity.ok().body(response);
     }
 
 

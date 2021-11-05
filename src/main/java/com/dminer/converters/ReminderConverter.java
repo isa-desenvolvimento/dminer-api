@@ -27,6 +27,7 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
+        reminder.setStatus(false); //todo implementar lógica do status
         return reminder;
     }
 
@@ -38,7 +39,7 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
-        
+        reminder.setStatus(false);
         return reminder;
     }
 
@@ -48,6 +49,7 @@ public class ReminderConverter {
         notificationDTO.setIdUser(reminder.getUser().getId());
         notificationDTO.setReminderDescrible(reminder.getReminderDescrible());
         notificationDTO.setDataHora(UtilDataHora.timestampToString(reminder.getDataHora()));
+        notificationDTO.setStatus(false);
         return notificationDTO;
     }
 

@@ -75,6 +75,7 @@ public class ReminderController {
                 result.addError(new ObjectError("ReminderRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
             }
         }
+        
     }
 
 

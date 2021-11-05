@@ -18,6 +18,6 @@ public class UserDTO {
     private Integer id;
     private String name;
     private String dtBirthday;
-    private String avatar;
-    private String banner; 
+    private byte[] avatar;
+    private byte[] banner; 
 }

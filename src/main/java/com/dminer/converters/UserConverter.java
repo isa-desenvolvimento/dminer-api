@@ -15,6 +15,8 @@ public class UserConverter {
         user.setId(dto.getId());
         user.setName(dto.getName());
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
+        user.setAvatar(dto.getAvatar());
+        user.setBanner(dto.getBanner());
         return user;
     }
     
@@ -22,6 +24,8 @@ public class UserConverter {
         User user = new User();        
         user.setName(dto.getName());
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
+        user.setAvatar(dto.getAvatar());
+        user.setBanner(dto.getBanner());
         return user;
     }
 
@@ -32,9 +36,9 @@ public class UserConverter {
         if (user.getDtBirthday() != null)
             dto.setDtBirthday(UtilDataHora.timestampToString(user.getDtBirthday()));
         if (user.getAvatar() != null)
-            dto.setAvatar(user.getAvatar().getUrl());
+            dto.setAvatar(user.getAvatar());
         if (user.getBanner() != null)
-            dto.setBanner(user.getBanner().getUrl());
+            dto.setBanner(user.getBanner());
         return dto;
     }
 }
