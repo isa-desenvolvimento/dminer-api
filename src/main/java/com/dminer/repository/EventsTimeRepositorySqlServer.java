@@ -198,7 +198,7 @@ public class EventsTimeRepositorySqlServer {
 
         //"U.DT_BIRTHDAY BETWEEN cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime) "+ " AND " + "cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)" ;
 
-        log.info("fetchEventsInBetween = {}", query);
+        log.info("getBirthDaysOfMonth = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> {
             UserDTO u = new UserDTO();

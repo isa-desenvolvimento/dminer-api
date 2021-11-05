@@ -2,8 +2,10 @@ package com.dminer.repository;
 
 import java.util.List;
 
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.enums.EventsTime;
+import com.dminer.utils.UtilDataHora;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,5 +184,32 @@ public class EventsTimeRepositoryPostgres {
 
     }
 
+
+    public List<UserDTO> getBirthDaysOfMonth() {
+
+        String query = 
+        "SELECT * " + 
+        "FROM USERS U " +
+        "WHERE " +
+        "   EXTRACT( " +
+        "       month from u.dt_birthday" +
+        ") = EXTRACT ( " +
+        "        MONTH FROM TIMESTAMP '" + UtilDataHora.currentFirstDayFormat() +
+        ")";
+        
+        
+
+        log.info("getBirthDaysOfMonth = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> {
+            UserDTO u = new UserDTO();
+            
+            u.setId(rs.getInt("ID"));
+            u.setName(rs.getString("NAME"));
+            u.setDtBirthday(rs.getString("DT_BIRTHDAY"));
+            u.setAvatar(rs.getString("AVATAR_ID"));
+            return u;
+        });
+    }
 
 }
