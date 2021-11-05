@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReminderService implements IReminderService {
 
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
+    private static final Logger log = LoggerFactory.getLogger(ReminderService.class);
 
     @Autowired
     private ReminderRepository reminderRepository;
@@ -45,6 +45,11 @@ public class ReminderService implements IReminderService {
 		reminderRepository.deleteById(id);        
     }
 
-    
+    public Optional<List<Reminder>> search(String keyword) {
+        if (keyword != null) {
+            return Optional.ofNullable(reminderRepository.search(keyword));
+        }
+        return Optional.ofNullable(reminderRepository.findAll());
+    }
     
 }

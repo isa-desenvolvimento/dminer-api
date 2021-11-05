@@ -28,7 +28,8 @@ public class FeedController {
     private static final Logger log = LoggerFactory.getLogger(FeedController.class);
 
     @Autowired
-    private PostService postService; 
+    private PostService postService;
+
 
 
     @GetMapping("/all")

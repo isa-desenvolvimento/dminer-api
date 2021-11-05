@@ -51,9 +51,10 @@ public class UserService implements IUserService {
 		userRepository.deleteById(id);
     }
 
-    public Optional<List<UserDTO>> getBirthDaysOfMonth(int mes) {
+
+    public Optional<List<UserDTO>> getBirthDaysOfMonth() {
         log.info("Buscando todos os usuários que fazem aniversário no mês");
-		return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth(mes));
+		    return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth());
     } 
     
 }

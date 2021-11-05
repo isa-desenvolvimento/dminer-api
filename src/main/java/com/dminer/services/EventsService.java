@@ -107,4 +107,18 @@ public class EventsService implements IEventsService {
         return Optional.ofNullable(eventsTimeRepositoryPostgres.fetchEventsInBetween(dtInicio, dtFim));         
     }
 
+
+    public Optional<List<Events>> search(String keyword) {
+        if (keyword != null) {
+            return Optional.ofNullable(eventsTimeRepositorySqlServe.search(keyword));
+        }
+        return Optional.ofNullable(eventsTimeRepository.findAll());
+    }
+
+    public Optional<List<Events>> searchPostgres(String keyword) {
+        if (keyword != null) {
+            return Optional.ofNullable(eventsTimeRepositoryPostgres.search(keyword));
+        }
+        return Optional.ofNullable(eventsTimeRepository.findAll());
+    }
 }

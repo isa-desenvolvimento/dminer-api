@@ -45,4 +45,10 @@ public class NotificationService implements INotificationService {
 		notificationRepository.deleteById(id);		        
     }
     
+    public Optional<List<Notification>> search(String keyword) {
+        if (keyword != null) {
+            return Optional.ofNullable(notificationRepository.search(keyword));
+        }
+        return Optional.ofNullable(notificationRepository.findAll());
+    }
 }
