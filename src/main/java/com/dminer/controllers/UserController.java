@@ -25,11 +25,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.constantes.Constantes;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
@@ -40,7 +38,6 @@ import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,9 +49,6 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
-    private static final String USER_BANNER = "\\user\\banner";
-    private static final String USER_AVATAR = "\\user\\avatar";
 
     @Autowired
     private UserService userService;
@@ -102,6 +96,7 @@ public class UserController {
 		}
     }
     
+    
     private FileInfo salvarImagem(MultipartFile multipartFile, String directory, BindingResult result) {
         try {
             fileStorageService.createDirectory(Paths.get(directory));
@@ -125,7 +120,6 @@ public class UserController {
 
 
 
-    //@PostMapping(consumes = {"multipart/form-data", "multipart/form-data", "application/json"})
     @PostMapping()
     public ResponseEntity<Response<UserDTO>> create(@Valid @RequestBody UserRequestDTO userRequestDto, BindingResult result) {        
 
@@ -258,10 +252,6 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
-
-    private void rollback(User user) {
-        deleteUser(user.getId());
-    }
 
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);

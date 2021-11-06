@@ -1,5 +1,6 @@
 package com.dminer.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import lombok.ToString;
 public class SurveyResponseDTO {
     private Integer id;
     private Integer idSurvey;
-    private List<Integer> users;
-    private Integer countA;
-    private Integer countB;
+    private List<Integer> users = new ArrayList<>();
+    private Integer countA = 0;
+    private Integer countB = 0;
 }

@@ -2,6 +2,7 @@ package com.dminer.controllers;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -50,6 +52,7 @@ import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,28 +83,77 @@ public class SurveyController {
     @Autowired
     private Environment env;
 
-    private void validateRequestDto(UserRequestDTO userRequestDTO, BindingResult result) {
-        if (userRequestDTO.getName() == null) {
-            result.addError(new ObjectError("userRequestDTO", "Nome precisa estar preenchido."));			
-		}
-        if (userRequestDTO.getDtBirthday() == null) {
-            result.addError(new ObjectError("userRequestDTO", "Data de aniversário precisa estar preenchido."));
-		}
+
+
+    private void validateRequestDto(SurveyRequestDTO surveyRequestDto, BindingResult result) {        
+        if (surveyRequestDto.getQuestion() == null || surveyRequestDto.getQuestion().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Questão precisa estar preenchida."));
+        } 
+
+        if (surveyRequestDto.getOptionA() == null || surveyRequestDto.getOptionA().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Opção A precisa estar preenchido."));			
+        }
+
+        if (surveyRequestDto.getOptionB() == null || surveyRequestDto.getOptionB().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Opção B precisa estar preenchido."));
+        } else {
+            try {
+                Timestamp.valueOf(surveyRequestDto.getDate());
+            } catch (IllegalArgumentException e) {
+                result.addError(new ObjectError("SurveyRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
+            }
+        }
     }
 
-    
-    
-    
+
+    private Response<String> validateAnswerQuestion( Integer id, Integer idUser, String option) {
+        Response<String> response = new Response<>();
+        if (id == null) {
+            log.info("Informe o id do questionário");
+            response.getErrors().add("Informe o id do questionário");
+        } else {
+            Optional<Survey> findById = surveyService.findById(id);
+            if (!findById.isPresent()) {
+                log.info("Questionário não encontrado");
+                response.getErrors().add("Questionário não encontrado");
+            }
+        }
+        
+        if (idUser == null) {
+            log.info("Informe o id do usuário que está respondendo o questionário");
+            response.getErrors().add("Informe o id do usuário que está respondendo o questionário");
+        } else {
+            Optional<User> user = userService.findById(idUser);
+            if (!user.isPresent()) {
+                log.info("Usuário não encontrado");
+                response.getErrors().add("Usuário não encontrado");
+            }
+        }
+        
+        if (option == null || option.isEmpty() || (!option.equalsIgnoreCase("A") && !option.equalsIgnoreCase("B"))) {
+            log.info("Informe uma opção válida para a resposta = {}", option);
+            response.getErrors().add("Informe uma opção válida para a resposta");
+        }
+
+        return response;
+    }
 
 
-    //@PostMapping(consumes = {"multipart/form-data", "multipart/form-data", "application/json"})
+
     @PostMapping()
-    public ResponseEntity<Response<SurveyDTO>> create( @RequestBody SurveyRequestDTO surveyRequestDto) {
+    public ResponseEntity<Response<SurveyDTO>> create( @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
 
+        validateRequestDto(surveyRequestDto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando surveyRequestDto: {}", surveyRequestDto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
         Survey survey = surveyService.persist(surveyConverter.requestDtoToEntity(surveyRequestDto));
-        
+
         SurveyResponses s = new SurveyResponses();
         s.setIdSurvey(survey.getId());
 
@@ -113,9 +165,14 @@ public class SurveyController {
 
 
     @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
-    public ResponseEntity<Boolean> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
+    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
 
-        Optional<User> userOpt = userService.findById(id);
+        Response<String> response = validateAnswerQuestion(id, idUser, option);
+        if (! response.getErrors().isEmpty()) {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<User> userOpt = userService.findById(idUser);
         User user = userOpt.get();
 
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
@@ -130,9 +187,17 @@ public class SurveyController {
                 findByIdSurvey.getCountB() + 1
             );
         }
+        
+        try {
+            surveyResponseRepository.save(findByIdSurvey);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Questionário já foi respondido por este usuário");
+            response.getErrors().add("Questionário já foi respondido por este usuário");
+            return ResponseEntity.badRequest().body(response);
+        }
 
-        surveyResponseRepository.save(findByIdSurvey);
-        return ResponseEntity.ok().body(true);
+        response.setData("Questionário respondido com sucesso!");
+        return ResponseEntity.ok().body(response);
     }
 
 
@@ -146,15 +211,22 @@ public class SurveyController {
         }
 
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        if (findByIdSurvey == null) {
+            response.getErrors().add("Questionário de id: "+ id +", não encontrado!");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        System.out.println(findByIdSurvey.toString());
+
         response.setData(surveyConverter.surveyResponseToDTO(findByIdSurvey));
         return ResponseEntity.ok().body(response);
     }
 
 
     @PutMapping()
-    public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO userDto) {
+    public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO userDto, BindingResult result ) {
 
-        log.info("Alterando um usuário {}", userDto);
+        log.info("Alterando um questionário {}", userDto);
 
         Response<SurveyDTO> response = new Response<>();
 
@@ -194,7 +266,7 @@ public class SurveyController {
 
         Optional<List<Survey>> user = surveyService.findAll();
         if (user.get().isEmpty()) {
-            response.getErrors().add("Usuários não encontrados");
+            response.getErrors().add("Questionários não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -221,6 +293,10 @@ public class SurveyController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        if (findByIdSurvey != null) {
+            surveyResponseRepository.deleteById(findByIdSurvey.getId());
+        }
         response.setData(true);
         return ResponseEntity.ok().body(response);
     }
