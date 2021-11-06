@@ -99,7 +99,7 @@ public class EventsController {
     }
 
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<EventsDTO>> getEvents(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<EventsDTO>> get(@PathVariable("id") Integer id) {
         log.info("Buscando evento {}", id);
         
         Response<EventsDTO> response = new Response<>();
@@ -118,8 +118,8 @@ public class EventsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<Boolean>> deleteEvent(@PathVariable("id") Integer id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {

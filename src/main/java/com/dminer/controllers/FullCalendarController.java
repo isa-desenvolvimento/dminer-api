@@ -95,7 +95,7 @@ public class FullCalendarController {
 
 
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<FullCalendarDTO>> getNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<FullCalendarDTO>> get(@PathVariable("id") Integer id) {
         
         Response<FullCalendarDTO> response = new Response<>();
         if (id == null) {
@@ -114,8 +114,8 @@ public class FullCalendarController {
     }
 
 
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<FullCalendarDTO>> deleteNotifications(@PathVariable("id") Integer id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<FullCalendarDTO>> delete(@PathVariable("id") Integer id) {
         
         Response<FullCalendarDTO> response = new Response<>();
         if (id == null) {
@@ -141,7 +141,7 @@ public class FullCalendarController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<FullCalendarDTO>>> getAllEvents() {
+    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll() {
         
         Response<List<FullCalendarDTO>> response = new Response<>();
 

@@ -153,8 +153,8 @@ public class PostController {
 	}
     
 	
-	@DeleteMapping(value = "/delete/{id}")
-	public ResponseEntity<Response<String>> deletePost(@PathVariable("id") int id) {
+	@DeleteMapping(value = "/{id}")
+	public ResponseEntity<Response<String>> delete(@PathVariable("id") int id) {
 		
 		Response<String> response = new Response<>();
 

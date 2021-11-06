@@ -90,7 +90,7 @@ public class NotificationController {
 
 
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<NotificationDTO>> getNotifications(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<NotificationDTO>> get(@PathVariable("id") Integer id) {
         log.info("Buscando notificação {}", id);
         
         Response<NotificationDTO> response = new Response<>();
@@ -110,8 +110,8 @@ public class NotificationController {
     }
 
 
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<NotificationDTO>> deleteNotifications(@PathVariable("id") Integer id) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<NotificationDTO>> delete(@PathVariable("id") Integer id) {
         log.info("Buscando notificação {}", id);
         
         Response<NotificationDTO> response = new Response<>();
@@ -138,7 +138,7 @@ public class NotificationController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<NotificationDTO>>> getAllEvents() {
+    public ResponseEntity<Response<List<NotificationDTO>>> getAll() {
         
         Response<List<NotificationDTO>> response = new Response<>();
 

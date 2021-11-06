@@ -118,7 +118,7 @@ public class NoticeController {
     }
 
 
-    @DeleteMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<NoticeDTO>> delete(@PathVariable("id") Integer id) {
         log.info("Buscando avisos {}", id);
         
