@@ -145,7 +145,7 @@ public class UserController {
 
 
     @PutMapping()
-    public ResponseEntity<Response<UserDTO>> putUser( @Valid @RequestBody UserDTO userDto, BindingResult result) {
+    public ResponseEntity<Response<UserDTO>> put( @Valid @RequestBody UserDTO userDto, BindingResult result) {
 
         log.info("Alterando um usuário {}", userDto);
 
@@ -171,7 +171,7 @@ public class UserController {
 
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<UserDTO>> getUser(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<UserDTO>> get(@PathVariable("id") Integer id) {
         log.info("Buscando usuário {}", id);
         
         Response<UserDTO> response = new Response<>();
@@ -191,8 +191,8 @@ public class UserController {
     }
 
 
-    @GetMapping()
-    public ResponseEntity<Response<List<UserDTO>>> getAllUser() {
+    @GetMapping(value = "/all")
+    public ResponseEntity<Response<List<UserDTO>>> getAll() {
         
         Response<List<UserDTO>> response = new Response<>();
 
@@ -211,7 +211,7 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> deleteUser(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
         log.info("Deletando usuário {}", id);
         
         Response<Boolean> response = new Response<>();
