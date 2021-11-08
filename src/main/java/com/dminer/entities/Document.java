@@ -20,7 +20,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "COMMENT")
+@Table(name = "DOCUMENT")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
