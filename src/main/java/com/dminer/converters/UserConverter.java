@@ -51,7 +51,8 @@ public class UserConverter {
         dto.setArea(user.getArea());
         dto.setEmail(user.getEmail());
         dto.setLinkedin(user.getLinkedin());
-        dto.setProfile(user.getProfile().name());
+        if (user.getProfile() != null)
+            dto.setProfile(user.getProfile().name());
         return dto;
     }
    
