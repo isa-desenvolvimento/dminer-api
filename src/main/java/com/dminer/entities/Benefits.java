@@ -1,12 +1,16 @@
 package com.dminer.entities;
 
+
 import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.dminer.enums.Profiles;
@@ -19,42 +23,34 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "BENEFITS")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-public class User {
-    
+public class Benefits {
+
     @Id
 	@GeneratedValue(strategy = GenerationType.AUTO)	
 	private Integer id;
-
-	@Column
-	private String name; 
     
 	@Column
-	private Timestamp dtBirthday;
+	private String title;
 
 	@Column
-	private byte[] avatar; 
+	private String content;
 
-	@Column
-	private byte[] banner; 
+    @OneToOne
+    private User creator;
 
-	@Column
-	private String area;
+    @Enumerated(EnumType.STRING)
+    private Profiles profiles;
+    
+    @Column
+    private Timestamp date;
 
-	@Column
-	private String linkedin;
-
-	@Column
-	private String email;
-
-	@Column
-	private Profiles profile;
-
-
+    @Column
+    private byte[] image;
 }

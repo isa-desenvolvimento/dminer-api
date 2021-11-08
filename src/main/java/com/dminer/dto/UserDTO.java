@@ -20,4 +20,8 @@ public class UserDTO {
     private String dtBirthday;
     private byte[] avatar;
     private byte[] banner; 
+    private String area;
+	private String linkedin;
+	private String email;
+	private String profile;
 }

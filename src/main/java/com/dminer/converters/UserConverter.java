@@ -3,6 +3,7 @@ package com.dminer.converters;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.User;
+import com.dminer.enums.Profiles;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +15,10 @@ public class UserConverter {
         User user = new User();
         user.setId(dto.getId());
         user.setName(dto.getName());
+        user.setArea(dto.getArea());
+        user.setEmail(dto.getEmail());
+        user.setLinkedin(dto.getLinkedin());
+        user.setProfile(Profiles.valueOf(dto.getProfile()));
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -23,6 +28,10 @@ public class UserConverter {
     public User requestDtoToEntity(UserRequestDTO dto) {
         User user = new User();        
         user.setName(dto.getName());
+        user.setArea(dto.getArea());
+        user.setEmail(dto.getEmail());
+        user.setLinkedin(dto.getLinkedin());
+        user.setProfile(Profiles.valueOf(dto.getProfile()));
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -39,6 +48,11 @@ public class UserConverter {
             dto.setAvatar(user.getAvatar());
         if (user.getBanner() != null)
             dto.setBanner(user.getBanner());
+        dto.setArea(user.getArea());
+        dto.setEmail(user.getEmail());
+        dto.setLinkedin(user.getLinkedin());
+        dto.setProfile(user.getProfile().name());
         return dto;
     }
+   
 }
