@@ -173,9 +173,17 @@ public class SurveyController {
         }
 
         Optional<User> userOpt = userService.findById(idUser);
-        User user = userOpt.get();
+        if (!userOpt.isPresent()) {
+            response.getErrors().add("Nenhum usuário encontrado com id " + idUser);
+            return ResponseEntity.badRequest().body(response);
+        }
 
+        User user = userOpt.get();
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        if (findByIdSurvey == null) {
+            response.getErrors().add("Nenhum questionário encontrado com id " + id);
+            return ResponseEntity.badRequest().body(response);
+        }
         findByIdSurvey.getUsers().add(user);
 
         if (option.equalsIgnoreCase("a")) {
