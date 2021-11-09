@@ -55,7 +55,7 @@ public class BenefitsRepositorySqlServer {
                 rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
             );
 
-            e.setImage(rs.getBytes("IMAGE"));
+            e.setImage(rs.getString("IMAGE"));
             return e;
         });
 

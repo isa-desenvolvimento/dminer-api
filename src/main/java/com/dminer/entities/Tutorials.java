@@ -52,5 +52,5 @@ public class Tutorials {
     private Timestamp date;
 
     @Column
-    private byte[] image;
+    private String image;
 }

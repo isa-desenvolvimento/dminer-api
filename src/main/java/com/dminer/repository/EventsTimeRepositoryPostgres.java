@@ -205,7 +205,7 @@ public class EventsTimeRepositoryPostgres {
             u.setId(rs.getInt("ID"));
             u.setName(rs.getString("NAME"));
             u.setDtBirthday(rs.getString("DT_BIRTHDAY"));
-            u.setAvatar(rs.getBytes("AVATAR_ID"));
+            u.setAvatar(rs.getString("AVATAR"));
             return u;
         });
     }

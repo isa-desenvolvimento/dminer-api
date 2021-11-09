@@ -55,7 +55,7 @@ public class BenefitsRepositoryPostgres {
                 rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
             );
 
-            e.setImage(rs.getBytes("IMAGE"));
+            e.setImage(rs.getString("IMAGE"));
             return e;
         });
 

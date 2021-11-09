@@ -21,5 +21,5 @@ public class TutorialsDTO {
     private String date; 
     private String category;
     private String profiles;
-    private byte[] image;
+    private String image;
 }

@@ -20,5 +20,5 @@ public class BenefitsRequestDTO {
     private String content;
     private String date; //@Parameter(example = "01/01/2020")
     private String profiles;
-    private byte[] image;
+    private String image;
 }

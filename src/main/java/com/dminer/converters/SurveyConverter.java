@@ -46,9 +46,9 @@ public class SurveyConverter {
     public Survey dtoToEntity(SurveyDTO dto) {
         Survey survey = new Survey();
         survey.setId(dto.getId());
-        survey.setDate(survey.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
+        survey.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
         survey.setOptionA(dto.getOptionA());        
-        survey.setOptionB(dto.getOptionB());        
+        survey.setOptionB(dto.getOptionB());
         survey.setQuestion(dto.getQuestion());
         return survey;
     }

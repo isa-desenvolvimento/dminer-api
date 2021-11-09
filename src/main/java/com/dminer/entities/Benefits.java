@@ -52,5 +52,5 @@ public class Benefits {
     private Timestamp date;
 
     @Column
-    private byte[] image;
+    private String image;
 }

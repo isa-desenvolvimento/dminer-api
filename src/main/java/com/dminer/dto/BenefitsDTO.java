@@ -21,5 +21,5 @@ public class BenefitsDTO {
     private String content;
     private String date; 
     private String profiles;
-    private byte[] image;
+    private String image;
 }
