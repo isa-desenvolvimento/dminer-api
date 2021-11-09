@@ -18,5 +18,5 @@ public class DocumentDTO {
     private String title;
     private String category; 
     private String permission;
-    private byte[] content;
+    private String contentLink;
 }

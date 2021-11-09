@@ -17,5 +17,5 @@ public class DocumentRequestDTO {
     private String title;
     private String category; 
     private String permission;
-    private byte[] content;
+    private String contentLink;
 }

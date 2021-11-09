@@ -38,11 +38,11 @@ public class User {
 	@Column
 	private Timestamp dtBirthday;
 
-	@Column
-	private byte[] avatar; 
+	@Column(length = 9999999)
+	private String avatar; 
 
-	@Column
-	private byte[] banner; 
+	@Column(length = 9999999)
+	private String banner; 
 
 	@Column
 	private String area;

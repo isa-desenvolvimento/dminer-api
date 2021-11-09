@@ -37,7 +37,7 @@ public class Document {
 	private String title;
 
     @Column
-    private byte[] content;
+    private String contentLink;
 
     @Column
     @Enumerated(EnumType.STRING)

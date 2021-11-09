@@ -87,7 +87,7 @@ public class DocumentController {
             }
         }
 
-        if (dto.getContent() == null) {
+        if (dto.getContentLink() == null) {
             result.addError(new ObjectError("DocumentRequestDTO", "Conteúdo precisa estar preenchido."));
 		}
 

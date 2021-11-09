@@ -18,8 +18,8 @@ public class UserDTO {
     private Integer id;
     private String name;
     private String dtBirthday;
-    private byte[] avatar;
-    private byte[] banner; 
+    private String avatar;
+    private String banner; 
     private String area;
 	private String linkedin;
 	private String email;
