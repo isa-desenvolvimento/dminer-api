@@ -34,7 +34,7 @@ public class Document {
 	private Integer id;
 
 	@Column
-	private String titulo;
+	private String title;
 
     @Column
     private byte[] content;

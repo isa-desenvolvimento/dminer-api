@@ -21,7 +21,7 @@ public class DocumentConverter {
         if (containsPermission(dto.getPermission()))
             doc.setPermission(Permissions.valueOf(dto.getPermission()));
         doc.setContent(dto.getContent());
-        doc.setTitulo(dto.getTitulo());
+        doc.setTitle(dto.getTitle());
         return doc;
     }
 
@@ -32,7 +32,7 @@ public class DocumentConverter {
         if (containsPermission(dto.getPermission()))
             doc.setPermission(Permissions.valueOf(dto.getPermission()));
         doc.setContent(dto.getContent());
-        doc.setTitulo(dto.getTitulo());
+        doc.setTitle(dto.getTitle());
         return doc;
     }
 
@@ -42,7 +42,7 @@ public class DocumentConverter {
         dto.setCategory(doc.getCategory().name());
         dto.setPermission(doc.getPermission().name());
         dto.setContent(doc.getContent());
-        dto.setTitulo(doc.getTitulo());
+        dto.setTitle(doc.getTitle());
         return dto;
     }
 

@@ -74,7 +74,7 @@ public class TutorialsController {
 
     private void validateRequestDto(TutorialsRequestDTO dto, BindingResult result) {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
-            result.addError(new ObjectError("TutorialsRequestDTO", "Titulo precisa estar preenchido."));
+            result.addError(new ObjectError("TutorialsRequestDTO", "Title precisa estar preenchido."));
         }
 
         if (dto.getContent() == null || dto.getContent().isEmpty()) {

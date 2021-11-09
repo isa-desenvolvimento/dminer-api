@@ -58,7 +58,7 @@ public class FullCalendarController {
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
         if (fullCalendarRequestDTO.getTitle() == null) {
-            result.addError(new ObjectError("fullCalendarRequestDTO", "Titulo precisa estar preenchido."));			
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Title precisa estar preenchido."));			
 		}
 
         if (fullCalendarRequestDTO.getStart() == null) {

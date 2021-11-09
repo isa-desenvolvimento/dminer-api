@@ -71,7 +71,7 @@ public class BenefitsController {
 
     private void validateRequestDto(BenefitsRequestDTO dto, BindingResult result) {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Titulo precisa estar preenchido."));
+            result.addError(new ObjectError("BenefitsRequestDTO", "Title precisa estar preenchido."));
         }
 
         if (dto.getContent() == null || dto.getContent().isEmpty()) {

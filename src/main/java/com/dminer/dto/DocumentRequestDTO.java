@@ -14,7 +14,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DocumentRequestDTO {
-    private String titulo;
+    private String title;
     private String category; 
     private String permission;
     private byte[] content;

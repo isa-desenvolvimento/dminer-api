@@ -20,5 +20,7 @@ public class SurveyDTO {
 	private String question;
     private String optionA;
     private String optionB;
+    private Integer countA = 0;
+    private Integer countB = 0;
     private String date;
 }

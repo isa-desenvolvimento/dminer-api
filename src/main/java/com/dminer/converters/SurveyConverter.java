@@ -1,14 +1,11 @@
 package com.dminer.converters;
 
-import java.util.Optional;
-
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.SurveyResponseDTO;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
-import com.dminer.entities.User;
-import com.dminer.services.UserService;
+import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +15,8 @@ import org.springframework.stereotype.Service;
 public class SurveyConverter {
 
     @Autowired
-    private UserService userService;
-
-
+    private SurveyResponseRepository surveyResponseRepository;
+    
     public SurveyResponseDTO surveyResponseToDTO(SurveyResponses survey) { 
         SurveyResponseDTO dto = new SurveyResponseDTO();
         dto.setId(survey.getId());
@@ -38,10 +34,12 @@ public class SurveyConverter {
         SurveyDTO dto = new SurveyDTO();
         dto.setId(survey.getId());
         dto.setDate(survey.getDate() != null ? UtilDataHora.timestampToString(survey.getDate()) : null);
-        // dto.setIdUser(survey.getUser().getId());
         dto.setOptionA(survey.getOptionA());
         dto.setOptionB(survey.getOptionB());
         dto.setQuestion(survey.getQuestion());
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(survey.getId());
+        dto.setCountA(findByIdSurvey.getCountA());
+        dto.setCountB(findByIdSurvey.getCountB());
         return dto;
     }
 
@@ -49,9 +47,6 @@ public class SurveyConverter {
         Survey survey = new Survey();
         survey.setId(dto.getId());
         survey.setDate(survey.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        // Optional<User> user = userService.findById(dto.getIdUser());
-        // if (user.isPresent())
-        //     survey.setUser(user.get());
         survey.setOptionA(dto.getOptionA());        
         survey.setOptionB(dto.getOptionB());        
         survey.setQuestion(dto.getQuestion());
@@ -61,9 +56,6 @@ public class SurveyConverter {
     public Survey requestDtoToEntity(SurveyRequestDTO dto) {
         Survey survey = new Survey();
         survey.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        // Optional<User> user = userService.findById(dto.getIdUser());
-        // if (user.isPresent())
-            // survey.setUser(user.get());
         survey.setOptionA(dto.getOptionA());
         survey.setOptionB(dto.getOptionB());
         survey.setQuestion(dto.getQuestion());

@@ -91,8 +91,8 @@ public class DocumentController {
             result.addError(new ObjectError("DocumentRequestDTO", "Conteúdo precisa estar preenchido."));
 		}
 
-        if (dto.getTitulo() == null) {
-            result.addError(new ObjectError("DocumentRequestDTO", "Titulo precisa estar preenchido."));
+        if (dto.getTitle() == null) {
+            result.addError(new ObjectError("DocumentRequestDTO", "Title precisa estar preenchido."));
 		}
     }
     

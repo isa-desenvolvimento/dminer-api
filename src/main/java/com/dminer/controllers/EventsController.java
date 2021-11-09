@@ -55,7 +55,7 @@ public class EventsController {
 
     private void validateRequestDto(EventsRequestDTO eventsRequestDTO, BindingResult result) {
         if (eventsRequestDTO.getTitle() == null) {
-            result.addError(new ObjectError("eventsRequestDTO", "Titulo precisa estar preenchido."));			
+            result.addError(new ObjectError("eventsRequestDTO", "Title precisa estar preenchido."));			
 		}
 
         if (eventsRequestDTO.getStartDate() == null) {

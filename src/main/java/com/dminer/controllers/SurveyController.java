@@ -267,22 +267,22 @@ public class SurveyController {
     }
 
 
-    @GetMapping()
+    @GetMapping(value = "/all")
     public ResponseEntity<Response<List<SurveyDTO>>> getAll() {
         
         Response<List<SurveyDTO>> response = new Response<>();
 
-        Optional<List<Survey>> user = surveyService.findAll();
-        if (user.get().isEmpty()) {
+        Optional<List<Survey>> surveys = surveyService.findAll();
+        if (surveys.get().isEmpty()) {
             response.getErrors().add("Questionários não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<SurveyDTO> usuarios = new ArrayList<>();
-        user.get().forEach(u -> {
-            usuarios.add(surveyConverter.entityToDTO(u));
+        List<SurveyDTO> surveysDto = new ArrayList<>();
+        surveys.get().forEach(u -> {
+            surveysDto.add(surveyConverter.entityToDTO(u));
         });
-        response.setData(usuarios);
+        response.setData(surveysDto);
         return ResponseEntity.ok().body(response);
     }
 

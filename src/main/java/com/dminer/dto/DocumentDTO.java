@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class DocumentDTO {
     private int id;
-    private String titulo;
+    private String title;
     private String category; 
     private String permission;
     private byte[] content;
