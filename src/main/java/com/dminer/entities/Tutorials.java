@@ -39,7 +39,7 @@ public class Tutorials {
 	@Column
 	private String title;
 
-	@Column(length = 9999999)
+	@Column()
 	private String content;
 
     @Enumerated(EnumType.STRING)
@@ -51,6 +51,6 @@ public class Tutorials {
     @Column
     private Timestamp date;
 
-    @Column
+    @Column(length = 9999999)
     private String image;
 }
