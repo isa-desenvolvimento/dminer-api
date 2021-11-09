@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,6 +80,7 @@ public class ProfileController {
 
         Profile profile = profileRepository.save(profileConverter.requestDtoToEntity(dto));
         
+        
         response.setData(profileConverter.entityToDTO(profile));
         return ResponseEntity.ok().body(response);
     }
@@ -145,9 +147,11 @@ public class ProfileController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        List<ProfileDTO> ps = new ArrayList<>();
         profile.forEach(p -> {
-            response.getData().add(profileConverter.entityToDTO(p));
+            ps.add(profileConverter.entityToDTO(p));
         });
+        response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
 

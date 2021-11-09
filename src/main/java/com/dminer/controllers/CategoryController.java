@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -145,9 +146,11 @@ public class CategoryController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        List<CategoryDTO> ps = new ArrayList<>();
         category.forEach(p -> {
-            response.getData().add(categoryConverter.entityToDTO(p));
+            ps.add(categoryConverter.entityToDTO(p));
         });
+        response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
 

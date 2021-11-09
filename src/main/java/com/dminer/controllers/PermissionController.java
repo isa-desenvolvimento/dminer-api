@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -145,9 +146,11 @@ public class PermissionController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        List<PermissionDTO> ps = new ArrayList<>();
         permission.forEach(p -> {
-            response.getData().add(permissionConverter.entityToDTO(p));
+            ps.add(permissionConverter.entityToDTO(p));
         });
+        response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
 
