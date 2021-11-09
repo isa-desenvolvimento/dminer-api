@@ -36,7 +36,7 @@ public class Document {
 	@Column
 	private String title;
 
-    @Column
+    @Column(length = 9999999)
     private String contentLink;
 
     @Column

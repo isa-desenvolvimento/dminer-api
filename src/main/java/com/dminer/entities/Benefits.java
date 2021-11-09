@@ -39,7 +39,7 @@ public class Benefits {
 	@Column
 	private String title;
 
-	@Column
+	@Column(length = 9999999)
 	private String content;
 
     @OneToOne

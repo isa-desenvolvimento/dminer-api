@@ -39,7 +39,7 @@ public class Tutorials {
 	@Column
 	private String title;
 
-	@Column
+	@Column(length = 9999999)
 	private String content;
 
     @Enumerated(EnumType.STRING)
