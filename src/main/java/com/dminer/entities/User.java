@@ -7,9 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.dminer.enums.Profiles;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -53,8 +52,8 @@ public class User {
 	@Column
 	private String email;
 
-	@Column
-	private Profiles profile;
+	@OneToOne
+	private Profile profile;
 
 
 }

@@ -18,7 +18,7 @@ public class TutorialsRequestDTO {
 	private String title;
     private String content;
     private String date; 
-    private String category;
-    private String profiles;
+    private Integer category;
+    private Integer profile;
     private String image;
 }

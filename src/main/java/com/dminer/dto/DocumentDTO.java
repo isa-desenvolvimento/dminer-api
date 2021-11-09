@@ -14,9 +14,9 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DocumentDTO {
-    private int id;
+    private Integer id;
     private String title;
-    private String category; 
-    private String permission;
+    private CategoryDTO category; 
+    private PermissionDTO permission;
     private String contentLink;
 }

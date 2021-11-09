@@ -1,11 +1,9 @@
 package com.dminer.repository;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
-import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
 import com.dminer.utils.UtilDataHora;
 

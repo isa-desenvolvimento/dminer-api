@@ -19,6 +19,6 @@ public class BenefitsRequestDTO {
 	private String title;
     private String content;
     private String date; //@Parameter(example = "01/01/2020")
-    private String profiles;
+    private ProfileDTO profile;
     private String image;
 }

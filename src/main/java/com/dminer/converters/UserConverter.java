@@ -1,16 +1,24 @@
 package com.dminer.converters;
 
+import java.util.Optional;
+
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
+import com.dminer.entities.Profile;
 import com.dminer.entities.User;
-import com.dminer.enums.Profiles;
+import com.dminer.repository.ProfileRepository;
 import com.dminer.utils.UtilDataHora;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserConverter {
 
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    
     public User dtoToEntity(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());
@@ -18,7 +26,7 @@ public class UserConverter {
         user.setArea(dto.getArea());
         user.setEmail(dto.getEmail());
         user.setLinkedin(dto.getLinkedin());
-        user.setProfile(Profiles.valueOf(dto.getProfile()));
+        user.setProfile(new ProfileConverter().dtoToEntity(dto.getProfile()));
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -31,7 +39,9 @@ public class UserConverter {
         user.setArea(dto.getArea());
         user.setEmail(dto.getEmail());
         user.setLinkedin(dto.getLinkedin());
-        user.setProfile(Profiles.valueOf(dto.getProfile()));
+        Optional<Profile> p = profileRepository.findById(dto.getProfile());
+        if (p.isPresent())
+            user.setProfile(p.get());
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -52,7 +62,7 @@ public class UserConverter {
         dto.setEmail(user.getEmail());
         dto.setLinkedin(user.getLinkedin());
         if (user.getProfile() != null)
-            dto.setProfile(user.getProfile().name());
+            dto.setProfile(new ProfileConverter().entityToDTO(user.getProfile()));
         return dto;
     }
    

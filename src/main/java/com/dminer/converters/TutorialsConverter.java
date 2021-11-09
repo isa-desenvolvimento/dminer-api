@@ -4,17 +4,12 @@ import java.util.Optional;
 
 import com.dminer.dto.TutorialsDTO;
 import com.dminer.dto.TutorialsRequestDTO;
-import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.entities.Tutorials;
-import com.dminer.entities.Tutorials;
-import com.dminer.entities.Post;
-import com.dminer.entities.User;
-import com.dminer.enums.Category;
-import com.dminer.enums.Profiles;
-import com.dminer.services.PostService;
-import com.dminer.services.UserService;
+import com.dminer.entities.Category;
+import com.dminer.entities.Profile;
+import com.dminer.repository.CategoryRepository;
+import com.dminer.repository.ProfileRepository;
 import com.dminer.utils.UtilDataHora;
-import com.dminer.utils.UtilNumbers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,11 +18,12 @@ import org.springframework.stereotype.Service;
 public class TutorialsConverter {
 
     @Autowired
-    private UserService userService;
+    private CategoryRepository categoryRepository;
 
     @Autowired
-    private PostService postService;
+    private ProfileRepository profileRepository;
 
+    
     public TutorialsDTO entityToDTO(Tutorials entity) {
         TutorialsDTO dto = new TutorialsDTO();
         dto.setId(entity.getId());
@@ -35,8 +31,8 @@ public class TutorialsConverter {
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setImage(entity.getImage());        
-        dto.setProfiles(entity.getProfile().name());
-        dto.setCategory(entity.getCategory().name());
+        dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
+        dto.setCategory(new CategoryConverter().entityToDTO(entity.getCategory()));
         
         return dto;
     }
@@ -47,10 +43,12 @@ public class TutorialsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        if (contains(dto.getProfiles()))
-            c.setProfile(Profiles.valueOf(dto.getProfiles()));
-        if (containsCat(dto.getCategory()))
-            c.setCategory(Category.valueOf(dto.getCategory()));
+        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        if (findById.isPresent())
+            c.setProfile(findById.get());
+        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
+        if (findById2.isPresent())
+            c.setCategory(findById2.get());
         c.setImage(dto.getImage());
         return c;
     }
@@ -60,29 +58,14 @@ public class TutorialsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);        
-        if (contains(dto.getProfiles()))
-            c.setProfile(Profiles.valueOf(dto.getProfiles()));
-        if (containsCat(dto.getCategory()))
-            c.setCategory(Category.valueOf(dto.getCategory()));
+        Optional<Profile> findById = profileRepository.findById(dto.getProfile());
+        if (findById.isPresent())
+            c.setProfile(findById.get());
+        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
+        if (findById2.isPresent())
+            c.setCategory(findById2.get());
         c.setImage(dto.getImage());
         return c;
     }
 
-    private boolean contains(String event) {
-        Profiles[] events =  Profiles.values();
-        for (Profiles eventsTime : events) {
-            if (eventsTime.name().equals(event))
-                return true;
-        }
-        return false;
-    }
-
-    private boolean containsCat(String event) {
-        Category[] events =  Category.values();
-        for (Category eventsTime : events) {
-            if (eventsTime.name().equals(event))
-                return true;
-        }
-        return false;
-    }
 }

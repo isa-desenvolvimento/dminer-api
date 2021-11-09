@@ -8,25 +8,15 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.dminer.converters.TutorialsConverter;
-import com.dminer.converters.NoticeConverter;
-import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.dto.TutorialsDTO;
-import com.dminer.dto.NoticeRequestDTO;
 import com.dminer.entities.Tutorials;
-import com.dminer.entities.Tutorials;
-import com.dminer.entities.Notice;
-import com.dminer.entities.User;
-import com.dminer.enums.Category;
-import com.dminer.enums.Permissions;
-import com.dminer.enums.Profiles;
+import com.dminer.repository.CategoryRepository;
+import com.dminer.repository.ProfileRepository;
 import com.dminer.repository.TutorialsRepository;
 import com.dminer.repository.TutorialsRepositoryPostgres;
 import com.dminer.repository.TutorialsRepositorySqlServer;
 import com.dminer.response.Response;
-import com.dminer.repository.BenefitsRepositoryPostgres;
-import com.dminer.services.NoticeService;
-import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +58,14 @@ public class TutorialsController {
     TutorialsRepositoryPostgres tutorialsRepositoryPostgres;
 
     @Autowired
+    private ProfileRepository profileRepository;
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    @Autowired
     private Environment env;
 
-    Profiles profile;
 
     private void validateRequestDto(TutorialsRequestDTO dto, BindingResult result) {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
@@ -81,18 +76,19 @@ public class TutorialsController {
             result.addError(new ObjectError("TutorialsRequestDTO", "Conteúdo precisa estar preenchido."));
         }
 
-        if (dto.getProfiles() == null || dto.getProfiles().isEmpty()) {
-            result.addError(new ObjectError("TutorialsRequestDTO", "Perfil precisa estar preenchido."));
+        if (dto.getProfile() == null) {
+            result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
         } else {
-            Arrays.asList(Profiles.values()).forEach(c -> {
-                if (c.name().equals(dto.getProfiles())) {
-                    profile = Profiles.valueOf(dto.getProfiles());
-                    return;
-                }
-            });
+            if(!profileRepository.existsById(dto.getProfile())) {
+                result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
+            }
+        }
 
-            if (profile == null) {
-                result.addError(new ObjectError("TutorialsRequestDTO", "Perfil não é válida."));
+        if (dto.getCategory() == null) {
+            result.addError(new ObjectError("BenefitsRequestDTO", "Categoria precisa estar preenchido."));
+		} else {
+            if(!categoryRepository.existsById(dto.getCategory())) {
+                result.addError(new ObjectError("BenefitsRequestDTO", "Categoria não é válida."));
             }
         }
 

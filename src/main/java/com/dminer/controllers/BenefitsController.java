@@ -8,22 +8,14 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.dminer.converters.BenefitsConverter;
-import com.dminer.converters.NoticeConverter;
 import com.dminer.dto.BenefitsRequestDTO;
 import com.dminer.dto.BenefitsDTO;
-import com.dminer.dto.NoticeRequestDTO;
 import com.dminer.entities.Benefits;
-import com.dminer.entities.Notice;
-import com.dminer.entities.User;
-import com.dminer.enums.Category;
-import com.dminer.enums.Permissions;
-import com.dminer.enums.Profiles;
 import com.dminer.repository.BenefitsRepository;
 import com.dminer.repository.BenefitsRepositoryPostgres;
 import com.dminer.repository.BenefitsRepositorySqlServer;
+import com.dminer.repository.ProfileRepository;
 import com.dminer.response.Response;
-import com.dminer.services.NoticeService;
-import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +51,18 @@ public class BenefitsController {
     private BenefitsRepository benefitsRepository;
 
     @Autowired
-    BenefitsRepositorySqlServer benefitsRepositorySqlServer;
+    private BenefitsRepositorySqlServer benefitsRepositorySqlServer;
 
     @Autowired
-    BenefitsRepositoryPostgres benefitsRepositoryPostgres;
+    private BenefitsRepositoryPostgres benefitsRepositoryPostgres;
+
+    @Autowired
+    private ProfileRepository profileRepository;
 
     @Autowired
     private Environment env;
 
-    Profiles profile;
+    
 
     private void validateRequestDto(BenefitsRequestDTO dto, BindingResult result) {
         if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
@@ -78,17 +73,10 @@ public class BenefitsController {
             result.addError(new ObjectError("BenefitsRequestDTO", "Conteúdo precisa estar preenchido."));
         }
 
-        if (dto.getProfiles() == null || dto.getProfiles().isEmpty()) {
+        if (dto.getProfile() == null) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
         } else {
-            Arrays.asList(Profiles.values()).forEach(c -> {
-                if (c.name().equals(dto.getProfiles())) {
-                    profile = Profiles.valueOf(dto.getProfiles());
-                    return;
-                }
-            });
-
-            if (profile == null) {
+            if(!profileRepository.existsById(dto.getProfile().getId())) {
                 result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
             }
         }

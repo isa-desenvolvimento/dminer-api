@@ -1,7 +1,5 @@
 package com.dminer.controllers;
 
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,32 +25,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.constantes.Constantes;
 import com.dminer.converters.SurveyConverter;
-import com.dminer.converters.UserConverter;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.SurveyResponseDTO;
-import com.dminer.dto.SurveyDTO;
-import com.dminer.dto.UserRequestDTO;
-import com.dminer.entities.FileInfo;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
 import com.dminer.repository.SurveyResponseRepository;
-import com.dminer.entities.Survey;
 import com.dminer.response.Response;
-import com.dminer.services.FileDatabaseService;
-import com.dminer.services.FileStorageService;
 import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
-import com.dminer.utils.UtilDataHora;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -67,9 +52,6 @@ public class SurveyController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private UserConverter userConverter;
 
     @Autowired
     private SurveyConverter surveyConverter;
@@ -141,7 +123,7 @@ public class SurveyController {
 
 
     @PostMapping()
-    public ResponseEntity<Response<SurveyDTO>> create( @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
+    public ResponseEntity<Response<SurveyDTO>> create( @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
 

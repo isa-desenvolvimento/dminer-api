@@ -1,26 +1,19 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
 
 import com.dminer.converters.DocumentConverter;
-import com.dminer.converters.NoticeConverter;
 import com.dminer.dto.DocumentRequestDTO;
 import com.dminer.dto.DocumentDTO;
-import com.dminer.dto.NoticeRequestDTO;
 import com.dminer.entities.Document;
-import com.dminer.entities.Notice;
-import com.dminer.entities.User;
-import com.dminer.enums.Category;
-import com.dminer.enums.Permissions;
+import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.DocumentRepository;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
-import com.dminer.services.NoticeService;
-import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,21 +47,18 @@ public class DocumentController {
     @Autowired
     private DocumentRepository documentRepository;
 
-    private Category cat = null;    
-    private Permissions per = null;
+    @Autowired
+    private PermissionRepository permissionRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    
     private void validateRequestDto(DocumentRequestDTO dto, BindingResult result) {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("DocumentRequestDTO", "Categoria precisa estar preenchido."));
 		} else {
-            Arrays.asList(Category.values()).forEach(c -> {
-                if (c.name().equals(dto.getCategory())) {
-                    cat = Category.valueOf(dto.getCategory());
-                    return;
-                }
-            });
-
-            if (cat == null) {
+            if(!categoryRepository.existsById(dto.getCategory())) {
                 result.addError(new ObjectError("DocumentRequestDTO", "Categoria não é válida."));
             }
         }
@@ -76,13 +66,7 @@ public class DocumentController {
         if (dto.getPermission() == null) {
             result.addError(new ObjectError("DocumentRequestDTO", "Permissão precisa estar preenchido."));
 		} else {
-            Arrays.asList(Permissions.values()).forEach(c -> {
-                if (c.name().equals(dto.getPermission())) {
-                    per = Permissions.valueOf(dto.getPermission());
-                }
-            });
-
-            if (per == null) {
+            if (! permissionRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("DocumentRequestDTO", "Permissão não é válida."));
             }
         }

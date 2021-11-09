@@ -5,13 +5,11 @@ import java.util.Optional;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.dto.BenefitsRequestDTO;
 import com.dminer.entities.Benefits;
-import com.dminer.entities.Post;
+import com.dminer.entities.Profile;
 import com.dminer.entities.User;
-import com.dminer.enums.Profiles;
-import com.dminer.services.PostService;
+import com.dminer.repository.ProfileRepository;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
-import com.dminer.utils.UtilNumbers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,8 @@ public class BenefitsConverter {
     private UserService userService;
 
     @Autowired
-    private PostService postService;
+    private ProfileRepository profileRepository;
+
 
     public BenefitsDTO entityToDTO(Benefits entity) {
         BenefitsDTO dto = new BenefitsDTO();
@@ -32,8 +31,8 @@ public class BenefitsConverter {
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setCreator(entity.getCreator().getId());
-        dto.setImage(entity.getImage());        
-        dto.setProfiles(entity.getProfiles().name());
+        dto.setImage(entity.getImage());         
+        dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
         return dto;
     }
 
@@ -46,8 +45,9 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        if (contains(dto.getProfiles()))
-            c.setProfiles(Profiles.valueOf(dto.getProfiles()));
+        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        if (findById.isPresent())
+            c.setProfile(findById.get());
         c.setImage(dto.getImage());
         return c;
     }
@@ -60,18 +60,11 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        if (contains(dto.getProfiles()))
-            c.setProfiles(Profiles.valueOf(dto.getProfiles()));
+        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        if (findById.isPresent())
+            c.setProfile(findById.get());
         c.setImage(dto.getImage());
         return c;
     }
 
-    private boolean contains(String event) {
-        Profiles[] events =  Profiles.values();
-        for (Profiles eventsTime : events) {
-            if (eventsTime.name().equals(event))
-                return true;
-        }
-        return false;
-    }
 }

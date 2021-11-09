@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.dminer.entities.Benefits;
+import com.dminer.entities.Profile;
 import com.dminer.entities.Reminder;
 import com.dminer.entities.User;
-import com.dminer.enums.Profiles;
 import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
@@ -28,7 +28,8 @@ public class BenefitsRepositoryPostgres {
     @Autowired
     private UserService userService;
     
-
+    @Autowired
+    private ProfileRepository profileRepository;
 
     public List<Benefits> search(String keyword) {
         String query =
@@ -51,9 +52,12 @@ public class BenefitsRepositoryPostgres {
             if (findById.isPresent())
                 e.setCreator(findById.get());
             
-            e.setProfiles(
-                rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
-            );
+            // Optional<Profile> p = profileRepository.findById(dto.getProfile());
+            // if (p.isPresent())
+            //     user.setProfile(p.get());
+            // e.setProfiles(
+            //     rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
+            // );
 
             e.setImage(rs.getString("IMAGE"));
             return e;

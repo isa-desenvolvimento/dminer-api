@@ -2,8 +2,6 @@ package com.dminer.repository;
 
 import java.util.List;
 import com.dminer.entities.Tutorials;
-import com.dminer.enums.Category;
-import com.dminer.enums.Profiles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +35,10 @@ public class TutorialsRepositorySqlServer {
             e.setTitle(rs.getString("TITLE"));
             e.setContent(rs.getString("CONTENT"));
             e.setDate(rs.getTimestamp("DATE"));
-            e.setCategory(Category.valueOf(rs.getString("CATEGORY")));
-            e.setProfile(
-                rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
-            );
+            // e.setCategory(Category.valueOf(rs.getString("CATEGORY")));
+            // e.setProfile(
+            //     rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
+            // );
             e.setImage(rs.getString("IMAGE"));
             return e;
         });

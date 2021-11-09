@@ -20,6 +20,6 @@ public class BenefitsDTO {
 	private String title;
     private String content;
     private String date; 
-    private String profiles;
+    private ProfileDTO profile;
     private String image;
 }

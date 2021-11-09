@@ -13,9 +13,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class DocumentRequestDTO {
-    private String title;
-    private Integer category;
-    private Integer permission;
-    private String contentLink;
+public class PermissionDTO { 
+    
+    private Integer id;
+	private String permission;
 }

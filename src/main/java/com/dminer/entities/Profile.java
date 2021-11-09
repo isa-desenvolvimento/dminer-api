@@ -1,15 +1,12 @@
 package com.dminer.entities;
 
-
-import java.sql.Timestamp;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,34 +16,20 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "TUTORIALS")
+@Table(name = "PROFILE")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-public class Tutorials {
+public class Profile {
 
     @Id
 	@GeneratedValue(strategy = GenerationType.AUTO)	
 	private Integer id;
-    
+
 	@Column
-	private String title;
+	private String describle;
 
-	@Column()
-	private String content;
-
-    @OneToOne
-    private Profile profile;
-    
-    @OneToOne
-    private Category category;
-
-    @Column
-    private Timestamp date;
-
-    @Column(length = 9999999)
-    private String image;
 }

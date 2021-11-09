@@ -6,7 +6,6 @@ import java.util.Optional;
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Reminder;
 import com.dminer.entities.User;
-import com.dminer.enums.Profiles;
 import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
@@ -51,9 +50,9 @@ public class BenefitsRepositorySqlServer {
             if (findById.isPresent())
                 e.setCreator(findById.get());
             
-            e.setProfiles(
-                rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
-            );
+            // e.setProfiles(
+            //     rs.getString("PROFILES") != null ? Profiles.valueOf(rs.getString("PROFILES")) : null
+            // );
 
             e.setImage(rs.getString("IMAGE"));
             return e;

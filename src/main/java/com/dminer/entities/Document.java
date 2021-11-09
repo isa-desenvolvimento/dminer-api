@@ -2,15 +2,11 @@ package com.dminer.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.dminer.enums.Category;
-import com.dminer.enums.Permissions;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -39,12 +35,10 @@ public class Document {
     @Column(length = 9999999)
     private String contentLink;
 
-    @Column
-    @Enumerated(EnumType.STRING)
+    @OneToOne
     private Category category;
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Permissions permission;
-
+    @OneToOne
+    private Permission permission;
+    
 }
