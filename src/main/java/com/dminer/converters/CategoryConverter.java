@@ -11,12 +11,14 @@ public class CategoryConverter {
 
     public CategoryDTO entityToDTO(Category entity) {
         CategoryDTO dto = new CategoryDTO();
+        dto.setId(entity.getId());
         dto.setDescrible(entity.getDescrible() != null ? entity.getDescrible() : "");
         return dto;
     }
 
     public Category dtoToEntity(CategoryDTO dto) {
         Category c = new Category();
+        c.setId(dto.getId());
         c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
         return c;
     }

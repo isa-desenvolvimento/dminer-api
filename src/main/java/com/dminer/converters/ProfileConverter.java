@@ -11,12 +11,14 @@ public class ProfileConverter {
 
     public ProfileDTO entityToDTO(Profile entity) {
         ProfileDTO dto = new ProfileDTO();
+        dto.setId(entity.getId());
         dto.setDescrible(entity.getDescrible() != null ? entity.getDescrible() : "");
         return dto;
     }
 
     public Profile dtoToEntity(ProfileDTO dto) {
         Profile c = new Profile();
+        c.setId(dto.getId());
         c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
         return c;
     }

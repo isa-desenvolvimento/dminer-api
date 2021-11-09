@@ -115,7 +115,7 @@ public class ProfileController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<Response<ProfileDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando usuário {}", id);
+        log.info("Buscando perfil {}", id);
         
         Response<ProfileDTO> response = new Response<>();
         if (id == null) {
@@ -141,7 +141,7 @@ public class ProfileController {
 
         List<Profile> profile = profileRepository.findAll();
         if (profile == null || profile.isEmpty()) {
-            response.getErrors().add("Permissões não encontradas");
+            response.getErrors().add("Perfis não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
