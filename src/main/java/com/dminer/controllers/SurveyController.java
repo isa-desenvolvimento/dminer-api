@@ -232,16 +232,25 @@ public class SurveyController {
 
 
     @PutMapping()
-    public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO userDto, BindingResult result ) {
+    public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO surveyDto, BindingResult result ) {
 
-        log.info("Alterando um questionário {}", userDto);
+        log.info("Alterando um questionário {}", surveyDto);
 
         Response<SurveyDTO> response = new Response<>();
 
-        Optional<Survey> survey = surveyService.findById(userDto.getId());
+        Optional<Survey> survey = surveyService.findById(surveyDto.getId());
+        if (! survey.isPresent()) {
+            response.getErrors().add("Questionário de id: "+ surveyDto.getId() +", não encontrado!");
+            return ResponseEntity.badRequest().body(response);
+        }
+
         Survey s = survey.get();
-        s = surveyConverter.dtoToEntity(userDto);
-        s = surveyService.persist(s);
+        SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(surveyDto.getId());
+        if (responseDto != null) {
+            surveyDto.setCountA(responseDto.getCountA());
+            surveyDto.setCountB(responseDto.getCountB());
+        }
+        s = surveyService.persist(surveyConverter.dtoToEntity(surveyDto));
         response.setData(surveyConverter.entityToDTO(s));
         return ResponseEntity.ok().body(response);
     }
