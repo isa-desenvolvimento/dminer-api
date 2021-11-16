@@ -129,7 +129,7 @@ public class TutorialsController {
 
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Beneficio não encontrado");
+            response.getErrors().add("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -176,13 +176,13 @@ public class TutorialsController {
 
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Beneficio não encontrado");
+            response.getErrors().add("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
         try {tutorialsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Beneficio não encontrado");
+            response.getErrors().add("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -198,7 +198,7 @@ public class TutorialsController {
 
         List<Tutorials> doc = tutorialsRepository.findAll();
         if (doc.isEmpty()) {
-            response.getErrors().add("Beneficios não encontrados");
+            response.getErrors().add("Tutorials não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
