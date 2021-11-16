@@ -2,11 +2,13 @@ package com.dminer.entities;
 
 import java.sql.Timestamp;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -37,10 +39,10 @@ public class User {
 	@Column
 	private Timestamp dtBirthday;
 
-	@Column(length = 9999999)
+	@Column(length = 8000)
 	private String avatar; 
 
-	@Column(length = 9999999)
+	@Column(length = 8000)
 	private String banner; 
 
 	@Column
@@ -52,7 +54,11 @@ public class User {
 	@Column
 	private String email;
 
-	@OneToOne
+	@Column
+	private String nickname;
+
+	@OneToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name = "profile_id")
 	private Profile profile;
 
 

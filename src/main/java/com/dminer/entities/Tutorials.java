@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -39,14 +40,16 @@ public class Tutorials {
 	private String content;
 
     @OneToOne
+    @JoinColumn(name = "profile_id")
     private Profile profile;
     
     @OneToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column
     private Timestamp date;
 
-    @Column(length = 9999999)
+    @Column(length = 8000)
     private String image;
 }

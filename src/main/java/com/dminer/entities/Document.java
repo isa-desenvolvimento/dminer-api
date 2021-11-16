@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -32,13 +33,15 @@ public class Document {
 	@Column
 	private String title;
 
-    @Column(length = 9999999)
+    @Column
     private String contentLink;
 
     @OneToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToOne
+    @JoinColumn(name = "permission_id")
     private Permission permission;
     
 }

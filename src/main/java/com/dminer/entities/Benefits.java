@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -35,13 +36,15 @@ public class Benefits {
 	@Column
 	private String title;
 
-	@Column(length = 9999999)
+	@Column(length = 8000)
 	private String content;
 
     @OneToOne
+    @JoinColumn(name = "creator_id")
     private User creator;
 
     @OneToOne
+    @JoinColumn(name = "profile_id")
     private Profile profile;
     
     @Column
