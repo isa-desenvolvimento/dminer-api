@@ -7,7 +7,11 @@ import java.time.LocalTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dminer.dto.EventsDTO;
+import com.dminer.services.EmitterService;
+
 import com.dminer.services.UserService;
+import com.dminer.services.interfaces.NotificationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +41,25 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class ServerSendEvents {
     
+    private static final Logger log = LoggerFactory.getLogger(ServerSendEvents.class);
 
     @Autowired
     private UserService userService;
+
+    private final EmitterService emitterService;
+    private final NotificationService notificationService;
+
+    @GetMapping("/subscribe/{MEMBER_ID_HEADER}")
+    public SseEmitter subscribeToEvents(@PathVariable(name = "MEMBER_ID_HEADER") String memberId) {
+        log.debug("Subscribing member with id {}", memberId);
+        return emitterService.createEmitter(memberId);
+    }
+
+    @PostMapping("/publish/{MEMBER_ID_HEADER}")
+    public void publishEvent(@PathVariable(name = "MEMBER_ID_HEADER") String memberId, @RequestBody EventsDTO event) {
+        log.debug("Publishing event {} for member with id {}", event, memberId);
+        notificationService.sendNotification(memberId, event);
+    }
 
 
     @GetMapping("/notification")
@@ -67,7 +87,7 @@ public class ServerSendEvents {
     public  SseEmitter streamSseBirthday() {
         
         
-        String json = "disparando evento sse de notificação";
+        String json = "disparando evento sse de aniversário";
 
         System.out.println(json);
         SseEmitter emitter = new SseEmitter(); 
