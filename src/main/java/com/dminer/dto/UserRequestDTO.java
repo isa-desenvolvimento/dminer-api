@@ -22,6 +22,6 @@ public class UserRequestDTO {
     private String area;
 	private String linkedin;
 	private String email;
-	private Integer profile;
+	private Integer permission;
 
 }

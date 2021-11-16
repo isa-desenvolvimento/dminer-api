@@ -23,5 +23,5 @@ public class UserDTO {
     private String area;
 	private String linkedin;
 	private String email;
-	private ProfileDTO profile;
+	private PermissionDTO permission;
 }

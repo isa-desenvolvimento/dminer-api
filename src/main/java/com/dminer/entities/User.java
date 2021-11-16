@@ -58,8 +58,8 @@ public class User {
 	private String nickname;
 
 	@OneToOne(cascade=CascadeType.ALL)
-	@JoinColumn(name = "profile_id")
-	private Profile profile;
+	@JoinColumn(name = "permission_id")
+	private Permission permission;
 
 
 }

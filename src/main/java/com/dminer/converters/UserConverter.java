@@ -4,9 +4,9 @@ import java.util.Optional;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
-import com.dminer.entities.Profile;
+import com.dminer.entities.Permission;
 import com.dminer.entities.User;
-import com.dminer.repository.ProfileRepository;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class UserConverter {
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private PermissionRepository permissionRepository;
 
     
     public User dtoToEntity(UserDTO dto) {
@@ -26,7 +26,9 @@ public class UserConverter {
         user.setArea(dto.getArea());
         user.setEmail(dto.getEmail());
         user.setLinkedin(dto.getLinkedin());
-        user.setProfile(new ProfileConverter().dtoToEntity(dto.getProfile()));
+        if (dto.getPermission() != null) {
+            user.setPermission(new PermissionConverter().dtoToEntity(dto.getPermission()));
+        }
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -39,9 +41,11 @@ public class UserConverter {
         user.setArea(dto.getArea());
         user.setEmail(dto.getEmail());
         user.setLinkedin(dto.getLinkedin());
-        Optional<Profile> p = profileRepository.findById(dto.getProfile());
-        if (p.isPresent())
-            user.setProfile(p.get());
+        if (dto.getPermission() != null) {
+            Optional<Permission> p = permissionRepository.findById(dto.getPermission());
+            if (p.isPresent())
+                user.setPermission(p.get());
+        }
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
         user.setBanner(dto.getBanner());
@@ -60,9 +64,9 @@ public class UserConverter {
             dto.setBanner(user.getBanner());
         dto.setArea(user.getArea());
         dto.setEmail(user.getEmail());
-        dto.setLinkedin(user.getLinkedin());
-        if (user.getProfile() != null)
-            dto.setProfile(new ProfileConverter().entityToDTO(user.getProfile()));
+        dto.setLinkedin(user.getLinkedin());        
+        if (user.getPermission() != null)
+            dto.setPermission(new PermissionConverter().entityToDTO(user.getPermission()));
         return dto;
     }
    
