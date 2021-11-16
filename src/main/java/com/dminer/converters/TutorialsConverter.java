@@ -30,9 +30,11 @@ public class TutorialsConverter {
         dto.setContent(entity.getContent() != null ? entity.getContent() : "");
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
-        dto.setImage(entity.getImage());        
-        dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
-        dto.setCategory(new CategoryConverter().entityToDTO(entity.getCategory()));
+        dto.setImage(entity.getImage());
+        if (entity.getProfile() != null)
+            dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
+        if (entity.getCategory() != null)
+            dto.setCategory(new CategoryConverter().entityToDTO(entity.getCategory()));
         
         return dto;
     }
@@ -43,12 +45,16 @@ public class TutorialsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
-        if (findById.isPresent())
-            c.setProfile(findById.get());
-        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
-        if (findById2.isPresent())
-            c.setCategory(findById2.get());
+        if (dto.getProfile() != null) {
+            Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+            if (findById.isPresent())
+                c.setProfile(findById.get());
+        }
+        if (dto.getCategory() != null) {
+            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
+            if (findById2.isPresent())
+                c.setCategory(findById2.get());
+        }
         c.setImage(dto.getImage());
         return c;
     }
@@ -57,13 +63,17 @@ public class TutorialsConverter {
         Tutorials c = new Tutorials();
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
-        c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);        
-        Optional<Profile> findById = profileRepository.findById(dto.getProfile());
-        if (findById.isPresent())
-            c.setProfile(findById.get());
-        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
-        if (findById2.isPresent())
-            c.setCategory(findById2.get());
+        c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null); 
+        if (dto.getProfile() != null) {
+            Optional<Profile> findById = profileRepository.findById(dto.getProfile());
+            if (findById.isPresent())
+                c.setProfile(findById.get());
+        }
+        if (dto.getCategory() != null) {
+            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
+            if (findById2.isPresent())
+                c.setCategory(findById2.get());
+        }
         c.setImage(dto.getImage());
         return c;
     }
