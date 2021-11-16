@@ -63,7 +63,7 @@ public class NoticeController {
             });
         }
 
-        if (avisosRequestDTO.getPriority() == null || avisosRequestDTO.getPriority().isEmpty()) {
+        if (avisosRequestDTO.getPriority() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Prioridade do aviso precisa estar preenchido."));			
 		}
 

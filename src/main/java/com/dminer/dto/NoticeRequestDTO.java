@@ -22,6 +22,6 @@ public class NoticeRequestDTO {
     private String date;
     private String creator;
     private String warning;
-    private String priority;
+    private Integer priority;
 
 }

@@ -48,6 +48,6 @@ public class Notice {
     private Timestamp date;
 
     @Column
-    private String priority;
+    private Integer priority;
     
 }
