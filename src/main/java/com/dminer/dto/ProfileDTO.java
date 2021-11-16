@@ -16,5 +16,5 @@ import lombok.ToString;
 public class ProfileDTO { 
     
     private Integer id;
-	private String describle;
+	private String title;
 }

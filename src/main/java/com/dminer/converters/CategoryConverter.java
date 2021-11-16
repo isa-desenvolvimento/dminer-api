@@ -13,7 +13,7 @@ public class CategoryConverter {
         CategoryDTO dto = new CategoryDTO();
         if (entity == null) return dto;
         dto.setId(entity.getId());
-        dto.setDescrible(entity.getDescrible() != null ? entity.getDescrible() : "");
+        dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         return dto;
     }
 
@@ -21,14 +21,14 @@ public class CategoryConverter {
         Category c = new Category();
         if (dto == null) return c;
         c.setId(dto.getId());
-        c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
+        c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         return c;
     }
 
     public Category requestDtoToEntity(CategoryRequestDTO dto) {
         Category c = new Category();
         if (dto == null) return c;
-        c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
+        c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         return c;
     }
 }

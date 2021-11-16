@@ -62,7 +62,7 @@ public class ReminderController {
             }
         }
 
-        if (reminderRequestDTO.getReminderDescrible() == null || reminderRequestDTO.getReminderDescrible().isEmpty()) {
+        if (reminderRequestDTO.getReminder() == null || reminderRequestDTO.getReminder().isEmpty()) {
             result.addError(new ObjectError("ReminderRequestDTO", "Descrição do lembrete precisa estar preenchido."));			
 		}
 

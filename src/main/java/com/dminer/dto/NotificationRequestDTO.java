@@ -15,6 +15,6 @@ public class NotificationRequestDTO {
         
     private Integer idUser;
 
-	private String notificationDescrible; 
+	private String notification; 
 
 }

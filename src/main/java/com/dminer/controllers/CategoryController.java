@@ -49,7 +49,7 @@ public class CategoryController {
 
 
     private void validateRequestDto(CategoryRequestDTO dto, BindingResult result) {
-        if (dto.getDescrible() == null || dto.getDescrible().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -59,7 +59,7 @@ public class CategoryController {
             result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
 		}
 
-        if (dto.getDescrible() == null || dto.getDescrible().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -67,7 +67,7 @@ public class CategoryController {
     @PostMapping()
     public ResponseEntity<Response<CategoryDTO>> create(@Valid @RequestBody CategoryRequestDTO dto, BindingResult result) {        
 
-		log.info("Salvando uma nova categoria {}", dto.getDescrible());
+		log.info("Salvando uma nova categoria {}", dto.getTitle());
 
         Response<CategoryDTO> response = new Response<>();
 
@@ -106,7 +106,7 @@ public class CategoryController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        optProfile.get().setDescrible(dto.getDescrible());
+        optProfile.get().setTitle(dto.getTitle());
 
        Category category = categoryRepository.save(optProfile.get());
         response.setData(categoryConverter.entityToDTO(category));
@@ -116,7 +116,7 @@ public class CategoryController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<Response<CategoryDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando usuário {}", id);
+        log.info("Buscando categoria {}", id);
         
         Response<CategoryDTO> response = new Response<>();
         if (id == null) {
@@ -142,7 +142,7 @@ public class CategoryController {
 
         List<Category> category = categoryRepository.findAll();
         if (category == null || category.isEmpty()) {
-            response.getErrors().add("Permissões não encontradas");
+            response.getErrors().add("Categorias não encontradas");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -166,7 +166,7 @@ public class CategoryController {
 
         try {categoryRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Categoria não encontrado");
+            response.getErrors().add("Categoria não encontrada");
             return ResponseEntity.badRequest().body(response);
         }
 

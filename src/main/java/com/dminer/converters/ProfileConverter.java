@@ -13,7 +13,7 @@ public class ProfileConverter {
         ProfileDTO dto = new ProfileDTO();
         if (entity == null) return dto;
         dto.setId(entity.getId());
-        dto.setDescrible(entity.getDescrible() != null ? entity.getDescrible() : "");
+        dto.setTitle(entity.getDescrible() != null ? entity.getDescrible() : "");
         return dto;
     }
 
@@ -21,14 +21,14 @@ public class ProfileConverter {
         Profile c = new Profile();
         if (dto == null) return c;
         c.setId(dto.getId());
-        c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
+        c.setDescrible(dto.getTitle() != null ? dto.getTitle() : "");
         return c;
     }
 
     public Profile requestDtoToEntity(ProfileRequestDTO dto) {
         Profile c = new Profile();
         if (dto == null) return c;
-        c.setDescrible(dto.getDescrible() != null ? dto.getDescrible() : "");
+        c.setDescrible(dto.getTitle() != null ? dto.getTitle() : "");
         return c;
     }
 }

@@ -14,5 +14,5 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ProfileRequestDTO {     
-	private String describle;
+	private String title;
 }

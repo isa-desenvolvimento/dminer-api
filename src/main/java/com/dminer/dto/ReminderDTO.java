@@ -17,7 +17,7 @@ public class ReminderDTO {
 
     private Integer idUser;
 
-	private String reminderDescrible; 
+	private String reminder; 
 
     private String dataHora;
 

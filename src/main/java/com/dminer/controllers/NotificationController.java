@@ -63,7 +63,7 @@ public class NotificationController {
             }
         }
 
-        if (notificationRequestDTO.getNotificationDescrible() == null || notificationRequestDTO.getNotificationDescrible().isEmpty()) {
+        if (notificationRequestDTO.getNotification() == null || notificationRequestDTO.getNotification().isEmpty()) {
             result.addError(new ObjectError("NotificationRequestDTO", "Descrição da notificação precisa estar preenchido."));			
 		}
     }

@@ -33,6 +33,6 @@ public class Notification {
     private User user;
 
 	@Column
-	private String notificationDescrible; 
+	private String notification; 
 
 }

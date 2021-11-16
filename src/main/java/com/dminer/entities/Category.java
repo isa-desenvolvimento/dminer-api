@@ -30,6 +30,6 @@ public class Category {
 	private Integer id;
 
 	@Column
-	private String describle;
+	private String title;
 
 }

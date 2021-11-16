@@ -49,7 +49,7 @@ public class ProfileController {
 
 
     private void validateRequestDto(ProfileRequestDTO dto, BindingResult result) {
-        if (dto.getDescrible() == null || dto.getDescrible().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Perfil precisa estar preenchido."));			
 		}
     }
@@ -59,7 +59,7 @@ public class ProfileController {
             result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
 		}
 
-        if (dto.getDescrible() == null || dto.getDescrible().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Perfil precisa estar preenchido."));			
 		}
     }
@@ -67,7 +67,7 @@ public class ProfileController {
     @PostMapping()
     public ResponseEntity<Response<ProfileDTO>> create(@Valid @RequestBody ProfileRequestDTO dto, BindingResult result) {        
 
-		log.info("Salvando um novo perfil {}", dto.getDescrible());
+		log.info("Salvando um novo perfil {}", dto.getTitle());
 
         Response<ProfileDTO> response = new Response<>();
 
@@ -107,7 +107,7 @@ public class ProfileController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        optProfile.get().setDescrible(dto.getDescrible());
+        optProfile.get().setDescrible(dto.getTitle());
 
         Profile profile = profileRepository.save(optProfile.get());
         response.setData(profileConverter.entityToDTO(profile));
