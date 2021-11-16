@@ -49,7 +49,7 @@ public class PermissionController {
 
 
     private void validateRequestDto(PermissionRequestDTO dto, BindingResult result) {
-        if (dto.getPermission() == null || dto.getPermission().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));			
 		}
     }
@@ -59,7 +59,7 @@ public class PermissionController {
             result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
 		}
 
-        if (dto.getPermission() == null || dto.getPermission().isEmpty())  {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
             result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));			
 		}
     }
@@ -67,7 +67,7 @@ public class PermissionController {
     @PostMapping()
     public ResponseEntity<Response<PermissionDTO>> create(@Valid @RequestBody PermissionRequestDTO dto, BindingResult result) {        
 
-		log.info("Salvando uma nova permissão {}", dto.getPermission());
+		log.info("Salvando uma nova permissão {}", dto.getTitle());
 
         Response<PermissionDTO> response = new Response<>();
 
@@ -106,7 +106,7 @@ public class PermissionController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        optUser.get().setPermission(dto.getPermission());
+        optUser.get().setPermission(dto.getTitle());
 
         Permission permission = permissionRepository.save(optUser.get());
         response.setData(permissionConverter.entityToDTO(permission));

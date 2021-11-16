@@ -15,5 +15,5 @@ import lombok.ToString;
 @ToString
 public class PermissionRequestDTO { 
     
-	private String permission;
+	private String title;
 }

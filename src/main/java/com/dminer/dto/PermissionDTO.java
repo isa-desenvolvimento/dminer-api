@@ -16,5 +16,5 @@ import lombok.ToString;
 public class PermissionDTO { 
     
     private Integer id;
-	private String permission;
+	private String title;
 }
