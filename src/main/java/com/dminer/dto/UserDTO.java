@@ -23,5 +23,6 @@ public class UserDTO {
     private String area;
 	private String linkedin;
 	private String email;
+    private String nickname;
 	private PermissionDTO permission;
 }

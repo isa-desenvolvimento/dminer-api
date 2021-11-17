@@ -18,7 +18,7 @@ public class UserConverter {
     @Autowired
     private PermissionRepository permissionRepository;
 
-    
+
     public User dtoToEntity(UserDTO dto) {
         User user = new User();
         user.setId(dto.getId());

@@ -28,10 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dminer.converters.PermissionConverter;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.FileInfo;
+import com.dminer.entities.Permission;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.FileDatabaseService;
@@ -163,6 +165,12 @@ public class UserController {
         optUser.get().setDtBirthday(UtilDataHora.toTimestamp(userDto.getDtBirthday()));
         optUser.get().setAvatar(userDto.getAvatar());
         optUser.get().setBanner(userDto.getBanner());
+        optUser.get().setEmail(userDto.getEmail());
+        optUser.get().setArea(userDto.getArea());
+        optUser.get().setLinkedin(userDto.getLinkedin());
+        optUser.get().setNickname(userDto.getNickname());
+        if (userDto.getPermission() != null)
+            optUser.get().setPermission(new PermissionConverter().dtoToEntity(userDto.getPermission()));
 
         User user = userService.persist(optUser.get());
         response.setData(userConverter.entityToDto(user));
