@@ -60,7 +60,7 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        Optional<Profile> findById = profileRepository.findById(dto.getProfile());
         if (findById.isPresent())
             c.setProfile(findById.get());
         c.setImage(dto.getImage());

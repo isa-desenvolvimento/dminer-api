@@ -76,7 +76,7 @@ public class BenefitsController {
         if (dto.getProfile() == null) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
         } else {
-            if(!profileRepository.existsById(dto.getProfile().getId())) {
+            if(!profileRepository.existsById(dto.getProfile())) {
                 result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
             }
         }
