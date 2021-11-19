@@ -129,16 +129,16 @@ public class UserController {
 
         Response<UserDTO> response = new Response<>();
 
-        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        // UserRequestDTO userRequestDTO = new UserRequestDTO();
 
-        validateRequestDto(userRequestDTO, result);
+        validateRequestDto(userRequestDto, result);
         if (result.hasErrors()) {
-            log.info("Erro validando userRequestDTO: {}", userRequestDTO);
+            log.info("Erro validando userRequestDTO: {}", userRequestDto);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
-        User user = userService.persist(userConverter.requestDtoToEntity(userRequestDTO));
+        User user = userService.persist(userConverter.requestDtoToEntity(userRequestDto));
         
         response.setData(userConverter.entityToDto(user));
         serverSendEvents.streamSseMvc(response.toString());

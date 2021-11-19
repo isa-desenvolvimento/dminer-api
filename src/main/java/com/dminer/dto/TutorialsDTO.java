@@ -20,6 +20,6 @@ public class TutorialsDTO {
     private String content;
     private String date; 
     private CategoryDTO category;
-    private ProfileDTO profile;
+    private PermissionDTO permission;
     private String image;
 }

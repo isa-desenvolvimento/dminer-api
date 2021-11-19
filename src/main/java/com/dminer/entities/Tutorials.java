@@ -40,8 +40,8 @@ public class Tutorials {
 	private String content;
 
     @OneToOne
-    @JoinColumn(name = "profile_id")
-    private Profile profile;
+    @JoinColumn(name = "permission_id")
+    private Permission permission;
     
     @OneToOne
     @JoinColumn(name = "category_id")

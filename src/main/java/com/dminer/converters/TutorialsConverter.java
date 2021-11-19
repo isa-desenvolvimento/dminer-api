@@ -6,8 +6,9 @@ import com.dminer.dto.TutorialsDTO;
 import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.entities.Tutorials;
 import com.dminer.entities.Category;
-import com.dminer.entities.Profile;
+import com.dminer.entities.Permission;
 import com.dminer.repository.CategoryRepository;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.ProfileRepository;
 import com.dminer.utils.UtilDataHora;
 
@@ -21,7 +22,7 @@ public class TutorialsConverter {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private PermissionRepository permissionRepository;
 
     
     public TutorialsDTO entityToDTO(Tutorials entity) {
@@ -31,8 +32,8 @@ public class TutorialsConverter {
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setImage(entity.getImage());
-        if (entity.getProfile() != null)
-            dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
+        if (entity.getPermission() != null)
+            dto.setPermission(new PermissionConverter().entityToDTO(entity.getPermission()));
         if (entity.getCategory() != null)
             dto.setCategory(new CategoryConverter().entityToDTO(entity.getCategory()));
         
@@ -45,10 +46,10 @@ public class TutorialsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        if (dto.getProfile() != null) {
-            Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        if (dto.getPermission() != null) {
+            Optional<Permission> findById = permissionRepository.findById(dto.getPermission().getId());
             if (findById.isPresent())
-                c.setProfile(findById.get());
+                c.setPermission(findById.get());
         }
         if (dto.getCategory() != null) {
             Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
@@ -64,10 +65,10 @@ public class TutorialsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null); 
-        if (dto.getProfile() != null) {
-            Optional<Profile> findById = profileRepository.findById(dto.getProfile());
+        if (dto.getPermission() != null) {
+            Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
             if (findById.isPresent())
-                c.setProfile(findById.get());
+                c.setPermission(findById.get());
         }
         if (dto.getCategory() != null) {
             Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());

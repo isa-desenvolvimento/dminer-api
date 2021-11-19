@@ -19,6 +19,6 @@ public class TutorialsRequestDTO {
     private String content;
     private String date; 
     private Integer category;
-    private Integer profile;
+    private Integer permission;
     private String image;
 }

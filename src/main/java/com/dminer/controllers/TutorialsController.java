@@ -76,10 +76,10 @@ public class TutorialsController {
             result.addError(new ObjectError("TutorialsRequestDTO", "Conteúdo precisa estar preenchido."));
         }
 
-        if (dto.getProfile() == null) {
+        if (dto.getPermission() == null) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
         } else {
-            if(!profileRepository.existsById(dto.getProfile())) {
+            if(!profileRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
             }
         }
