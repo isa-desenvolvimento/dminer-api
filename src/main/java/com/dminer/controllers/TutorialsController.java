@@ -12,6 +12,7 @@ import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.dto.TutorialsDTO;
 import com.dminer.entities.Tutorials;
 import com.dminer.repository.CategoryRepository;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.ProfileRepository;
 import com.dminer.repository.TutorialsRepository;
 import com.dminer.repository.TutorialsRepositoryPostgres;
@@ -58,7 +59,7 @@ public class TutorialsController {
     TutorialsRepositoryPostgres tutorialsRepositoryPostgres;
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private PermissionRepository permissionRepository;
     
     @Autowired
     private CategoryRepository categoryRepository;
@@ -77,18 +78,18 @@ public class TutorialsController {
         }
 
         if (dto.getPermission() == null) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
+            result.addError(new ObjectError("TutorialsRequestDTO", "Permissão precisa estar preenchido."));
         } else {
-            if(!profileRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
+            if(!permissionRepository.existsById(dto.getPermission())) {
+                result.addError(new ObjectError("TutorialsRequestDTO", "Permissão não é válida."));
             }
         }
 
         if (dto.getCategory() == null) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Categoria precisa estar preenchido."));
+            result.addError(new ObjectError("TutorialsRequestDTO", "Categoria precisa estar preenchido."));
 		} else {
             if(!categoryRepository.existsById(dto.getCategory())) {
-                result.addError(new ObjectError("BenefitsRequestDTO", "Categoria não é válida."));
+                result.addError(new ObjectError("TutorialsRequestDTO", "Categoria não é válida."));
             }
         }
 
