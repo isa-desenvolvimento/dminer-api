@@ -1,7 +1,5 @@
 package com.dminer.controllers;
 
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,18 +24,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.dminer.converters.PermissionConverter;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserRequestDTO;
-import com.dminer.entities.FileInfo;
 import com.dminer.entities.Permission;
 import com.dminer.entities.User;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
-import com.dminer.services.FileDatabaseService;
-import com.dminer.services.FileStorageService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
@@ -59,14 +54,8 @@ public class UserController {
     private UserConverter userConverter;
 
     @Autowired
-    private FileDatabaseService fileDatabaseService;
+    private PermissionRepository permissionRepository;
 
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    @Autowired
-    private ServerSendEvents serverSendEvents;
-    
     @Autowired
     private Environment env;
 
@@ -77,6 +66,11 @@ public class UserController {
         if (userRequestDTO.getDtBirthday() == null) {
             result.addError(new ObjectError("userRequestDTO", "Data de aniversário precisa estar preenchido."));
 		}
+        if (userRequestDTO.getPermission() != null) {
+            if (permissionRepository.existsById(userRequestDTO.getPermission()) == false) {
+                result.addError(new ObjectError("userRequestDTO", "Permissão não cadastrada."));
+            }
+        }
     }
 
     private void validateDto(UserDTO userDTO, BindingResult result) {
@@ -94,32 +88,16 @@ public class UserController {
             if (!optUser.isPresent()) {
                 log.info("Usuário não encontrado: {}", userDTO);
                 result.addError(new ObjectError("userDTO", "Usuário não encontrado."));
-            }            
+            }
+		}
+        if (userDTO.getPermission() != null) {
+            Optional<Permission> opt = permissionRepository.findById(userDTO.getPermission().getId());
+            if (!opt.isPresent()) {
+                log.info("Permissão não encontrada: {}", userDTO.getPermission().toString());
+                result.addError(new ObjectError("userDTO", "Permissão não encontrada."));
+            }
 		}
     }
-    
-    
-    private FileInfo salvarImagem(MultipartFile multipartFile, String directory, BindingResult result) {
-        try {
-            fileStorageService.createDirectory(Paths.get(directory));
-            fileStorageService.save(multipartFile, Paths.get(directory));
-        } catch (IOException e) {
-            result.addError(new ObjectError("multipartFile", "Falha ao criar diretório para este usuário em: " + directory));
-            log.info("Falha ao criar diretório para este usuário em: {} ", directory);
-        }
-
-        FileInfo info = new FileInfo();
-        info.setUrl(directory + "\\" + multipartFile.getOriginalFilename());
-        Optional<FileInfo> optinfo = fileDatabaseService.persist(info);
-        if (!optinfo.isPresent()) {
-            result.addError(new ObjectError("multipartFile", "Falha ao salvar arquivo para este usuário em: " + directory));
-            log.info("Falha ao salvar arquivo para este usuário em: {} ", directory);
-        }
-
-        if (result.hasErrors()) return null;
-        return optinfo.get();
-    }
-
 
 
     @PostMapping()
@@ -129,8 +107,6 @@ public class UserController {
 
         Response<UserDTO> response = new Response<>();
 
-        // UserRequestDTO userRequestDTO = new UserRequestDTO();
-
         validateRequestDto(userRequestDto, result);
         if (result.hasErrors()) {
             log.info("Erro validando userRequestDTO: {}", userRequestDto);
@@ -138,10 +114,19 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        User user = userService.persist(userConverter.requestDtoToEntity(userRequestDto));
+        User u = userConverter.requestDtoToEntity(userRequestDto);
+
+        User user = userService.persist(u);
         
+        System.out.println("\n\n");
+        System.out.println(userRequestDto.toString());
+        System.out.println(u.toString());
+        System.out.println(user.toString());
+        System.out.println("\n\n");
+
+
         response.setData(userConverter.entityToDto(user));
-        serverSendEvents.streamSseMvc(response.toString());
+        // serverSendEvents.streamSseMvc(response.toString());
         return ResponseEntity.ok().body(response);
     }
 

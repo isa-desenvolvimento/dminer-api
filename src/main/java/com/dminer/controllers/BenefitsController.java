@@ -14,7 +14,8 @@ import com.dminer.entities.Benefits;
 import com.dminer.repository.BenefitsRepository;
 import com.dminer.repository.BenefitsRepositoryPostgres;
 import com.dminer.repository.BenefitsRepositorySqlServer;
-import com.dminer.repository.ProfileRepository;
+import com.dminer.repository.PermissionRepository;
+import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
 
 import org.slf4j.Logger;
@@ -57,7 +58,10 @@ public class BenefitsController {
     private BenefitsRepositoryPostgres benefitsRepositoryPostgres;
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private Environment env;
@@ -73,11 +77,19 @@ public class BenefitsController {
             result.addError(new ObjectError("BenefitsRequestDTO", "Conteúdo precisa estar preenchido."));
         }
 
-        if (dto.getProfile() == null) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Perfil precisa estar preenchido."));
+        if (dto.getPermission() == null) {
+            result.addError(new ObjectError("BenefitsRequestDTO", "Permissão precisa estar preenchido."));
         } else {
-            if(!profileRepository.existsById(dto.getProfile())) {
-                result.addError(new ObjectError("BenefitsRequestDTO", "Perfil não é válida."));
+            if(!permissionRepository.existsById(dto.getPermission())) {
+                result.addError(new ObjectError("BenefitsRequestDTO", "Permissão não é válida."));
+            }
+        }
+        
+        if (dto.getCreator() == null) {
+            result.addError(new ObjectError("BenefitsRequestDTO", "Responsável precisa estar preenchido."));
+        } else {
+            if(!userRepository.existsById(dto.getCreator())) {
+                result.addError(new ObjectError("BenefitsRequestDTO", "Usuário não encontrado."));
             }
         }
 

@@ -15,10 +15,10 @@ import lombok.ToString;
 @ToString
 public class BenefitsRequestDTO { 
     
-    private int creator;
+    private Integer creator;
 	private String title;
     private String content;
     private String date; //@Parameter(example = "01/01/2020")
-    private Integer profile;
+    private Integer permission;
     private String image;
 }

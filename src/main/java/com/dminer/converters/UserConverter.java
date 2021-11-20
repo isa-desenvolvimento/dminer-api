@@ -43,8 +43,7 @@ public class UserConverter {
         user.setLinkedin(dto.getLinkedin());
         if (dto.getPermission() != null) {
             Optional<Permission> p = permissionRepository.findById(dto.getPermission());
-            if (p.isPresent())
-                user.setPermission(p.get());
+            user.setPermission(p.get());
         }
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());

@@ -44,8 +44,8 @@ public class Benefits {
     private User creator;
 
     @OneToOne
-    @JoinColumn(name = "profile_id")
-    private Profile profile;
+    @JoinColumn(name = "permission_id")
+    private Permission permission;
     
     @Column
     private Timestamp date;

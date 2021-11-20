@@ -5,9 +5,9 @@ import java.util.Optional;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.dto.BenefitsRequestDTO;
 import com.dminer.entities.Benefits;
-import com.dminer.entities.Profile;
+import com.dminer.entities.Permission;
 import com.dminer.entities.User;
-import com.dminer.repository.ProfileRepository;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
@@ -21,7 +21,7 @@ public class BenefitsConverter {
     private UserService userService;
 
     @Autowired
-    private ProfileRepository profileRepository;
+    private PermissionRepository permissionRepository;
 
 
     public BenefitsDTO entityToDTO(Benefits entity) {
@@ -32,7 +32,7 @@ public class BenefitsConverter {
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setCreator(entity.getCreator().getId());
         dto.setImage(entity.getImage());         
-        dto.setProfile(new ProfileConverter().entityToDTO(entity.getProfile()));
+        dto.setPermission(new PermissionConverter().entityToDTO(entity.getPermission()));
         return dto;
     }
 
@@ -45,9 +45,9 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        Optional<Profile> findById = profileRepository.findById(dto.getProfile().getId());
+        Optional<Permission> findById = permissionRepository.findById(dto.getPermission().getId());
         if (findById.isPresent())
-            c.setProfile(findById.get());
+            c.setPermission(findById.get());
         c.setImage(dto.getImage());
         return c;
     }
@@ -60,9 +60,9 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        Optional<Profile> findById = profileRepository.findById(dto.getProfile());
+        Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
         if (findById.isPresent())
-            c.setProfile(findById.get());
+            c.setPermission(findById.get());
         c.setImage(dto.getImage());
         return c;
     }

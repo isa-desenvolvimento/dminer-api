@@ -57,7 +57,7 @@ public class User {
 	@Column
 	private String nickname;
 
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name = "permission_id")
 	private Permission permission;
 

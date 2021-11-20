@@ -12,7 +12,6 @@ import com.dminer.converters.PermissionConverter;
 import com.dminer.dto.DocumentRequestDTO;
 import com.dminer.dto.DocumentDTO;
 import com.dminer.entities.Document;
-import com.dminer.entities.Permission;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.DocumentRepository;
 import com.dminer.repository.PermissionRepository;

@@ -13,7 +13,6 @@ import com.dminer.dto.TutorialsDTO;
 import com.dminer.entities.Tutorials;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.PermissionRepository;
-import com.dminer.repository.ProfileRepository;
 import com.dminer.repository.TutorialsRepository;
 import com.dminer.repository.TutorialsRepositoryPostgres;
 import com.dminer.repository.TutorialsRepositorySqlServer;

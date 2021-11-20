@@ -7,18 +7,11 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.dminer.converters.FullCalendarConverter;
-import com.dminer.converters.NotificationConverter;
-import com.dminer.dto.FullCalendarDTO;
 import com.dminer.dto.FullCalendarDTO;
 import com.dminer.dto.FullCalendarRequestDTO;
-import com.dminer.dto.FullCalendarRequestDTO;
 import com.dminer.entities.FullCalendar;
-import com.dminer.entities.FullCalendar;
-import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.FullCalendarService;
-import com.dminer.services.NotificationService;
-import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +44,6 @@ public class FullCalendarController {
 
     @Autowired 
     private FullCalendarConverter fullCalendarConverter;
-
-    @Autowired
-    private UserService userService;
 
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
