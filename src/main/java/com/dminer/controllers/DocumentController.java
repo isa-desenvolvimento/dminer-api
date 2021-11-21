@@ -6,9 +6,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
-import com.dminer.converters.CategoryConverter;
 import com.dminer.converters.DocumentConverter;
-import com.dminer.converters.PermissionConverter;
 import com.dminer.dto.DocumentRequestDTO;
 import com.dminer.dto.DocumentDTO;
 import com.dminer.entities.Document;
@@ -96,7 +94,7 @@ public class DocumentController {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
 		} else {
-            if(!categoryRepository.existsById(dto.getCategory().getId())) {
+            if(!categoryRepository.existsById(dto.getCategory())) {
                 result.addError(new ObjectError("dto", "Categoria não é válida."));
             }
         }
@@ -104,7 +102,7 @@ public class DocumentController {
         if (dto.getPermission() == null) {
             result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
 		} else {
-            if (! permissionRepository.existsById(dto.getPermission().getId())) {
+            if (! permissionRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("dto", "Permissão não é válida."));
             }
         }
@@ -192,15 +190,7 @@ public class DocumentController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Document> doc = documentRepository.findById(dto.getId());
-
-        doc.get().setTitle(dto.getTitle());
-        doc.get().setContentLink(dto.getContentLink());
-        doc.get().setId(dto.getId());        
-        doc.get().setPermission(new PermissionConverter().dtoToEntity(dto.getPermission()));
-        doc.get().setCategory(new CategoryConverter().dtoToEntity(dto.getCategory()));
-
-        Document doc2 = documentRepository.save(doc.get());
+        Document doc2 = documentRepository.save(documentConverter.dtoToEntity(dto));
         response.setData(documentConverter.entityToDto(doc2));
         return ResponseEntity.ok().body(response);
     }

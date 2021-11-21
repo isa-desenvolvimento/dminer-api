@@ -91,7 +91,7 @@ public class UserController {
             }
 		}
         if (userDTO.getPermission() != null) {
-            Optional<Permission> opt = permissionRepository.findById(userDTO.getPermission().getId());
+            Optional<Permission> opt = permissionRepository.findById(userDTO.getPermission());
             if (!opt.isPresent()) {
                 log.info("Permissão não encontrada: {}", userDTO.getPermission().toString());
                 result.addError(new ObjectError("userDTO", "Permissão não encontrada."));
@@ -115,16 +115,7 @@ public class UserController {
         }
 
         User u = userConverter.requestDtoToEntity(userRequestDto);
-
         User user = userService.persist(u);
-        
-        System.out.println("\n\n");
-        System.out.println(userRequestDto.toString());
-        System.out.println(u.toString());
-        System.out.println(user.toString());
-        System.out.println("\n\n");
-
-
         response.setData(userConverter.entityToDto(user));
         // serverSendEvents.streamSseMvc(response.toString());
         return ResponseEntity.ok().body(response);
@@ -145,19 +136,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> optUser = userService.findById(userDto.getId());
-        optUser.get().setName(userDto.getName());
-        optUser.get().setDtBirthday(UtilDataHora.toTimestamp(userDto.getDtBirthday()));
-        optUser.get().setAvatar(userDto.getAvatar());
-        optUser.get().setBanner(userDto.getBanner());
-        optUser.get().setEmail(userDto.getEmail());
-        optUser.get().setArea(userDto.getArea());
-        optUser.get().setLinkedin(userDto.getLinkedin());
-        optUser.get().setNickname(userDto.getNickname());
-        if (userDto.getPermission() != null)
-            optUser.get().setPermission(new PermissionConverter().dtoToEntity(userDto.getPermission()));
-
-        User user = userService.persist(optUser.get());
+        User user = userService.persist(userConverter.dtoToEntity(userDto));
         response.setData(userConverter.entityToDto(user));
         return ResponseEntity.ok().body(response);
     }

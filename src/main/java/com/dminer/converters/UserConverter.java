@@ -27,7 +27,8 @@ public class UserConverter {
         user.setEmail(dto.getEmail());
         user.setLinkedin(dto.getLinkedin());
         if (dto.getPermission() != null) {
-            user.setPermission(new PermissionConverter().dtoToEntity(dto.getPermission()));
+            Optional<Permission> p = permissionRepository.findById(dto.getPermission());
+            user.setPermission(p.get());
         }
         user.setDtBirthday(UtilDataHora.toTimestamp(dto.getDtBirthday()));
         user.setAvatar(dto.getAvatar());
@@ -65,7 +66,7 @@ public class UserConverter {
         dto.setEmail(user.getEmail());
         dto.setLinkedin(user.getLinkedin());        
         if (user.getPermission() != null)
-            dto.setPermission(new PermissionConverter().entityToDTO(user.getPermission()));
+            dto.setPermission(user.getPermission().getId());
         return dto;
     }
    

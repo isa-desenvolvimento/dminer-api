@@ -27,10 +27,10 @@ public class DocumentConverter {
     public Document dtoToEntity(DocumentDTO dto) {
         Document doc = new Document();
         doc.setId(dto.getId());
-        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
+        Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
         if (findById2.isPresent())
             doc.setCategory(findById2.get());
-        Optional<Permission> findById = permissionRepository.findById(dto.getPermission().getId());
+        Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
         if (findById.isPresent())
             doc.setPermission(findById.get());
         doc.setContentLink(dto.getContentLink() != null ? dto.getContentLink() : null);
@@ -54,8 +54,8 @@ public class DocumentConverter {
     public DocumentDTO entityToDto(Document doc) {
         DocumentDTO dto = new DocumentDTO();
         dto.setId(doc.getId());
-        dto.setCategory(new CategoryConverter().entityToDTO(doc.getCategory()));
-        dto.setPermission(new PermissionConverter().entityToDTO(doc.getPermission()));
+        dto.setCategory(doc.getCategory().getId());
+        dto.setPermission(doc.getPermission().getId());
         dto.setContentLink(doc.getContentLink() != null ? doc.getContentLink() : null);
         dto.setTitle(doc.getTitle());
         return dto;
