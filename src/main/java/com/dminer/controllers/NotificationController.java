@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,6 +70,30 @@ public class NotificationController {
     }
     
 
+    private void validateDto(NotificationDTO dto, BindingResult result) {
+        if (dto.getId() == null) {
+            result.addError(new ObjectError("dto", "Id da notificação precisa estar preenchido."));
+		} else {
+            Optional<Notification> findById = notificationService.findById(dto.getIdUser());
+            if (!findById.isPresent()) {
+                result.addError(new ObjectError("dto", "Notificação não encontrada."));
+            }
+        }
+        
+        if (dto.getIdUser() == null) {
+            result.addError(new ObjectError("dto", "Id do usuário precisa estar preenchido."));
+		} else {
+            Optional<User> findById = userService.findById(dto.getIdUser());
+            if (!findById.isPresent()) {
+                result.addError(new ObjectError("dto", "Usuário não encontrado."));
+            }
+        }
+
+        if (dto.getNotification() == null || dto.getNotification().isEmpty()) {
+            result.addError(new ObjectError("dto", "Descrição da notificação precisa estar preenchido."));			
+		}
+    }
+
     @PostMapping
     public ResponseEntity<Response<NotificationDTO>> create(@Valid @RequestBody NotificationRequestDTO notificationRequest, BindingResult result) {
     
@@ -89,6 +114,26 @@ public class NotificationController {
     }
 
 
+    @PutMapping()
+    public ResponseEntity<Response<NotificationDTO>> put( @Valid @RequestBody NotificationDTO dto, BindingResult result) {
+
+        log.info("Alterando um notification {}", dto);
+
+        Response<NotificationDTO> response = new Response<>();
+
+        validateDto(dto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando NotificationDTO: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Notification notification = notificationService.persist(notificationConverter.dtoToEntity(dto));
+        response.setData(notificationConverter.entityToDto(notification));
+        return ResponseEntity.ok().body(response);
+    }
+
+    
     @GetMapping(value = "/find/{id}")
     public ResponseEntity<Response<NotificationDTO>> get(@PathVariable("id") Integer id) {
         log.info("Buscando notificação {}", id);
