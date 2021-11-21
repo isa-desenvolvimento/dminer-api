@@ -112,7 +112,7 @@ public class TutorialsController {
         if (dto.getId() == null) {
             result.addError(new ObjectError("dto", "Id da permissão precisa estar preenchido."));
         } else {
-            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+            if(!permissionRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("dto", "Id da permissão não é válida."));
             }
         }
@@ -120,7 +120,7 @@ public class TutorialsController {
         if (dto.getPermission() == null) {
             result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
         } else {
-            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+            if(!permissionRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("dto", "Permissão não é válida."));
             }
         }
@@ -128,7 +128,7 @@ public class TutorialsController {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
 		} else {
-            if(!categoryRepository.existsById(dto.getCategory().getId())) {
+            if(!categoryRepository.existsById(dto.getCategory())) {
                 result.addError(new ObjectError("dto", "Categoria não é válida."));
             }
         }
@@ -165,16 +165,8 @@ public class TutorialsController {
         Response<TutorialsDTO> response = new Response<>();
 
         validateDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Tutorials> opt = tutorialsRepository.findById(dto.getId());
-        opt.get().setTitle(dto.getTitle());
-
-        Tutorials benefits = tutorialsRepository.save(opt.get());
+        
+        Tutorials benefits = tutorialsRepository.save(tutorialsConverter.dtoToEntity(dto));
         response.setData(tutorialsConverter.entityToDTO(benefits));
         return ResponseEntity.ok().body(response);
     }

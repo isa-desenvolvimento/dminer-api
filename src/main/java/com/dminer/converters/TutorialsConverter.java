@@ -9,7 +9,6 @@ import com.dminer.entities.Category;
 import com.dminer.entities.Permission;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.PermissionRepository;
-import com.dminer.repository.ProfileRepository;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +32,9 @@ public class TutorialsConverter {
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setImage(entity.getImage());
         if (entity.getPermission() != null)
-            dto.setPermission(new PermissionConverter().entityToDTO(entity.getPermission()));
+            dto.setPermission(entity.getPermission().getId());
         if (entity.getCategory() != null)
-            dto.setCategory(new CategoryConverter().entityToDTO(entity.getCategory()));
-        
+            dto.setCategory(entity.getPermission().getId());        
         return dto;
     }
 
@@ -47,12 +45,12 @@ public class TutorialsConverter {
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
         if (dto.getPermission() != null) {
-            Optional<Permission> findById = permissionRepository.findById(dto.getPermission().getId());
+            Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
             if (findById.isPresent())
                 c.setPermission(findById.get());
         }
         if (dto.getCategory() != null) {
-            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory().getId());
+            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
             if (findById2.isPresent())
                 c.setCategory(findById2.get());
         }

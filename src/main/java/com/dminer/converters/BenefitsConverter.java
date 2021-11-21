@@ -32,7 +32,7 @@ public class BenefitsConverter {
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setCreator(entity.getCreator().getId());
         dto.setImage(entity.getImage());         
-        dto.setPermission(new PermissionConverter().entityToDTO(entity.getPermission()));
+        dto.setPermission(entity.getPermission().getId());
         return dto;
     }
 
@@ -45,7 +45,7 @@ public class BenefitsConverter {
         Optional<User> user = userService.findById(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
-        Optional<Permission> findById = permissionRepository.findById(dto.getPermission().getId());
+        Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
         if (findById.isPresent())
             c.setPermission(findById.get());
         c.setImage(dto.getImage());

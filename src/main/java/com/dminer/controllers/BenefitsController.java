@@ -121,7 +121,7 @@ public class BenefitsController {
         if (dto.getPermission() == null) {
             result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
         } else {
-            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+            if(!permissionRepository.existsById(dto.getPermission())) {
                 result.addError(new ObjectError("dto", "Permissão não é válida."));
             }
         }
@@ -173,20 +173,11 @@ public class BenefitsController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Benefits> opt = benefitsRepository.findById(dto.getId());
-        if (! opt.isPresent()) {
-            log.info("Beneficio não encontrado: {}", dto);
-            response.getErrors().add("Beneficio não encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        opt.get().setTitle(dto.getTitle());
-
-        Benefits benefits = benefitsRepository.save(opt.get());
+        Benefits benefits = benefitsRepository.save(benefitsConverter.dtoToEntity(dto));
         response.setData(benefitsConverter.entityToDTO(benefits));
         return ResponseEntity.ok().body(response);
     }
-
+    
     
     @GetMapping(value = "/find/{id}")
     public ResponseEntity<Response<BenefitsDTO>> get(@PathVariable("id") Integer id) {

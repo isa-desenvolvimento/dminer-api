@@ -19,7 +19,7 @@ public class TutorialsDTO {
 	private String title;
     private String content;
     private String date; 
-    private CategoryDTO category;
-    private PermissionDTO permission;
+    private Integer category;
+    private Integer permission;
     private String image;
 }
