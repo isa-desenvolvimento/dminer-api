@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -73,6 +74,36 @@ public class NoticeController {
 
         if (avisosRequestDTO.getDate()== null || avisosRequestDTO.getDate().isEmpty()) {
             result.addError(new ObjectError("NoticeRequestDTO", "Data do aviso precisa estar preenchido."));			
+		}       
+    }
+
+
+    private void validateDto(NoticeDTO dto, BindingResult result) {
+        if (dto.getUsers() == null) {
+            result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
+		} else {
+            dto.getUsers().forEach(id -> {
+                Optional<User> findById = userService.findById(id);
+                if (!findById.isPresent()) {
+                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+id+" não encontrado."));
+                }
+            });
+        }
+
+        if (dto.getPriority() == null) {
+            result.addError(new ObjectError("NoticeRequestDTO", "Prioridade do aviso precisa estar preenchido."));			
+		}
+
+        if (dto.getCreator() == null || dto.getCreator().isEmpty()) {
+            result.addError(new ObjectError("NoticeRequestDTO", "Criador do aviso precisa estar preenchido."));			
+		}
+
+        if (dto.getDate()== null || dto.getDate().isEmpty()) {
+            result.addError(new ObjectError("NoticeRequestDTO", "Data do aviso precisa estar preenchido."));			
+		}
+
+        if (dto.getId() == null) {
+            result.addError(new ObjectError("NoticeRequestDTO", "Id precisa estar preenchido."));
 		}
     }
     
@@ -85,7 +116,7 @@ public class NoticeController {
 		Response<NoticeDTO> response = new Response<>();
         validateRequestDto(avisosRequest, result);
         if (result.hasErrors()) {
-            log.info("Erro validando avisosRequest: {}", avisosRequest);
+            log.info("Erro validando NoticeDTO: {}", avisosRequest);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
@@ -93,6 +124,26 @@ public class NoticeController {
         Notice events = avisosService.persist(avisosConverter.requestDtoToEntity(avisosRequest));
         response.setData(avisosConverter.entityToDTO(events));
 
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping()
+    public ResponseEntity<Response<NoticeDTO>> put( @Valid @RequestBody NoticeDTO dto, BindingResult result) {
+
+        log.info("Alterando um notice {}", dto);
+
+        Response<NoticeDTO> response = new Response<>();
+
+        validateDto(dto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando NoticeDTO: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Notice notice = avisosService.persist(avisosConverter.dtoToEntity(dto));
+        response.setData(avisosConverter.entityToDTO(notice));
         return ResponseEntity.ok().body(response);
     }
 
