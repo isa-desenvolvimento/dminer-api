@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -98,6 +99,45 @@ public class TutorialsController {
        
     }
     
+
+    private void validateDto(TutorialsDTO dto, BindingResult result) {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
+            result.addError(new ObjectError("dto", "Title precisa estar preenchido."));
+        }
+
+        if (dto.getContent() == null || dto.getContent().isEmpty()) {
+            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
+        }
+
+        if (dto.getId() == null) {
+            result.addError(new ObjectError("dto", "Id da permissão precisa estar preenchido."));
+        } else {
+            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+                result.addError(new ObjectError("dto", "Id da permissão não é válida."));
+            }
+        }
+
+        if (dto.getPermission() == null) {
+            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
+        } else {
+            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+                result.addError(new ObjectError("dto", "Permissão não é válida."));
+            }
+        }
+
+        if (dto.getCategory() == null) {
+            result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
+		} else {
+            if(!categoryRepository.existsById(dto.getCategory().getId())) {
+                result.addError(new ObjectError("dto", "Categoria não é válida."));
+            }
+        }
+
+        if (dto.getDate() == null || dto.getTitle().isEmpty()) {
+            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
+        }
+       
+    }
    
 
     @PostMapping
@@ -117,7 +157,29 @@ public class TutorialsController {
         return ResponseEntity.ok().body(response);
     }
 
+    @PutMapping()
+    public ResponseEntity<Response<TutorialsDTO>> put( @Valid @RequestBody TutorialsDTO dto, BindingResult result) {
 
+        log.info("Alterando um categoria {}", dto);
+
+        Response<TutorialsDTO> response = new Response<>();
+
+        validateDto(dto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando dto: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Tutorials> opt = tutorialsRepository.findById(dto.getId());
+        opt.get().setTitle(dto.getTitle());
+
+        Tutorials benefits = tutorialsRepository.save(opt.get());
+        response.setData(tutorialsConverter.entityToDTO(benefits));
+        return ResponseEntity.ok().body(response);
+    }
+
+    
     @GetMapping(value = "/find/{id}")
     public ResponseEntity<Response<TutorialsDTO>> get(@PathVariable("id") Integer id) {
         

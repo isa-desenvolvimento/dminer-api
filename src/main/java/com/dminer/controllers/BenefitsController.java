@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -100,6 +101,45 @@ public class BenefitsController {
     }
     
    
+    private void validateDto(BenefitsDTO dto, BindingResult result) {
+        if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
+            result.addError(new ObjectError("dto", "Title precisa estar preenchido."));
+        }
+
+        if (dto.getContent() == null || dto.getContent().isEmpty()) {
+            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
+        }
+
+        if (dto.getId() == null) {
+            result.addError(new ObjectError("dto", "Id do benefício precisa estar preenchido."));
+        } else {
+            if(!benefitsRepository.existsById(dto.getId())) {
+                result.addError(new ObjectError("dto", "Id do benefício não é válida."));
+            }
+        }
+
+        if (dto.getPermission() == null) {
+            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
+        } else {
+            if(!permissionRepository.existsById(dto.getPermission().getId())) {
+                result.addError(new ObjectError("dto", "Permissão não é válida."));
+            }
+        }
+        
+        if (dto.getCreator() == null) {
+            result.addError(new ObjectError("dto", "Responsável precisa estar preenchido."));
+        } else {
+            if(!userRepository.existsById(dto.getCreator())) {
+                result.addError(new ObjectError("dto", "Usuário não encontrado."));
+            }
+        }
+
+        if (dto.getDate() == null || dto.getTitle().isEmpty()) {
+            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
+        }
+       
+    }
+
 
     @PostMapping
     public ResponseEntity<Response<BenefitsDTO>> create(@Valid @RequestBody BenefitsRequestDTO dto, BindingResult result) {
@@ -119,6 +159,35 @@ public class BenefitsController {
     }
 
 
+    @PutMapping()
+    public ResponseEntity<Response<BenefitsDTO>> put( @Valid @RequestBody BenefitsDTO dto, BindingResult result) {
+
+        log.info("Alterando um categoria {}", dto);
+
+        Response<BenefitsDTO> response = new Response<>();
+
+        validateDto(dto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando dto: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Benefits> opt = benefitsRepository.findById(dto.getId());
+        if (! opt.isPresent()) {
+            log.info("Beneficio não encontrado: {}", dto);
+            response.getErrors().add("Beneficio não encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        opt.get().setTitle(dto.getTitle());
+
+        Benefits benefits = benefitsRepository.save(opt.get());
+        response.setData(benefitsConverter.entityToDTO(benefits));
+        return ResponseEntity.ok().body(response);
+    }
+
+    
     @GetMapping(value = "/find/{id}")
     public ResponseEntity<Response<BenefitsDTO>> get(@PathVariable("id") Integer id) {
         

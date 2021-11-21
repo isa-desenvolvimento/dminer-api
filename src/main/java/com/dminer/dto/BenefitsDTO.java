@@ -15,8 +15,8 @@ import lombok.ToString;
 @ToString
 public class BenefitsDTO { 
     
-    private int id;
-    private int creator;
+    private Integer id;
+    private Integer creator;
 	private String title;
     private String content;
     private String date; 

@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class TutorialsDTO { 
     
-    private int id;
+    private Integer id;
 	private String title;
     private String content;
     private String date; 
