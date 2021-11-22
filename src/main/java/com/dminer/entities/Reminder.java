@@ -1,6 +1,8 @@
 package com.dminer.entities;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -45,4 +47,18 @@ public class Reminder {
     // flag pra informar se o lembrete ainda está na data vigente
     @Column
     private boolean status; 
+
+
+    
+    public String getCron() {
+        String dateFormat = "ss mm HH dd MM ? yyyy";
+        Date date = new Date(dataHora.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formatTimeStr = null;
+        if (date != null) {  
+            formatTimeStr = sdf.format(date);  
+        }  
+        return formatTimeStr;
+    }  
+    
 }

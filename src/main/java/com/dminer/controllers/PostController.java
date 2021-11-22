@@ -8,16 +8,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -85,7 +89,7 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		
-
+		
 		Post post = new Post();
 		if (postRequestDTO.getContent() != null) 
 			post.setContent(postRequestDTO.getContent());
@@ -183,6 +187,26 @@ public class PostController {
 		}
 		return ResponseEntity.ok().body(response);
 	}
+
+
+	// @PutMapping()
+    // public ResponseEntity<Response<PostDTO>> put( @Valid @RequestBody PostDTO dto, BindingResult result) {
+
+        // log.info("Alterando um post {}", dto);
+
+        // Response<PostDTO> response = new Response<>();
+
+        // validateDto(dto, result);
+        // if (result.hasErrors()) {
+        //     log.info("Erro validando NotificationDTO: {}", dto);
+        //     result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+        //     return ResponseEntity.badRequest().body(response);
+        // }
+
+        // Notification notification = notificationService.persist(notificationConverter.dtoToEntity(dto));
+        // response.setData(notificationConverter.entityToDto(notification));
+        // return ResponseEntity.ok().body(response);
+    // }
 
 
 	@PostMapping(value = "/drop-storage")

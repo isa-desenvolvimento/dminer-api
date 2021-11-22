@@ -43,9 +43,6 @@ public class ServerSendEvents {
     
     private static final Logger log = LoggerFactory.getLogger(ServerSendEvents.class);
 
-    @Autowired
-    private UserService userService;
-
     private final EmitterService emitterService;
     private final NotificationService notificationService;
 

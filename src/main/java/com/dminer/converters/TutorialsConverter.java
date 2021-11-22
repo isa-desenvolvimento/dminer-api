@@ -34,7 +34,7 @@ public class TutorialsConverter {
         if (entity.getPermission() != null)
             dto.setPermission(entity.getPermission().getId());
         if (entity.getCategory() != null)
-            dto.setCategory(entity.getPermission().getId());        
+            dto.setCategory(entity.getCategory().getId());        
         return dto;
     }
 

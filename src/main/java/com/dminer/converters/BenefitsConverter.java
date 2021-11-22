@@ -31,8 +31,9 @@ public class BenefitsConverter {
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setCreator(entity.getCreator().getId());
-        dto.setImage(entity.getImage());         
-        dto.setPermission(entity.getPermission().getId());
+        dto.setImage(entity.getImage());
+        if (entity.getPermission() != null)
+            dto.setPermission(entity.getPermission().getId());
         return dto;
     }
 
