@@ -12,8 +12,8 @@ import com.dminer.dto.BenefitsRequestDTO;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.repository.BenefitsRepository;
-import com.dminer.repository.BenefitsRepositoryPostgres;
-import com.dminer.repository.BenefitsRepositorySqlServer;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
@@ -53,16 +53,16 @@ public class BenefitsController {
     private BenefitsRepository benefitsRepository;
 
     @Autowired
-    private BenefitsRepositorySqlServer benefitsRepositorySqlServer;
-
-    @Autowired
-    private BenefitsRepositoryPostgres benefitsRepositoryPostgres;
-
-    @Autowired
     private PermissionRepository permissionRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GenericRepositoryPostgres genericRepositoryPostgres;
+
+    @Autowired
+    private GenericRepositorySqlServer genericRepositorySqlServer;
 
     @Autowired
     private Environment env;
@@ -210,9 +210,9 @@ public class BenefitsController {
         List<Benefits> search2 = new ArrayList<>();
 
         if (isProd()) {
-            search2 = benefitsRepositoryPostgres.search(search);            
+            search2 = genericRepositoryPostgres.searchBenefits(search);            
         } else {
-            search2 = benefitsRepositorySqlServer.search(search);
+            search2 = genericRepositorySqlServer.searchBenefits(search);
         }
 
         if (!search2.isEmpty()) {

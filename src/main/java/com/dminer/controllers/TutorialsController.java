@@ -12,10 +12,10 @@ import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.dto.TutorialsDTO;
 import com.dminer.entities.Tutorials;
 import com.dminer.repository.CategoryRepository;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.TutorialsRepository;
-import com.dminer.repository.TutorialsRepositoryPostgres;
-import com.dminer.repository.TutorialsRepositorySqlServer;
 import com.dminer.response.Response;
 
 import org.slf4j.Logger;
@@ -53,10 +53,10 @@ public class TutorialsController {
     private TutorialsRepository tutorialsRepository;
 
     @Autowired
-    TutorialsRepositorySqlServer tutorialsRepositorySqlServer;
+    GenericRepositorySqlServer tutorialsRepositorySqlServer;
 
     @Autowired
-    TutorialsRepositoryPostgres tutorialsRepositoryPostgres;
+    GenericRepositoryPostgres tutorialsRepositoryPostgres;
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -203,9 +203,9 @@ public class TutorialsController {
         List<Tutorials> search2 = new ArrayList<>();
 
         if (isProd()) {
-            search2 = tutorialsRepositoryPostgres.search(search);            
+            search2 = tutorialsRepositoryPostgres.searchTutorial(search);            
         } else {
-            search2 = tutorialsRepositorySqlServer.search(search);
+            search2 = tutorialsRepositorySqlServer.searchTutorials(search);
         }
 
         if (!search2.isEmpty()) {

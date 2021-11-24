@@ -5,13 +5,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Reminder;
+import com.dminer.entities.User;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.response.Response;
 import com.dminer.services.EventsService;
 import com.dminer.services.NotificationService;
 import com.dminer.services.ReminderService;
+import com.dminer.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -39,6 +44,15 @@ public class SearchController {
 
     @Autowired
     private EventsService eventsService;
+
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private GenericRepositoryPostgres genericRepositoryPostgres;
+
+    @Autowired
+    private GenericRepositorySqlServer genericRepositorySqlServer;
 
     @Autowired
     private Environment env;
@@ -71,10 +85,25 @@ public class SearchController {
                     dados.add(u);
                 });
             }
+
+            List<UserDTO> searchUsers = genericRepositoryPostgres.searchUsers(keyword);
+            if (! searchUsers.isEmpty()) {
+                searchUsers.forEach(u -> {
+                    dados.add(u);
+                });
+            }
+
         } else {
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
             if (! searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
+                    dados.add(u);
+                });
+            }
+
+            List<UserDTO> searchUsers = genericRepositorySqlServer.searchUsers(keyword);
+            if (! searchUsers.isEmpty()) {
+                searchUsers.forEach(u -> {
                     dados.add(u);
                 });
             }

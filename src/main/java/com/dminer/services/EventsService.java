@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.dminer.entities.Events;
 import com.dminer.repository.EventsTimeRepository;
-import com.dminer.repository.EventsTimeRepositoryPostgres;
-import com.dminer.repository.EventsTimeRepositorySqlServer;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.services.interfaces.IEventsService;
 
 import org.slf4j.Logger;
@@ -21,10 +21,10 @@ public class EventsService implements IEventsService {
     private EventsTimeRepository eventsTimeRepository;
 
     @Autowired
-    private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServe;
+    private GenericRepositorySqlServer eventsTimeRepositorySqlServe;
     
     @Autowired
-    private EventsTimeRepositoryPostgres eventsTimeRepositoryPostgres;
+    private GenericRepositoryPostgres eventsTimeRepositoryPostgres;
     
 
     private static final Logger log = LoggerFactory.getLogger(EventsService.class);
@@ -110,14 +110,14 @@ public class EventsService implements IEventsService {
 
     public Optional<List<Events>> search(String keyword) {
         if (keyword != null) {
-            return Optional.ofNullable(eventsTimeRepositorySqlServe.search(keyword));
+            return Optional.ofNullable(eventsTimeRepositorySqlServe.searchEvents(keyword));
         }
         return Optional.ofNullable(eventsTimeRepository.findAll());
     }
 
     public Optional<List<Events>> searchPostgres(String keyword) {
         if (keyword != null) {
-            return Optional.ofNullable(eventsTimeRepositoryPostgres.search(keyword));
+            return Optional.ofNullable(eventsTimeRepositoryPostgres.searchEvents(keyword));
         }
         return Optional.ofNullable(eventsTimeRepository.findAll());
     }

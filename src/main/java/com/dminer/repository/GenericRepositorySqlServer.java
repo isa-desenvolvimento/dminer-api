@@ -1,10 +1,17 @@
 package com.dminer.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.dminer.dto.UserDTO;
+import com.dminer.entities.Benefits;
+import com.dminer.entities.Category;
 import com.dminer.entities.Events;
+import com.dminer.entities.Permission;
+import com.dminer.entities.Tutorials;
+import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
+import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
 import org.slf4j.Logger;
@@ -14,21 +21,34 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class EventsTimeRepositoryPostgres {
+public class GenericRepositorySqlServer {
     
     @Autowired
     private JdbcOperations jdbcOperations;
 
-    private static final Logger log = LoggerFactory.getLogger(EventsTimeRepositoryPostgres.class);
-
+    @Autowired
+    private UserRepository userService;
     
+    @Autowired
+    private ProfileRepository profileRepository;
+    
+    @Autowired
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+
+    private static final Logger log = LoggerFactory.getLogger(GenericRepositorySqlServer.class);
+
+
     public List<Events> fetchEventsByYear (String data1, String data2) {
         String query = 
         "SELECT * " + 
         "FROM EVENTS E "+
-        "WHERE " +
-            "E.START_DATE >= TO_TIMESTAMP('"+data1+"', 'YYYY-MM-DD HH:MI:SS') AND E.START_DATE <= TO_TIMESTAMP('"+data2+"', 'YYYY-MM-DD HH:MI:SS') OR " +
-            "E.END_DATE >= TO_TIMESTAMP('"+data1+"', 'YYYY-MM-DD HH:MI:SS') AND E.END_DATE <= TO_TIMESTAMP('"+data2+"', 'YYYY-MM-DD HH:MI:SS')";
+        "WHERE "+
+            "E.START_DATE >= CONVERT(VARCHAR, '"+data1+"', 20) AND " +
+            "E.END_DATE <= CONVERT(VARCHAR, '"+data2+"', 20) ";
         
         log.info("fetchEventsByYear = {}", query);
 
@@ -52,15 +72,16 @@ public class EventsTimeRepositoryPostgres {
             return e;
         });
     }
-    
+
+
 
     public List<Events> fetchEventsByMonth (String data1, String data2) {
         String query = 
         "SELECT * " + 
         "FROM EVENTS E "+
         "WHERE "+
-            "E.START_DATE >= TO_TIMESTAMP('"+data1+"', 'YYYY-MM-DD HH:MI:SS') AND E.START_DATE <= TO_TIMESTAMP('"+data2+"', 'YYYY-MM-DD HH:MI:SS') OR " +
-            "E.END_DATE >= TO_TIMESTAMP('"+data1+"', 'YYYY-MM-DD HH:MI:SS') AND E.END_DATE <= TO_TIMESTAMP('"+data2+"', 'YYYY-MM-DD HH:MI:SS')";
+            "E.START_DATE >= CONVERT(VARCHAR, '"+data1+"', 20) AND E.START_DATE <= CONVERT(VARCHAR, '"+data2+"', 20) OR " +
+            "E.END_DATE >= CONVERT(VARCHAR, '"+data1+"', 20) AND E.END_DATE <= CONVERT(VARCHAR, '"+data2+"', 20)";
 
         log.info("fetchEventsByMonth = {}", query);
 
@@ -86,13 +107,12 @@ public class EventsTimeRepositoryPostgres {
     }
 
 
-    public List<Events> fetchEventsByDate(String data1, String data2) {
+    public List<Events> fetchEventsByDate (String data1, String data2) {
         String query = 
-        "SELECT * " +
-        "FROM EVENTS EV " + 
-        "WHERE " +
-            "EV.START_DATE BETWEEN TO_TIMESTAMP('" + data1 + "', 'YYYY-MM-DD HH:MI:SS') " +
-            "AND TO_TIMESTAMP('" + data2 + "', 'YYYY-MM-DD HH:MI:SS');";
+        "SELECT * " + 
+        "FROM EVENTS E "+
+        "WHERE "+
+            "E.START_DATE BETWEEN CONVERT(VARCHAR, '"+data1+"', 20) AND CONVERT(VARCHAR, '"+data2+"', 20)";
 
         log.info("fetchEventsByDate = {}", query);
 
@@ -115,17 +135,16 @@ public class EventsTimeRepositoryPostgres {
             );
             return e;
         });
+    }
 
-    };
-
-
+    
     public List<Events> fetchEventsInBetween(String data1, String data2) {
         String query = 
         "SELECT * " + 
         "FROM EVENTS E "+
         "WHERE "+
-            "E.START_DATE >= TO_TIMESTAMP('"+data1+"', 'YYYY-MM-DD HH:MI:SS') AND E.START_DATE <= TO_TIMESTAMP('"+data2+"', 'YYYY-MM-DD HH:MI:SS')";
-        
+            "E.START_DATE >= CONVERT(VARCHAR, '"+data1+"', 20) AND E.START_DATE <= CONVERT(VARCHAR, '"+data2+"', 20)";
+
         log.info("fetchEventsInBetween = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
@@ -149,16 +168,18 @@ public class EventsTimeRepositoryPostgres {
         });
     }
 
-    public List<Events> search(String keyword) {
+
+
+    public List<Events> searchEvents(String keyword) {
         String query =
         "SELECT * " +
         "FROM EVENTS e " +
-        "WHERE lower(CONCAT( " +
+        "WHERE CONCAT( " +
            "e.title, ' ', e.location, ' ', e.description, ' ', " +
            "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
-           "to_char(e.start_date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "to_char(e.end_date , 'yyyy-mm-dd hh:mm:ss'))) " +
-           "LIKE lower('%" +keyword+ "%')";
+           "' ', convert(varchar(100), e.start_date, 120), " +
+           "' ', convert(varchar(100), e.end_date, 120)) " +
+           "LIKE '%" +keyword+ "%'";
 
         log.info("search = {}", query);
 
@@ -189,13 +210,11 @@ public class EventsTimeRepositoryPostgres {
 
         String query = 
         "SELECT * " + 
-        "FROM USERS U " +
-        "WHERE " +
-        "   EXTRACT( " +
-        "       month from u.dt_birthday" +
-        ") = EXTRACT ( MONTH FROM TIMESTAMP '" + UtilDataHora.currentFirstDayFormat() + "')";
-        
-        
+        "FROM USERS U "+
+        "WHERE "+
+            "(select MONTH(u.dt_birthday)) BETWEEN (select MONTH (cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime))) and (select MONTH (cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)))" ;
+
+        //"U.DT_BIRTHDAY BETWEEN cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime) "+ " AND " + "cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)" ;
 
         log.info("getBirthDaysOfMonth = {}", query);
 
@@ -210,4 +229,92 @@ public class EventsTimeRepositoryPostgres {
         });
     }
 
+
+    public List<Benefits> searchBenefits(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM BENEFITS e " +
+        "WHERE CONCAT( " +
+           "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
+           "' ', convert(varchar(100), e.date, 120)) " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Benefits e = new Benefits();
+            e.setId(rs.getInt("ID"));
+            e.setTitle(rs.getString("TITLE"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setDate(rs.getTimestamp("DATE"));
+            Optional<User> findById = userService.findById(rs.getInt("CREATOR"));
+            if (findById.isPresent())
+                e.setCreator(findById.get());
+            
+            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
+            if (p.isPresent())
+                e.setPermission(p.get());            
+            e.setImage(rs.getString("IMAGE"));
+            return e;
+        });
+
+    }
+    
+
+    public List<Tutorials> searchTutorials(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM BENEFITS e " +
+        "WHERE CONCAT( " +
+           "e.profile, ' ', e.category, ' ', e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
+           "' ', convert(varchar(100), e.date, 120)) " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Tutorials e = new Tutorials();
+            e.setId(rs.getInt("ID"));
+            e.setTitle(rs.getString("TITLE"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setDate(rs.getTimestamp("DATE"));
+            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
+            if (p.isPresent())
+                e.setPermission(p.get());
+            Optional<Category> c = categoryRepository.findById(rs.getInt("CATEGORY_ID"));
+            if (c.isPresent())
+                e.setCategory(c.get());            
+            e.setImage(rs.getString("IMAGE"));
+            return e;
+        });
+    }
+
+
+    public List<UserDTO> searchUsers(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM USERS e " +
+        "WHERE lower(CONCAT( " +
+           "e.area, ' ', e.email, ' ', e.linkedin, ' ', e.name, ' ', e.nickname, ' ', " +
+           "' ', convert(varchar(100), e.dt_birthday, 120)) " +
+           "LIKE lower('%" +keyword+ "%')";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            UserDTO e = new UserDTO();
+            e.setId(rs.getInt("ID"));
+            e.setArea(rs.getString("AREA"));
+            e.setAvatar(rs.getString("AVATAR"));
+            e.setBanner(rs.getString("BANNER"));
+            e.setDtBirthday(rs.getString("DT_BIRTHDAY"));
+            e.setLinkedin(rs.getString("LINKEDIN"));
+            e.setName(rs.getString("NAME"));
+            e.setNickname(rs.getString("NICKNAME"));            
+            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
+            if (p.isPresent())
+                e.setPermission(p.get().getId());            
+            return e;
+        });
+    }
 }

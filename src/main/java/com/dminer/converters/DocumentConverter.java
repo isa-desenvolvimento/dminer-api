@@ -54,8 +54,10 @@ public class DocumentConverter {
     public DocumentDTO entityToDto(Document doc) {
         DocumentDTO dto = new DocumentDTO();
         dto.setId(doc.getId());
-        dto.setCategory(doc.getCategory().getId());
-        dto.setPermission(doc.getPermission().getId());
+        if (doc.getCategory() != null)
+            dto.setCategory(doc.getCategory().getId());
+        if (doc.getPermission() != null)
+            dto.setPermission(doc.getPermission().getId());
         dto.setContentLink(doc.getContentLink() != null ? doc.getContentLink() : null);
         dto.setTitle(doc.getTitle());
         return dto;

@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
-import com.dminer.repository.EventsTimeRepositoryPostgres;
-import com.dminer.repository.EventsTimeRepositorySqlServer;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.UserRepository;
 import com.dminer.services.interfaces.IUserService;
 
@@ -23,10 +23,11 @@ public class UserService implements IUserService {
 	private UserRepository userRepository;	
 	
     @Autowired
-	private EventsTimeRepositorySqlServer eventsTimeRepositorySqlServer;
+	private GenericRepositorySqlServer genericRepositorySqlServer;
 
     @Autowired
-	private EventsTimeRepositoryPostgres eventsTimeRepositoryPostgres;
+	private GenericRepositoryPostgres genericRepositoryPostgres;
+
 
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
@@ -58,12 +59,24 @@ public class UserService implements IUserService {
 
     public Optional<List<UserDTO>> getBirthDaysOfMonth() {
         log.info("Buscando todos os usuários que fazem aniversário no mês");
-		return Optional.ofNullable(eventsTimeRepositorySqlServer.getBirthDaysOfMonth());
+		return Optional.ofNullable(genericRepositorySqlServer.getBirthDaysOfMonth());
     }
     
     public Optional<List<UserDTO>> getBirthDaysOfMonthPostgres() {
         log.info("[Postgres] Buscando todos os usuários que fazem aniversário no mês");
-		return Optional.ofNullable(eventsTimeRepositoryPostgres.getBirthDaysOfMonth());
+		return Optional.ofNullable(genericRepositoryPostgres.getBirthDaysOfMonth());
     } 
+     
+    
+    // public Optional<List<UserDTO>> searchUserPostgres(String keyword) {
+    //     log.info("[Postgres] Pesquisa genérica em usuários: {}", keyword);
+	// 	return Optional.ofNullable(genericRepositoryPostgres.searchUsers(keyword));
+    // }
+
+
+    // public Optional<List<UserDTO>> searchUserSqlServer(String keyword) {
+    //     log.info("[Sql Server] Pesquisa genérica em usuários: {}", keyword);
+	// 	return Optional.ofNullable(genericRepositorySqlServer.searchUsers(keyword));
+    // }
     
 }
