@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SurveyResponseRepository extends JpaRepository<SurveyResponses, Integer> {
     
-    @Query("SELECT s FROM SurveyResponses s WHERE s.idSurvey = :idSurvey")
-    public SurveyResponses findByIdSurvey(@Param("idSurvey") int idSurvey);
+    // @Query("SELECT s FROM SurveyResponses s WHERE s.idSurvey = :idSurvey")
+    public SurveyResponses findByIdSurvey(@Param("idSurvey") Integer idSurvey);
     
 }
