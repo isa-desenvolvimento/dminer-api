@@ -294,10 +294,8 @@ public class GenericRepositoryPostgres {
         String query =
         "SELECT * " +
         "FROM USERS e " +
-        "WHERE lower(CONCAT( " +
-           "e.area, ' ', e.email, ' ', e.linkedin, ' ', e.name, ' ', e.nickname, ' ', " +
-           "to_char(e.dt_birthday, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "LIKE lower('%" +keyword+ "%')";
+        "WHERE lower(e.login)" +
+        "LIKE lower('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 

@@ -292,10 +292,8 @@ public class GenericRepositorySqlServer {
         String query =
         "SELECT * " +
         "FROM USERS e " +
-        "WHERE lower(CONCAT( " +
-           "e.area, ' ', e.email, ' ', e.linkedin, ' ', e.name, ' ', e.nickname, ' ', " +
-           "' ', convert(varchar(100), e.dt_birthday, 120)) " +
-           "LIKE lower('%" +keyword+ "%')";
+        "WHERE lower(e.login)" +
+        "LIKE lower('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 

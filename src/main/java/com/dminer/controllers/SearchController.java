@@ -66,9 +66,12 @@ public class SearchController {
     @GetMapping(value = "/{keyword}")
     public ResponseEntity<Response<List<Object>>> getAllEvents(@PathVariable String keyword) {
         
-        Response<List<Object>> response = new Response<>();
-        
+        Response<List<Object>> response = new Response<>();        
         List<Object> dados = new ArrayList<>();
+        
+        
+
+        // notification
         Optional<List<Notification>> searchNotification = notificationService.search(keyword);
         if (! searchNotification.get().isEmpty()) {
             searchNotification.get().forEach(u -> {
@@ -76,6 +79,7 @@ public class SearchController {
             });
         }
 
+        // reminder
         Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
         if (! searchReminder.get().isEmpty()) {
             searchReminder.get().forEach(u -> {
@@ -83,7 +87,11 @@ public class SearchController {
             });
         }
 
+
+
         if (isProd()) {
+            
+            // events
             Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
             if (! searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
@@ -91,6 +99,7 @@ public class SearchController {
                 });
             }
 
+            // users
             List<UserDTO> searchUsers = genericRepositoryPostgres.searchUsers(keyword);
             if (! searchUsers.isEmpty()) {
                 searchUsers.forEach(u -> {
@@ -104,7 +113,10 @@ public class SearchController {
                     });
                 }
             }
+     
         } else {
+
+            // events
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
             if (! searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
@@ -112,6 +124,7 @@ public class SearchController {
                 });
             }
 
+            // users
             List<UserDTO> searchUsers = genericRepositorySqlServer.searchUsers(keyword);
             if (! searchUsers.isEmpty()) {
                 searchUsers.forEach(u -> {
