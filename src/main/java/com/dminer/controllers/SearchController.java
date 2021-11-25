@@ -133,13 +133,13 @@ public class SearchController {
             Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
             if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
                 searchSurvey.get().forEach(u -> {
-                    searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
                 });
             } else {
                 searchSurvey = surveyService.findAll();
                 if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
                     searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
                     });
                 }
             }
