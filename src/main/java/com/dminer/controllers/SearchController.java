@@ -69,7 +69,7 @@ public class SearchController {
         Response<List<Object>> response = new Response<>();        
         List<Object> dados = new ArrayList<>();
         
-        
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         // notification
         Optional<List<Notification>> searchNotification = notificationService.search(keyword);
