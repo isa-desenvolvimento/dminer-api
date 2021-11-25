@@ -315,7 +315,7 @@ public class GenericRepositoryPostgres {
         "FROM SURVEY e " +
         "WHERE CONCAT( " +
            "e.question, ' ', " +
-           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ') " +
            "LIKE '%" +keyword+ "%'";
 
         log.info("search = {}", query);
