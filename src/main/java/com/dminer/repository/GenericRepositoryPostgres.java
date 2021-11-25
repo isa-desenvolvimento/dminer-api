@@ -9,6 +9,7 @@ import com.dminer.entities.Category;
 import com.dminer.entities.Events;
 import com.dminer.entities.Permission;
 import com.dminer.entities.Profile;
+import com.dminer.entities.Survey;
 import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
@@ -40,7 +41,6 @@ public class GenericRepositoryPostgres {
     private CategoryRepository categoryRepository;
 
     
-
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
 
     
@@ -304,6 +304,29 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setLogin(rs.getString("LOGIN"));
             e.setBanner(rs.getString("BANNER"));
+            return e;
+        });
+    }
+
+
+    public List<Survey> searchSurvey(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM SURVEY e " +
+        "WHERE CONCAT( " +
+           "e.question, ' ', " +
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Survey e = new Survey();
+            e.setId(rs.getInt("ID"));
+            e.setOptionA(rs.getString("OPTIONA"));
+            e.setOptionB(rs.getString("OPTIONB"));
+            e.setQuestion(rs.getString("QUESTION"));
+            e.setDate(rs.getTimestamp("DATE"));
             return e;
         });
     }

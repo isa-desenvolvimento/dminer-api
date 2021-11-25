@@ -5,11 +5,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.converters.SurveyConverter;
 import com.dminer.converters.UserConverter;
+import com.dminer.dto.SearchDTO;
+import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Reminder;
+import com.dminer.entities.Survey;
 import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
@@ -17,6 +21,7 @@ import com.dminer.response.Response;
 import com.dminer.services.EventsService;
 import com.dminer.services.NotificationService;
 import com.dminer.services.ReminderService;
+import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,16 +63,19 @@ public class SearchController {
     @Autowired
     private UserConverter userConverter;
 
+    @Autowired
+    private SurveyService surveyService;
 
     @Autowired
     private Environment env;
 
 
     @GetMapping(value = "/{keyword}")
-    public ResponseEntity<Response<List<Object>>> getAllEvents(@PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String keyword) {
         
-        Response<List<Object>> response = new Response<>();        
-        List<Object> dados = new ArrayList<>();
+        Response<SearchDTO> response = new Response<>();        
+        //List<Object> dados = new ArrayList<>();
+        SearchDTO searchDTO = new SearchDTO();
         
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
@@ -75,7 +83,8 @@ public class SearchController {
         Optional<List<Notification>> searchNotification = notificationService.search(keyword);
         if (! searchNotification.get().isEmpty()) {
             searchNotification.get().forEach(u -> {
-                dados.add(u);
+                //dados.add(u);
+                searchDTO.getNotificationlist().add(u);
             });
         }
 
@@ -83,11 +92,10 @@ public class SearchController {
         Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
         if (! searchReminder.get().isEmpty()) {
             searchReminder.get().forEach(u -> {
-                dados.add(u);
+                //dados.add(u);
+                searchDTO.getReminderList().add(u);
             });
         }
-
-
 
         if (isProd()) {
             
@@ -95,7 +103,8 @@ public class SearchController {
             Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
             if (! searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
-                    dados.add(u);
+                    //dados.add(u);
+                    searchDTO.getEventsList().add(u);
                 });
             }
 
@@ -103,24 +112,42 @@ public class SearchController {
             List<UserDTO> searchUsers = genericRepositoryPostgres.searchUsers(keyword);
             if (! searchUsers.isEmpty()) {
                 searchUsers.forEach(u -> {
-                    dados.add(u);
+                    //dados.add(u);
+                    searchDTO.getUsersList().add(u);
                 });
             } else {
                 Optional<List<User>> users = userService.findAll();
                 if (users.isPresent() && !users.get().isEmpty()) {
                     users.get().forEach(user -> {
-                        dados.add(userConverter.entityToDto(user));
+                        //dados.add(userConverter.entityToDto(user));
+                        searchDTO.getUsersList().add(userConverter.entityToDto(user));
                     });
                 }
             }
      
+            // surveys
+            Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
+            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+                searchSurvey.get().forEach(u -> {
+                    searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                });
+            } else {
+                searchSurvey = surveyService.findAll();
+                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+                    searchSurvey.get().forEach(u -> {
+                        searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                    });
+                }
+            }
+
         } else {
 
             // events
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
             if (! searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
-                    dados.add(u);
+                    //dados.add(u);
+                    searchDTO.getEventsList().add(u);
                 });
             }
 
@@ -128,19 +155,36 @@ public class SearchController {
             List<UserDTO> searchUsers = genericRepositorySqlServer.searchUsers(keyword);
             if (! searchUsers.isEmpty()) {
                 searchUsers.forEach(u -> {
-                    dados.add(u);
+                    //dados.add(u);
+                    searchDTO.getUsersList().add(u);
                 });
             } else {
                 Optional<List<User>> users = userService.findAll();
                 if (users.isPresent() && !users.get().isEmpty()) {
                     users.get().forEach(user -> {
-                        dados.add(userConverter.entityToDto(user));
+                        //dados.add(userConverter.entityToDto(user));
+                        searchDTO.getUsersList().add(userConverter.entityToDto(user));
+                    });
+                }
+            }
+
+            // surveys
+            Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
+            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+                searchSurvey.get().forEach(u -> {
+                    searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                });
+            } else {
+                searchSurvey = surveyService.findAll();
+                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+                    searchSurvey.get().forEach(u -> {
+                        searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
                     });
                 }
             }
         }
 
-        response.setData(dados);
+        response.setData(searchDTO);
         return ResponseEntity.ok().body(response);
     }
 

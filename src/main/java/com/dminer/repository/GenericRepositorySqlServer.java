@@ -8,6 +8,7 @@ import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Events;
 import com.dminer.entities.Permission;
+import com.dminer.entities.Survey;
 import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
@@ -305,4 +306,28 @@ public class GenericRepositorySqlServer {
             return e;
         });
     }
+
+
+    public List<Survey> searchSurvey(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM SURVEY e " +
+        "WHERE CONCAT( " +
+           "e.question, ' ', " +
+           " convert(varchar(100), e.date, 120)) " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Survey e = new Survey();
+            e.setId(rs.getInt("ID"));
+            e.setOptionA(rs.getString("OPTIONA"));
+            e.setOptionB(rs.getString("OPTIONB"));
+            e.setQuestion(rs.getString("QUESTION"));
+            e.setDate(rs.getTimestamp("DATE"));
+            return e;
+        });
+    }
+
 }

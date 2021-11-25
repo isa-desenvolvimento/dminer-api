@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import com.dminer.entities.Survey;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.SurveyRepository;
 import com.dminer.services.interfaces.ISurveyService;
 
@@ -17,6 +19,13 @@ public class SurveyService implements ISurveyService {
     @Autowired
 	private SurveyRepository surveyRepository;	
 	
+	@Autowired
+	private GenericRepositoryPostgres genericRepositoryPostgres;	
+
+	@Autowired
+	private GenericRepositorySqlServer genericRepositorySqlServer;	
+
+
     @Override
     public Survey persist(Survey user) {
 		return surveyRepository.save(user);
@@ -35,5 +44,14 @@ public class SurveyService implements ISurveyService {
     @Override
     public void delete(int id) throws EmptyResultDataAccessException {
 		surveyRepository.deleteById(id);
+    }
+
+
+	public Optional<List<Survey>> searchPostgres(String keyword) {		
+		return Optional.ofNullable(genericRepositoryPostgres.searchSurvey(keyword));
+    }
+
+	public Optional<List<Survey>> searchSqlServer(String keyword) {
+		return Optional.ofNullable(genericRepositorySqlServer.searchSurvey(keyword));
     }
 }
