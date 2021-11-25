@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notification;
@@ -55,6 +56,10 @@ public class SearchController {
     private GenericRepositorySqlServer genericRepositorySqlServer;
 
     @Autowired
+    private UserConverter userConverter;
+
+
+    @Autowired
     private Environment env;
 
 
@@ -91,8 +96,14 @@ public class SearchController {
                 searchUsers.forEach(u -> {
                     dados.add(u);
                 });
+            } else {
+                Optional<List<User>> users = userService.findAll();
+                if (users.isPresent() && !users.get().isEmpty()) {
+                    users.get().forEach(user -> {
+                        dados.add(userConverter.entityToDto(user));
+                    });
+                }
             }
-
         } else {
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
             if (! searchEvents.get().isEmpty()) {
@@ -106,6 +117,13 @@ public class SearchController {
                 searchUsers.forEach(u -> {
                     dados.add(u);
                 });
+            } else {
+                Optional<List<User>> users = userService.findAll();
+                if (users.isPresent() && !users.get().isEmpty()) {
+                    users.get().forEach(user -> {
+                        dados.add(userConverter.entityToDto(user));
+                    });
+                }
             }
         }
 

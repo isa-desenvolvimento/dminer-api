@@ -68,6 +68,16 @@ public class UserService implements IUserService {
     } 
      
     
+    public boolean existsByLogin(String login) {
+        log.info("Verificando se usuário existe pelo login, {}", login);
+        return userRepository.findByLogin(login) != null;
+    }
+
+    public Optional<User> findByLogin(String login) {
+        log.info("Recuperando usuário pelo login, {}", login);
+        return Optional.ofNullable(userRepository.findByLogin(login));
+    }
+
     // public Optional<List<UserDTO>> searchUserPostgres(String keyword) {
     //     log.info("[Postgres] Pesquisa genérica em usuários: {}", keyword);
 	// 	return Optional.ofNullable(genericRepositoryPostgres.searchUsers(keyword));

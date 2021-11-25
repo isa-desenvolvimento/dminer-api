@@ -222,13 +222,11 @@ public class GenericRepositoryPostgres {
         log.info("getBirthDaysOfMonth = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> {
-            UserDTO u = new UserDTO();
-            
-            u.setId(rs.getInt("ID"));
-            u.setName(rs.getString("NAME"));
-            u.setDtBirthday(rs.getString("DT_BIRTHDAY"));
-            u.setAvatar(rs.getString("AVATAR"));
-            return u;
+            UserDTO e = new UserDTO();
+            e.setId(rs.getInt("ID"));
+            e.setLogin(rs.getString("LOGIN"));
+            e.setBanner(rs.getString("BANNER"));
+            return e;
         });
     }
 
@@ -306,16 +304,8 @@ public class GenericRepositoryPostgres {
         return jdbcOperations.query(query, (rs, rowNum) -> { 
             UserDTO e = new UserDTO();
             e.setId(rs.getInt("ID"));
-            e.setArea(rs.getString("AREA"));
-            e.setAvatar(rs.getString("AVATAR"));
+            e.setLogin(rs.getString("LOGIN"));
             e.setBanner(rs.getString("BANNER"));
-            e.setDtBirthday(rs.getString("DT_BIRTHDAY"));
-            e.setLinkedin(rs.getString("LINKEDIN"));
-            e.setName(rs.getString("NAME"));
-            e.setNickname(rs.getString("NICKNAME"));            
-            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
-            if (p.isPresent())
-                e.setPermission(p.get().getId());            
             return e;
         });
     }

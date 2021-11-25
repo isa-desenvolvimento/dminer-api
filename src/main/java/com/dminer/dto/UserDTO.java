@@ -13,16 +13,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class UserDTO {
-    
+public class UserDTO {    
     private Integer id;
-    private String name;
-    private String dtBirthday;
-    private String avatar;
+    private String login;
     private String banner; 
-    private String area;
-	private String linkedin;
-	private String email;
-    private String nickname;
-	private Integer permission;
 }

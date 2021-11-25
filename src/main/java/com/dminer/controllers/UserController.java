@@ -20,21 +20,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dminer.converters.PermissionConverter;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
-import com.dminer.dto.UserRequestDTO;
-import com.dminer.entities.Permission;
 import com.dminer.entities.User;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
 import com.dminer.services.UserService;
-import com.dminer.utils.UtilDataHora;
 
 import lombok.RequiredArgsConstructor;
 
@@ -59,62 +54,29 @@ public class UserController {
     @Autowired
     private Environment env;
 
-    private void validateRequestDto(UserRequestDTO userRequestDTO, BindingResult result) {
-        if (userRequestDTO.getName() == null) {
-            result.addError(new ObjectError("userRequestDTO", "Nome precisa estar preenchido."));			
-		}
-        if (userRequestDTO.getDtBirthday() == null) {
-            result.addError(new ObjectError("userRequestDTO", "Data de aniversário precisa estar preenchido."));
-		}
-        if (userRequestDTO.getPermission() != null) {
-            if (permissionRepository.existsById(userRequestDTO.getPermission()) == false) {
-                result.addError(new ObjectError("userRequestDTO", "Permissão não cadastrada."));
-            }
-        }
-    }
 
-    private void validateDto(UserDTO userDTO, BindingResult result) {
-        if (userDTO.getId() == null) {
-            result.addError(new ObjectError("userDTO", "Id precisa estar preenchido."));
-		}
-        if (userDTO.getName() == null) {
-            result.addError(new ObjectError("userDTO", "Nome precisa estar preenchido."));			
-		}
-        if (userDTO.getDtBirthday() == null) {
-            result.addError(new ObjectError("userDTO", "Data de aniversário precisa estar preenchido."));
-		}
-        if (userDTO.getId() != null) {
-            Optional<User> optUser = userService.findById(userDTO.getId());
-            if (!optUser.isPresent()) {
-                log.info("Usuário não encontrado: {}", userDTO);
-                result.addError(new ObjectError("userDTO", "Usuário não encontrado."));
-            }
-		}
-        if (userDTO.getPermission() != null) {
-            Optional<Permission> opt = permissionRepository.findById(userDTO.getPermission());
-            if (!opt.isPresent()) {
-                log.info("Permissão não encontrada: {}", userDTO.getPermission().toString());
-                result.addError(new ObjectError("userDTO", "Permissão não encontrada."));
-            }
+    private void validateDto(UserDTO userDTO, BindingResult result) {        
+        if (userDTO.getLogin() == null) {
+            result.addError(new ObjectError("userDTO", "Login precisa estar preenchido."));			
 		}
     }
 
 
     @PostMapping()
-    public ResponseEntity<Response<UserDTO>> create(@Valid @RequestBody UserRequestDTO userRequestDto, BindingResult result) {        
+    public ResponseEntity<Response<UserDTO>> persist(@Valid @RequestBody UserDTO dto, BindingResult result) {        
 
-		log.info("Salvando um novo usuário {}", userRequestDto.getName());
+		log.info("Persistindo um usuário {}", dto.getLogin());
 
         Response<UserDTO> response = new Response<>();
 
-        validateRequestDto(userRequestDto, result);
+        validateDto(dto, result);
         if (result.hasErrors()) {
-            log.info("Erro validando userRequestDTO: {}", userRequestDto);
+            log.info("Erro validando userRequestDTO: {}", dto);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
-        User u = userConverter.requestDtoToEntity(userRequestDto);
+        User u = userConverter.dtoToEntity(dto);
         User user = userService.persist(u);
         response.setData(userConverter.entityToDto(user));
         // serverSendEvents.streamSseMvc(response.toString());
@@ -122,24 +84,24 @@ public class UserController {
     }
 
 
-    @PutMapping()
-    public ResponseEntity<Response<UserDTO>> put( @Valid @RequestBody UserDTO userDto, BindingResult result) {
+    // @PutMapping()
+    // public ResponseEntity<Response<UserDTO>> put( @Valid @RequestBody UserDTO userDto, BindingResult result) {
 
-        log.info("Alterando um usuário {}", userDto);
+    //     log.info("Alterando um usuário {}", userDto);
 
-        Response<UserDTO> response = new Response<>();
+    //     Response<UserDTO> response = new Response<>();
 
-        validateDto(userDto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando UserRequestDTO: {}", userDto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
+    //     validateDto(userDto, result);
+    //     if (result.hasErrors()) {
+    //         log.info("Erro validando UserRequestDTO: {}", userDto);
+    //         result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
 
-        User user = userService.persist(userConverter.dtoToEntity(userDto));
-        response.setData(userConverter.entityToDto(user));
-        return ResponseEntity.ok().body(response);
-    }
+    //     User user = userService.persist(userConverter.dtoToEntity(userDto));
+    //     response.setData(userConverter.entityToDto(user));
+    //     return ResponseEntity.ok().body(response);
+    // }
 
 
     @GetMapping(value = "/{id}")
