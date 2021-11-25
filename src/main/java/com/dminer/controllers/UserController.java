@@ -58,14 +58,14 @@ public class UserController {
     private void validateDto(UserDTO userDTO, BindingResult result) {        
         if (userDTO.getLogin() == null) {
             result.addError(new ObjectError("userDTO", "Login precisa estar preenchido."));			
-		}
+        }
     }
 
 
     @PostMapping()
     public ResponseEntity<Response<UserDTO>> persist(@Valid @RequestBody UserDTO dto, BindingResult result) {        
 
-		log.info("Persistindo um usuário {}", dto.getLogin());
+	    log.info("Persistindo um usuário {}", dto.getLogin());
 
         Response<UserDTO> response = new Response<>();
 
@@ -76,10 +76,18 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        if (userService.existsByLogin(dto.getLogin())) {            
+            Optional<User> findByLogin = userService.findByLogin(dto.getLogin());
+            User user = findByLogin.get();
+            user.setBanner(dto.getBanner());
+            user = userService.persist(user);
+            response.setData(userConverter.entityToDto(user));
+            return ResponseEntity.ok().body(response);
+        }
+
         User u = userConverter.dtoToEntity(dto);
         User user = userService.persist(u);
         response.setData(userConverter.entityToDto(user));
-        // serverSendEvents.streamSseMvc(response.toString());
         return ResponseEntity.ok().body(response);
     }
 
