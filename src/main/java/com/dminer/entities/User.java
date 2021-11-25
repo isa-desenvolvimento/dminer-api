@@ -26,12 +26,12 @@ import lombok.ToString;
 public class User {
     
 	@Id
-	@Column
-	private String login;
-    
 	@GeneratedValue(strategy = GenerationType.AUTO)	
 	private Integer id;
 
+	@Column
+	private String login;
+    
 	@Column(length = 8000)
 	private String banner; 
 
