@@ -14,6 +14,4 @@ public class DminerApplication {
 	// System.out.println(currentTimeMillis); // 1617752114615
 	// Date novaData = new Date(currentTimeMillis);
 	// System.out.println(novaData); // Tue Apr 06 20:36:02 BRT 2021
-
-
 }
