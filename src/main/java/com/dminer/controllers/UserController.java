@@ -104,17 +104,17 @@ public class UserController {
     // }
 
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<UserDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando usuário {}", id);
+    @GetMapping(value = "/{login}")
+    public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
+        log.info("Buscando usuário {}", login);
         
         Response<UserDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
+        if (login == null || login.isEmpty()) {
+            response.getErrors().add("Informe um login");
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> user = userService.findById(id);
+        Optional<User> user = userService.findByLogin(login);
         if (!user.isPresent()) {
             response.getErrors().add("Usuário não encontrado");
             return ResponseEntity.badRequest().body(response);
