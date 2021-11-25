@@ -67,6 +67,9 @@ public class SearchController {
     private SurveyService surveyService;
 
     @Autowired
+    private SurveyConverter surveyConverter;
+
+    @Autowired
     private Environment env;
 
 
@@ -95,6 +98,8 @@ public class SearchController {
                 searchDTO.getReminderList().add(u);
             });
         }
+
+        
 
         if (isProd()) {
             
@@ -170,18 +175,32 @@ public class SearchController {
             // surveys
             Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
             if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                searchSurvey.get().forEach(u -> {
-                    searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                searchSurvey.get().forEach(u -> {                    
+                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
                 });
             } else {
                 searchSurvey = surveyService.findAll();
                 if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
                     searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(new SurveyConverter().entityToDTO(u));
+                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
                     });
                 }
             }
         }
+
+        // aniversarios
+        // Optional<List<UserDTO>> user;
+        // if (isProd()) {
+        //     user = userService.getBirthDaysOfMonthPostgres();    
+        // } else {
+        //     user = userService.getBirthDaysOfMonth();
+        // }
+
+        // if (user.isPresent() && !user.get().isEmpty()) {
+        //     user.get().forEach(u -> {                    
+        //         searchDTO.getBirthdayList().add(u);
+        //     });
+        // }         
 
         response.setData(searchDTO);
         return ResponseEntity.ok().body(response);

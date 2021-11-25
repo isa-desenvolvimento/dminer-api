@@ -37,7 +37,7 @@ public class SurveyConverter {
         dto.setOptionA(survey.getOptionA());
         dto.setOptionB(survey.getOptionB());
         dto.setQuestion(survey.getQuestion());
-        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(survey.getId());
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(1);
         dto.setCountA(findByIdSurvey.getCountA());
         dto.setCountB(findByIdSurvey.getCountB());
         return dto;
