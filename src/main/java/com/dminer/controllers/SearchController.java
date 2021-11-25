@@ -81,16 +81,15 @@ public class SearchController {
 
         // notification
         Optional<List<Notification>> searchNotification = notificationService.search(keyword);
-        if (! searchNotification.get().isEmpty()) {
+        if (searchNotification.isPresent() &&  !searchNotification.get().isEmpty()) {
             searchNotification.get().forEach(u -> {
-                //dados.add(u);
                 searchDTO.getNotificationlist().add(u);
             });
         }
 
         // reminder
         Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
-        if (! searchReminder.get().isEmpty()) {
+        if (searchReminder.isPresent() && !searchReminder.get().isEmpty()) {
             searchReminder.get().forEach(u -> {
                 //dados.add(u);
                 searchDTO.getReminderList().add(u);
@@ -101,7 +100,7 @@ public class SearchController {
             
             // events
             Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
-            if (! searchEvents.get().isEmpty()) {
+            if (searchEvents.isPresent() &&  !searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
                     //dados.add(u);
                     searchDTO.getEventsList().add(u);
@@ -144,7 +143,7 @@ public class SearchController {
 
             // events
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
-            if (! searchEvents.get().isEmpty()) {
+            if (searchEvents.isPresent() && !searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
                     //dados.add(u);
                     searchDTO.getEventsList().add(u);

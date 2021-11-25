@@ -1,5 +1,6 @@
 package com.dminer.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -9,7 +10,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
@@ -21,4 +21,14 @@ public class SearchDTO {
     private List<Object> eventsList;
     private List<Object> usersList;
     private List<Object> quizList;
+
+    public SearchDTO() {
+        noticeList = new ArrayList<>();
+        notificationlist = new ArrayList<>();
+        reminderList = new ArrayList<>();
+        birthdayList = new ArrayList<>();
+        eventsList = new ArrayList<>();
+        usersList = new ArrayList<>();
+        quizList = new ArrayList<>();
+    }
 }
