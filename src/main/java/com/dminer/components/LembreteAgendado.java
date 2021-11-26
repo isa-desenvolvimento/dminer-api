@@ -13,20 +13,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class LembreteAgendado {
     
-    @Autowired
-    private ServerSendEvents serverSendEvents;
+    // @Autowired
+    // private ServerSendEvents serverSendEvents;
 
-    public LembreteAgendado() { }
+    // public LembreteAgendado() { }
     
-    public void execute(Reminder reminder) {
-        Date date = new Date(reminder.getDataHora().getTime());
-        Timer timer = new Timer();        
-        timer.schedule(new TimerTask() {
-            @Override public void run() {
-                serverSendEvents.addReminder(reminder);
-                serverSendEvents.streamSseReminder();
-            }
-        }, date);
-    }
+    // public void execute(Reminder reminder) {
+    //     Date date = new Date(reminder.getDataHora().getTime());
+    //     Timer timer = new Timer();        
+    //     timer.schedule(new TimerTask() {
+    //         @Override public void run() {
+    //             serverSendEvents.addReminder(reminder);
+    //             serverSendEvents.streamSseReminder();
+    //         }
+    //     }, date);
+    // }
 
 }
