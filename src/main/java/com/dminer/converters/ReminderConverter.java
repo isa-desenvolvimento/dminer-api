@@ -27,7 +27,6 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
-        reminder.setStatus(false); //todo implementar lógica do status
         return reminder;
     }
 
@@ -39,7 +38,6 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
-        reminder.setStatus(false);
         return reminder;
     }
 

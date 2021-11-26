@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dminer.dto.EventsDTO;
+import com.dminer.entities.Reminder;
 import com.dminer.services.EmitterService;
 
 import com.dminer.services.UserService;
@@ -56,6 +57,25 @@ public class ServerSendEvents {
     public void publishEvent(@PathVariable(name = "MEMBER_ID_HEADER") String memberId, @RequestBody EventsDTO event) {
         log.debug("Publishing event {} for member with id {}", event, memberId);
         notificationService.sendNotification(memberId, event);
+    }
+
+
+    @GetMapping("/reminder")
+    public  SseEmitter streamSseReminder(Reminder reminder) {
+        
+        String json = reminder.toJson();
+        SseEmitter emitter = new SseEmitter(); 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                emitter.send(json);
+                emitter.complete();
+            }catch (Exception ex) {
+                emitter.completeWithError(ex);
+            } 
+        });
+        executor.shutdown();
+        return emitter;
     }
 
 
