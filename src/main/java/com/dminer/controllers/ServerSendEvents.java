@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,38 +45,26 @@ import reactor.core.publisher.Flux;
 public class ServerSendEvents {
     
     private static final Logger log = LoggerFactory.getLogger(ServerSendEvents.class);
-
-    private final EmitterService emitterService;
-    private final NotificationService notificationService;
-
-    @GetMapping("/subscribe/{MEMBER_ID_HEADER}")
-    public SseEmitter subscribeToEvents(@PathVariable(name = "MEMBER_ID_HEADER") String memberId) {
-        log.debug("Subscribing member with id {}", memberId);
-        return emitterService.createEmitter(memberId);
-    }
-
-    @PostMapping("/publish/{MEMBER_ID_HEADER}")
-    public void publishEvent(@PathVariable(name = "MEMBER_ID_HEADER") String memberId, @RequestBody EventsDTO event) {
-        log.debug("Publishing event {} for member with id {}", event, memberId);
-        notificationService.sendNotification(memberId, event);
-    }
+    private List<Reminder> reminders = new ArrayList<>();
+    private SseEmitter emitter;
 
 
     @GetMapping("/reminder")
-    public  SseEmitter streamSseReminder(Reminder reminder) {
-        
-        String json = reminder.toJson();
-        SseEmitter emitter = new SseEmitter(); 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            try {
-                emitter.send(json);
-                emitter.complete();
-            }catch (Exception ex) {
-                emitter.completeWithError(ex);
-            } 
+    public  SseEmitter streamSseReminder() {
+        reminders.forEach(reminder -> {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                try {
+                    emitter = new SseEmitter();
+                    emitter.send(reminder.toJson());
+                    emitter.complete();
+                    Thread.sleep(3000);
+                }catch (Exception ex) {
+                    emitter.completeWithError(ex);
+                }
+            });
+            executor.shutdown();
         });
-        executor.shutdown();
         return emitter;
     }
 
@@ -121,9 +111,27 @@ public class ServerSendEvents {
         return emitter;
     }
 
+
+    public void addReminder(Reminder reminder) {
+        this.reminders.add(reminder);
+    }
+
+
+
+
+
+
+
+
+
+
+
     void print(SseEventBuilder emitter) {
         System.out.println(emitter.toString());
     }
+
+
+
 
 
 

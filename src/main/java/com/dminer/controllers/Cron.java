@@ -2,18 +2,25 @@ package com.dminer.controllers;
 
 import java.lang.annotation.Annotation;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dminer.components.LembreteAgendado;
+import com.dminer.dto.ReminderRequestDTO;
 import com.dminer.entities.Reminder;
+import com.dminer.entities.User;
 import com.dminer.response.Response;
+import com.dminer.services.ReminderService;
+import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,25 +40,44 @@ public class Cron {
     @Autowired
     private LembreteAgendado lembreteAgendado;
 
+    @Autowired
+    private ServerSendEvents serverSendEvents;
 
-    @PostMapping("/{date}")
-    public ResponseEntity<Response<Reminder>> create(@PathVariable("date") String date) {
-    
-        System.out.println(date);
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ReminderService reminderService;
+
+
+    @PostMapping()
+    public ResponseEntity<Response<Reminder>> create(@RequestBody ReminderRequestDTO dto) {
         Response<Reminder> response = new Response<>();
-        Reminder reminder = new Reminder();
-        Timestamp time = UtilDataHora.toTimestamp(date);
-        reminder.setDataHora(time);
-        reminder.setReminderDescrible("tentando lembrar aqui");
-        response.setData(reminder);
+        
+        Timestamp time = UtilDataHora.toTimestamp(dto.getDataHora());
+        Timestamp agora = new Timestamp(Date.from(Instant.now()).getTime());
+        
+        if (time.getTime() < agora.getTime()) {
+            response.getErrors().add("Data precisa ser superior a data atual");
+            response.getErrors().add("Data informada: " + dto.getDataHora() + "\t Data atual: " + UtilDataHora.dateToStringUTC(agora));
+        }
+        
+        Optional<User> opt = userService.findById(dto.getIdUser());
+        if (opt.isPresent()) {
+            Reminder reminder = new Reminder();
+            reminder.setDataHora(time);
+            reminder.setReminderDescrible(dto.getReminder());
+            reminder.setUser(opt.get());
+            reminder.setAtivo(true);
+            reminder = reminderService.persist(reminder);
 
-        lembreteAgendado.execute(reminder);
-        return ResponseEntity.ok().body(response);
+            response.setData(reminder);
+            serverSendEvents.addReminder(reminder);
+            return ResponseEntity.ok().body(response);
+        } 
+
+        response.getErrors().add("Usuário não encontrado");
+        return ResponseEntity.badRequest().body(response);
     }
 
-
-    public static void main2(String[] args) {
-        String date = "2021-11-26 11:43:00.09";
-        System.out.println(UtilDataHora.toTimestamp(date));
-    }
 }

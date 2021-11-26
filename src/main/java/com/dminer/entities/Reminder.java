@@ -45,6 +45,8 @@ public class Reminder {
 	@Column
     private Timestamp dataHora;
     
+    private Boolean ativo;
+
 
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();

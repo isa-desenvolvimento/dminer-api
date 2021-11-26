@@ -7,6 +7,7 @@ import com.dminer.dto.UserDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Events;
+import com.dminer.entities.Notice;
 import com.dminer.entities.Permission;
 import com.dminer.entities.Profile;
 import com.dminer.entities.Survey;
@@ -27,6 +28,9 @@ public class GenericRepositoryPostgres {
     
     @Autowired
     private JdbcOperations jdbcOperations;
+
+    @Autowired
+    private JdbcOperations jdbcSubOperations;
 
     @Autowired
     private UserRepository userService;
@@ -330,4 +334,33 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
+
+
+    public List<Notice> searchNotice(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM NOTICE e " +
+        "WHERE CONCAT( " +
+           "e.creator, ' ', " +
+           "e.warning, ' ', " +
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ') " +
+           "LIKE '%" +keyword+ "%'";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Notice e = new Notice();
+            e.setId(rs.getInt("ID"));
+            e.setCreator(rs.getString("CREATOR"));
+            e.setWarning(rs.getString("WARNING"));
+            e.setPriority(rs.getInt("PRIORITY"));
+            e.setDate(rs.getTimestamp("DATE"));
+            return e;
+        });
+    }
 }
+    
+    
+    // Optional<User> findById = userService.findById(rs.getInt("CREATOR_ID"));
+    // if (findById.isPresent())
+    //     e.setCreator(findById.get());

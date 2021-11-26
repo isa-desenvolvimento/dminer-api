@@ -11,6 +11,7 @@ import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
+import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Reminder;
 import com.dminer.entities.Survey;
@@ -19,6 +20,7 @@ import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.response.Response;
 import com.dminer.services.EventsService;
+import com.dminer.services.NoticeService;
 import com.dminer.services.NotificationService;
 import com.dminer.services.ReminderService;
 import com.dminer.services.SurveyService;
@@ -70,6 +72,9 @@ public class SearchController {
     private SurveyConverter surveyConverter;
 
     @Autowired
+    private NoticeService noticeService;
+
+    @Autowired
     private Environment env;
 
 
@@ -102,6 +107,22 @@ public class SearchController {
         
 
         if (isProd()) {
+            
+            // notice
+            List<Notice> notices = genericRepositoryPostgres.searchNotice(keyword);
+            if (!notices.isEmpty()) {
+                notices.forEach(u -> {
+                    searchDTO.getNoticeList().add(u);
+                });
+            } else {
+                Optional<List<Notice>> result = noticeService.findAll();
+                if (result.isPresent() &&  !result.get().isEmpty()) {
+                    result.get().forEach(u -> {
+                        searchDTO.getNoticeList().add(u);
+                    });
+                }    
+            }
+
             
             // events
             Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
@@ -187,20 +208,6 @@ public class SearchController {
                 }
             }
         }
-
-        // aniversarios
-        // Optional<List<UserDTO>> user;
-        // if (isProd()) {
-        //     user = userService.getBirthDaysOfMonthPostgres();    
-        // } else {
-        //     user = userService.getBirthDaysOfMonth();
-        // }
-
-        // if (user.isPresent() && !user.get().isEmpty()) {
-        //     user.get().forEach(u -> {                    
-        //         searchDTO.getBirthdayList().add(u);
-        //     });
-        // }         
 
         response.setData(searchDTO);
         return ResponseEntity.ok().body(response);
