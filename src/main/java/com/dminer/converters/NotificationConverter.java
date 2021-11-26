@@ -21,7 +21,7 @@ public class NotificationConverter {
         Notification notification = new Notification();
         notification.setId(dto.getId());
         notification.setNotification(dto.getNotification());
-        Optional<User> findById = userService.findById(dto.getIdUser());
+        Optional<User> findById = userService.findByLogin(dto.getIdUser());
         if (findById.isPresent()) {
             notification.setUser(findById.get());
         }
@@ -31,7 +31,7 @@ public class NotificationConverter {
     public Notification requestDtoToEntity(NotificationRequestDTO dto) {
         Notification notification = new Notification();
         notification.setNotification(dto.getNotification());
-        Optional<User> findById = userService.findById(dto.getIdUser());
+        Optional<User> findById = userService.findByLogin(dto.getIdUser());
         if (findById.isPresent()) {
             notification.setUser(findById.get());
         }
@@ -41,7 +41,7 @@ public class NotificationConverter {
     public NotificationDTO entityToDto(Notification notification) {
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setId(notification.getId());
-        notificationDTO.setIdUser(notification.getUser().getId());
+        notificationDTO.setIdUser(notification.getUser().getLogin());
         notificationDTO.setNotification(notification.getNotification());
         return notificationDTO;
     }

@@ -19,7 +19,7 @@ import lombok.ToString;
 public class SurveyResponseDTO {
     private Integer id;
     private Integer idSurvey;
-    private List<Integer> users = new ArrayList<>();
+    private List<String> users = new ArrayList<>();
     private Integer countA = 0;
     private Integer countB = 0;
 }

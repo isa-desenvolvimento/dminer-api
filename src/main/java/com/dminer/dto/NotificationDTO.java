@@ -14,6 +14,6 @@ import lombok.ToString;
 public class NotificationDTO {
     
     private Integer id;
-    private Integer idUser;
+    private String idUser;
 	private String notification;
 }

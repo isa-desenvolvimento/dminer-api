@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 public class NotificationRequestDTO {    
         
-    private Integer idUser;
+    private String idUser;
 
 	private String notification; 
 

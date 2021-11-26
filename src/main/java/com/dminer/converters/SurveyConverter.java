@@ -6,6 +6,7 @@ import com.dminer.dto.SurveyResponseDTO;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
 import com.dminer.repository.SurveyResponseRepository;
+import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,10 @@ public class SurveyConverter {
 
     @Autowired
     private SurveyResponseRepository surveyResponseRepository;
+
+    @Autowired
+    private UserService userService;
+
     
     public SurveyResponseDTO surveyResponseToDTO(SurveyResponses survey) { 
         SurveyResponseDTO dto = new SurveyResponseDTO();
@@ -24,7 +29,7 @@ public class SurveyConverter {
         dto.setCountA(survey.getCountA());
         dto.setCountB(survey.getCountB());
         survey.getUsers().forEach(u -> {
-            dto.getUsers().add(u.getId());
+            dto.getUsers().add(u.getLogin());
         });
         return dto;
     }

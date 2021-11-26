@@ -88,7 +88,7 @@ public class SurveyController {
     }
 
 
-    private Response<String> validateAnswerQuestion( Integer id, Integer idUser, String option) {
+    private Response<String> validateAnswerQuestion( Integer id, String loginUser, String option) {
         Response<String> response = new Response<>();
         if (id == null) {
             log.info("Informe o id do questionário");
@@ -101,12 +101,11 @@ public class SurveyController {
             }
         }
         
-        if (idUser == null) {
-            log.info("Informe o id do usuário que está respondendo o questionário");
-            response.getErrors().add("Informe o id do usuário que está respondendo o questionário");
+        if (loginUser == null) {
+            log.info("Informe o login do usuário que está respondendo o questionário");
+            response.getErrors().add("Informe o login do usuário que está respondendo o questionário");
         } else {
-            Optional<User> user = userService.findById(idUser);
-            if (!user.isPresent()) {
+            if (! userService.existsByLogin(loginUser)) {
                 log.info("Usuário não encontrado");
                 response.getErrors().add("Usuário não encontrado");
             }
@@ -147,16 +146,16 @@ public class SurveyController {
 
 
     @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
-    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("idUser") Integer idUser, @PathVariable("option") String option) {
+    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("loginUser") String loginUser, @PathVariable("option") String option) {
 
-        Response<String> response = validateAnswerQuestion(id, idUser, option);
+        Response<String> response = validateAnswerQuestion(id, loginUser, option);
         if (! response.getErrors().isEmpty()) {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> userOpt = userService.findById(idUser);
+        Optional<User> userOpt = userService.findByLogin(loginUser);
         if (!userOpt.isPresent()) {
-            response.getErrors().add("Nenhum usuário encontrado com id " + idUser);
+            response.getErrors().add("Nenhum usuário encontrado com id " + loginUser);
             return ResponseEntity.badRequest().body(response);
         }
 
