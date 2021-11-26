@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dminer.components.LembreteAgendado;
 import com.dminer.dto.EventsDTO;
 import com.dminer.entities.Reminder;
 import com.dminer.services.EmitterService;
@@ -46,6 +47,10 @@ public class ServerSendEvents {
     
     private static final Logger log = LoggerFactory.getLogger(ServerSendEvents.class);
     private List<Reminder> reminders = new ArrayList<>();
+    
+    @Autowired
+    private LembreteAgendado lembreteAgendado;
+    
     private SseEmitter emitter;
 
 

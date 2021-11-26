@@ -17,6 +17,7 @@ import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
+import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class BenefitsController {
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private GenericRepositoryPostgres genericRepositoryPostgres;
@@ -89,7 +90,7 @@ public class BenefitsController {
         if (dto.getCreator() == null) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Responsável precisa estar preenchido."));
         } else {
-            if(!userRepository.existsById(dto.getCreator())) {
+            if(!userService.existsByLogin(dto.getCreator())) {
                 result.addError(new ObjectError("BenefitsRequestDTO", "Usuário não encontrado."));
             }
         }
@@ -129,7 +130,7 @@ public class BenefitsController {
         if (dto.getCreator() == null) {
             result.addError(new ObjectError("dto", "Responsável precisa estar preenchido."));
         } else {
-            if(!userRepository.existsById(dto.getCreator())) {
+            if(!userService.existsByLogin(dto.getCreator())) {
                 result.addError(new ObjectError("dto", "Usuário não encontrado."));
             }
         }

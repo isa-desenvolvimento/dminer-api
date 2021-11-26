@@ -23,7 +23,8 @@ public class LembreteAgendado {
         Timer timer = new Timer();        
         timer.schedule(new TimerTask() {
             @Override public void run() {
-                serverSendEvents.streamSseReminder(reminder);
+                serverSendEvents.addReminder(reminder);
+                serverSendEvents.streamSseReminder();
             }
         }, date);
     }

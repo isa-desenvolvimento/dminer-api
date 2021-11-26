@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class BenefitsRequestDTO { 
     
-    private Integer creator;
+    private String creator;
 	private String title;
     private String content;
     private String date; //@Parameter(example = "01/01/2020")

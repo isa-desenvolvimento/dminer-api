@@ -30,7 +30,7 @@ public class BenefitsConverter {
         dto.setContent(entity.getContent() != null ? entity.getContent() : "");
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
-        dto.setCreator(entity.getCreator().getId());
+        dto.setCreator(entity.getCreator().getLogin());
         dto.setImage(entity.getImage());
         if (entity.getPermission() != null)
             dto.setPermission(entity.getPermission().getId());
@@ -43,7 +43,7 @@ public class BenefitsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        Optional<User> user = userService.findById(dto.getCreator());
+        Optional<User> user = userService.findByLogin(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
         Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
@@ -58,7 +58,7 @@ public class BenefitsConverter {
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
-        Optional<User> user = userService.findById(dto.getCreator());
+        Optional<User> user = userService.findByLogin(dto.getCreator());
         if (user.isPresent())
             c.setCreator(user.get());
         Optional<Permission> findById = permissionRepository.findById(dto.getPermission());

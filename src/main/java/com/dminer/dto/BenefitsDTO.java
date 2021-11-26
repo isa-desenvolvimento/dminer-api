@@ -16,7 +16,7 @@ import lombok.ToString;
 public class BenefitsDTO { 
     
     private Integer id;
-    private Integer creator;
+    private String creator;
 	private String title;
     private String content;
     private String date; 

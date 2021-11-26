@@ -77,16 +77,5 @@ public class UserService implements IUserService {
         log.info("Recuperando usuário pelo login, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
-
-    // public Optional<List<UserDTO>> searchUserPostgres(String keyword) {
-    //     log.info("[Postgres] Pesquisa genérica em usuários: {}", keyword);
-	// 	return Optional.ofNullable(genericRepositoryPostgres.searchUsers(keyword));
-    // }
-
-
-    // public Optional<List<UserDTO>> searchUserSqlServer(String keyword) {
-    //     log.info("[Sql Server] Pesquisa genérica em usuários: {}", keyword);
-	// 	return Optional.ofNullable(genericRepositorySqlServer.searchUsers(keyword));
-    // }
     
 }
