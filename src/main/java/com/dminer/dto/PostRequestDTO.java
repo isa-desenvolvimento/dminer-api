@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 public class PostRequestDTO { 
     
-    private Integer idUsuario;
+    private String idUsuario;
     private Integer likes;
     private String content;
     private String type;

@@ -35,6 +35,7 @@ import com.dminer.dto.PostRequestDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.Post;
+import com.dminer.entities.User;
 import com.dminer.enums.PostType;
 import com.dminer.response.Response;
 import com.dminer.services.CommentService;
@@ -84,7 +85,7 @@ public class PostController {
 		Response<PostDTO> response = new Response<>();
 		
 		log.info("Verificando se o usuário informado existe");
-		if (postRequestDTO.getIdUsuario() == null || !(userService.findById(postRequestDTO.getIdUsuario()).isPresent())) {
+		if (postRequestDTO.getIdUsuario() == null || !userService.existsByLogin(postRequestDTO.getIdUsuario())) {
 			response.getErrors().add("Usuário não encontrado.");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
@@ -100,6 +101,9 @@ public class PostController {
 		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty())
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
 		
+		Optional<User> user = userService.findByLogin(postRequestDTO.getIdUsuario());
+		post.setUser(user.get());
+
 		List<Comment> comments = new ArrayList<>();
 		if (!postRequestDTO.getComments().isEmpty()) {
 			log.info("Adicionando comentários");
@@ -259,7 +263,7 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		dto.setIdUsuario(post.getId());
+		dto.setIdUsuario(post.getUser().getLogin());
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().name());
 		dto.setId(post.getId());		

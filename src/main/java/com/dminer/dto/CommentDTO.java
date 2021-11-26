@@ -15,8 +15,8 @@ import lombok.ToString;
 @ToString
 public class CommentDTO { 
     
-    private int id;
-    private int idUsuario;
+    private Integer id;
+    private String idUsuario;
     private String content;
     private String date; //@Parameter(example = "01/01/2020")
     private String hours;

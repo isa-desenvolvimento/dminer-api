@@ -30,7 +30,7 @@ public class CommentConverter {
         dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
         dto.setHours(comment.getTimestamp() != null ? UtilDataHora.hourToString(comment.getTimestamp()) : null);
         dto.setId(comment.getId());
-        dto.setIdUsuario(comment.getUser().getId());
+        dto.setIdUsuario(comment.getUser().getLogin());
         return dto;
     }
 
@@ -39,11 +39,11 @@ public class CommentConverter {
         c.setId(UtilNumbers.isNumeric(commentDTO.getId()+"") ? commentDTO.getId() : null);
         c.setContent(commentDTO.getContent() != null ? commentDTO.getContent() : "");
         c.setTimestamp(commentDTO.getDate() != null ? UtilDataHora.toTimestamp(commentDTO.getDate()) : null);
-        Optional<User> user = userService.findById(commentDTO.getIdUsuario());
+        Optional<User> user = userService.findByLogin(commentDTO.getIdUsuario());
         if (user.isPresent())
             c.setUser(user.get());
         
-        Optional<Post> post = postService.findById(commentDTO.getIdUsuario());
+        Optional<Post> post = postService.findById(user.get().getId());
         if (post.isPresent())
             c.setPost(post.get());
         return c;
@@ -53,11 +53,11 @@ public class CommentConverter {
         Comment c = new Comment();
         c.setContent(commentRequestDTO.getContent() != null ? commentRequestDTO.getContent() : "");
         c.setTimestamp(commentRequestDTO.getDate() != null ? UtilDataHora.toTimestamp(commentRequestDTO.getDate()) : null);
-        Optional<User> user = userService.findById(commentRequestDTO.getIdUsuario());
+        Optional<User> user = userService.findByLogin(commentRequestDTO.getIdUsuario());
         if (user.isPresent())
             c.setUser(user.get());
         
-        Optional<Post> post = postService.findById(commentRequestDTO.getIdUsuario());
+            Optional<Post> post = postService.findById(user.get().getId());
         if (post.isPresent())
             c.setPost(post.get());
         return c;

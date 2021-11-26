@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 public class CommentRequestDTO { 
     
-    private int idUsuario;
+    private String idUsuario;
     private String date;
     private String hours;
     private String content;

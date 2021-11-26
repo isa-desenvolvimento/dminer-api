@@ -50,7 +50,7 @@ public class FeedController {
 
     private PostDTO postToDto(Post post) {
 		PostDTO dto = new PostDTO();
-		dto.setIdUsuario(post.getId());
+		dto.setIdUsuario(post.getUser().getLogin());
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().name());
 		dto.setId(post.getId());		
