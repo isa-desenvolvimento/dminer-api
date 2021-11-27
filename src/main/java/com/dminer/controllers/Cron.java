@@ -68,7 +68,7 @@ public class Cron {
             reminder.setDataHora(time);
             reminder.setReminderDescrible(dto.getReminder());
             reminder.setUser(opt.get());
-            reminder.setAtivo(true);
+            reminder.setActive(true);
             reminder = reminderService.persist(reminder);
 
             response.setData(reminder);

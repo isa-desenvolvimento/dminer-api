@@ -21,6 +21,5 @@ public class ReminderDTO {
 
     private String dataHora;
 
-    // flag pra informar se o lembrete ainda está na data vigente
-    private boolean status; 
+    private Boolean active;
 }

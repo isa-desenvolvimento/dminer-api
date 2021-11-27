@@ -35,4 +35,7 @@ public class Notification {
 	@Column
 	private String notification; 
 
+	@Column(columnDefinition = "default true")
+    private Boolean active;
+
 }

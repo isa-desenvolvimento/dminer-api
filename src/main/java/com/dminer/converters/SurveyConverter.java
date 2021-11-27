@@ -45,6 +45,7 @@ public class SurveyConverter {
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(survey.getId());
         dto.setCountA(findByIdSurvey.getCountA());
         dto.setCountB(findByIdSurvey.getCountB());
+        dto.setActive(survey.getActive());
         return dto;
     }
 
@@ -55,6 +56,7 @@ public class SurveyConverter {
         survey.setOptionA(dto.getOptionA());        
         survey.setOptionB(dto.getOptionB());
         survey.setQuestion(dto.getQuestion());
+        survey.setActive( dto.getActive() == null ? true : dto.getActive() );
         return survey;
     }
 
@@ -64,6 +66,7 @@ public class SurveyConverter {
         survey.setOptionA(dto.getOptionA());
         survey.setOptionB(dto.getOptionB());
         survey.setQuestion(dto.getQuestion());
+        survey.setActive(true);
         return survey;
     }
 }

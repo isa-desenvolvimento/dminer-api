@@ -25,6 +25,7 @@ public class NotificationConverter {
         if (findById.isPresent()) {
             notification.setUser(findById.get());
         }
+        notification.setActive( dto.getActive() == null ? true : dto.getActive() );
         return notification;
     }
 
@@ -35,6 +36,7 @@ public class NotificationConverter {
         if (findById.isPresent()) {
             notification.setUser(findById.get());
         }
+        notification.setActive(true);
         return notification;
     }
 
@@ -43,6 +45,7 @@ public class NotificationConverter {
         notificationDTO.setId(notification.getId());
         notificationDTO.setIdUser(notification.getUser().getLogin());
         notificationDTO.setNotification(notification.getNotification());
+        notificationDTO.setActive(notification.getActive());
         return notificationDTO;
     }
 }

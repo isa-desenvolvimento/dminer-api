@@ -28,6 +28,7 @@ public class NoticeConverter {
         dto.setCreator(aviso.getCreator());
         dto.setPriority(aviso.getPriority());
         dto.setDate(aviso.getDate() != null ? UtilDataHora.hourToString(aviso.getDate()) : null);
+        dto.setActive(aviso.getActive());
         return dto;
     }
 
@@ -43,6 +44,7 @@ public class NoticeConverter {
         c.setWarning(avisoDto.getWarning());
         c.setCreator(avisoDto.getCreator());        
         c.setPriority(avisoDto.getPriority());
+        c.setActive( avisoDto.getActive() == null ? true : avisoDto.getActive() );
         return c;
     }
 
@@ -57,6 +59,7 @@ public class NoticeConverter {
         c.setWarning(avisoDto.getWarning());
         c.setCreator(avisoDto.getCreator());        
         c.setPriority(avisoDto.getPriority());
+        c.setActive(true);
         return c;
     }
 }

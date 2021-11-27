@@ -27,6 +27,7 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
+        reminder.setActive( dto.getActive() == null ? true : dto.getActive() );
         return reminder;
     }
 
@@ -38,6 +39,7 @@ public class ReminderConverter {
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
+        reminder.setActive(true);
         return reminder;
     }
 
@@ -47,7 +49,7 @@ public class ReminderConverter {
         notificationDTO.setIdUser(reminder.getUser().getId());
         notificationDTO.setReminder(reminder.getReminderDescrible());
         notificationDTO.setDataHora(UtilDataHora.timestampToString(reminder.getDataHora()));
-        notificationDTO.setStatus(false);
+        notificationDTO.setActive(reminder.getActive());
         return notificationDTO;
     }
 

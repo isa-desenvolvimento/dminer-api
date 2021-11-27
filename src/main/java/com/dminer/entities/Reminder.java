@@ -45,7 +45,8 @@ public class Reminder {
 	@Column
     private Timestamp dataHora;
     
-    private Boolean ativo;
+    @Column(columnDefinition = "default true")
+    private Boolean active;
 
 
     public String toJson() {

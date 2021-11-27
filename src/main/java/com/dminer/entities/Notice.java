@@ -49,5 +49,8 @@ public class Notice {
 
     @Column
     private Integer priority;
+
+    @Column(columnDefinition = "default true")
+    private Boolean active;
     
 }

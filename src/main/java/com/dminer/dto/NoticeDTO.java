@@ -24,5 +24,5 @@ public class NoticeDTO {
     private String creator;
     private String warning;
     private Integer priority;
-
+    private Boolean active;
 }
