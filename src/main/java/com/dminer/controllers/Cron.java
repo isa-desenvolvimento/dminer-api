@@ -40,8 +40,8 @@ public class Cron {
     @Autowired
     private LembreteAgendado lembreteAgendado;
 
-    @Autowired
-    private ServerSendEvents serverSendEvents;
+    // @Autowired
+    // private ServerSendEvents serverSendEvents;
 
     @Autowired
     private UserService userService;
@@ -50,7 +50,7 @@ public class Cron {
     private ReminderService reminderService;
 
 
-    @PostMapping()
+    @PostMapping("/reminder")
     public ResponseEntity<Response<Reminder>> create(@RequestBody ReminderRequestDTO dto) {
         Response<Reminder> response = new Response<>();
         
@@ -71,8 +71,8 @@ public class Cron {
             reminder.setActive(true);
             reminder = reminderService.persist(reminder);
 
-            response.setData(reminder);
-            serverSendEvents.addReminder(reminder);
+            lembreteAgendado.execute(reminder);
+            response.setData(reminder);            
             return ResponseEntity.ok().body(response);
         } 
 

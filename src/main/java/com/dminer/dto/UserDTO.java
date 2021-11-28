@@ -16,5 +16,6 @@ import lombok.ToString;
 public class UserDTO {    
     private Integer id;
     private String login;
-    private String banner; 
+    private String banner;
+    private String avatar;
 }

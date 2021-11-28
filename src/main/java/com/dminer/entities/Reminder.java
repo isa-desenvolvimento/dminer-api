@@ -10,9 +10,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import com.dminer.services.ReminderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -45,8 +49,8 @@ public class Reminder {
 	@Column
     private Timestamp dataHora;
     
-    @Column(columnDefinition = "default true")
-    private Boolean active;
+    @Column
+    private Boolean active = true;
 
 
     public String toJson() {
@@ -59,5 +63,15 @@ public class Reminder {
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    @Transient
+    @Autowired 
+    private ReminderService reminderService;
+    
+    public void desactivate() {
+        this.active = false;
+        reminderService.persist(this);
     }
 }

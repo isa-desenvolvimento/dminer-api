@@ -12,7 +12,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import com.dminer.services.NoticeService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -50,7 +56,29 @@ public class Notice {
     @Column
     private Integer priority;
 
-    @Column(columnDefinition = "default true")
-    private Boolean active;
+    @Column
+    private Boolean active = true;
     
+
+    public String toJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writeValueAsString(this);
+            System.out.println("ResultingJSONstring = " + json);
+            return json;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    
+    @Transient
+    @Autowired
+    private NoticeService noticeService;
+    
+    public void desactivate() {
+        this.active = false;
+        noticeService.persist(this);
+    }
 }
