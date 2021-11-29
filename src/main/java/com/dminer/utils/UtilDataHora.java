@@ -88,6 +88,17 @@ public class UtilDataHora {
         return Timestamp.from(Instant.now());
     }
 
+    public static boolean isTimestampValid(String date) {
+        try {
+            if (date == null || date.isEmpty())
+                return false;
+            Timestamp.valueOf(date);
+            return true;
+        } catch (IllegalArgumentException  e) {
+            return false;
+        }
+    }
+
     /**
      * Recebe uma data Timestamp e retorna uma string yyyy-MM-dd HH:mm:ss
      * @param Timestamp date
