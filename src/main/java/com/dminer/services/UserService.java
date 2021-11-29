@@ -14,11 +14,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
@@ -27,8 +25,6 @@ import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
 import com.dminer.services.interfaces.IUserService;
-
-import reactor.core.publisher.Mono;
 
 @Service
 public class UserService implements IUserService {
