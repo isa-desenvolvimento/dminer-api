@@ -12,9 +12,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class CommentRequestDTO { 
-    
-    private String idUsuario;
+public class CommentRequestDTO {
+    private String login;
     private Integer idPost;
     private String date;
     private String content;

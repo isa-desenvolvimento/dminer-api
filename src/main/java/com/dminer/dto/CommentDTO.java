@@ -16,9 +16,8 @@ import lombok.ToString;
 public class CommentDTO { 
     
     private Integer id;
-    private String idUsuario;
+    private String login;
     private String content;
-    private String date; //@Parameter(example = "01/01/2020")
-    private String hours;
-
+    private String date;
+    private String avatar;
 }
