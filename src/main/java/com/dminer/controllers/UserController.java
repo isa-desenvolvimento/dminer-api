@@ -91,12 +91,15 @@ public class UserController {
 
 
     @GetMapping("/rest/all")
-    public ResponseEntity<Response<List<User>>> getUsersRest() {
+    public ResponseEntity<Response<List<UserDTO>>> getUsersRest() {
     	
     	String token = userService.getToken();
-    	Response<List<User>> retorno = userService.carregarUsuariosApi(token);
-    	List<User> usuarios = retorno.getData();
-    	Response<List<User>> response = new Response<>();
+    	Response<List<UserDTO>> retorno = userService.carregarUsuariosApi(token);
+    	if (!retorno.getErrors().isEmpty()) {
+    		return ResponseEntity.badRequest().body(retorno);
+    	}
+    	List<UserDTO> usuarios = retorno.getData();
+    	Response<List<UserDTO>> response = new Response<>();
     	 
     	usuarios.forEach(usuario -> {
     		String login = usuario.getLogin();
