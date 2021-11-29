@@ -85,7 +85,7 @@ public class PostController {
 		Response<PostDTO> response = new Response<>();
 		
 		log.info("Verificando se o usuário informado existe");
-		if (postRequestDTO.getIdUsuario() == null || !userService.existsByLogin(postRequestDTO.getIdUsuario())) {
+		if (postRequestDTO.getLogin() == null || !userService.existsByLogin(postRequestDTO.getLogin())) {
 			response.getErrors().add("Usuário não encontrado.");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
@@ -101,18 +101,18 @@ public class PostController {
 		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty())
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
 		
-		Optional<User> user = userService.findByLogin(postRequestDTO.getIdUsuario());
+		Optional<User> user = userService.findByLogin(postRequestDTO.getLogin());
 		post.setUser(user.get());
 
-		List<Comment> comments = new ArrayList<>();
-		if (!postRequestDTO.getComments().isEmpty()) {
-			log.info("Adicionando comentários");
-			postRequestDTO.getComments().forEach(commentReq -> {
-				Comment comment = commentConverter.requestDtoToEntity(commentReq);
-				comment = commentService.persist(comment);
-				comments.add(comment);
-			});
-		}
+		// List<Comment> comments = new ArrayList<>();
+		// if (!postRequestDTO.getComments().isEmpty()) {
+		// 	log.info("Adicionando comentários");
+		// 	postRequestDTO.getComments().forEach(commentReq -> {
+		// 		Comment comment = commentConverter.requestDtoToEntity(commentReq);
+		// 		comment = commentService.persist(comment);
+		// 		comments.add(comment);
+		// 	});
+		// }
 
 		post = postService.persist(post);
 
@@ -120,7 +120,7 @@ public class PostController {
 		try {
 			caminhoAbsoluto = criarDiretorio(post.getId());
 		} catch(IOException e) {
-			rollback(post, null, comments);
+			rollback(post, null);
 			response.getErrors().add(e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
@@ -156,7 +156,7 @@ public class PostController {
 		Post temp = postService.persist(post);
 		log.info("Adicionando anexos ao post e atualizando. {}", temp);
 		
-		response.setData(postToDto(temp, anexos, comments));
+		response.setData(postToDto(temp, anexos));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
     
@@ -233,13 +233,13 @@ public class PostController {
 		}
 
 		Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post.get());
-		Optional<List<Comment>> comments = commentService.findByPost(post.get());
-		response.setData(postToDto(post.get(), anexos.get(), comments.get()));
+		// Optional<List<Comment>> comments = commentService.findByPost(post.get());
+		response.setData(postToDto(post.get(), anexos.get()));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 
-	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
+	private void rollback(Post post, List<FileInfo> anexos) {
 		if (anexos != null) {
 			log.info("Apagando os anexos do banco");		
 			anexos.forEach(anexo -> {
@@ -247,12 +247,12 @@ public class PostController {
 			});
 		}
 
-		if (comments != null) {
-			log.info("Apagando os comentários do banco");
-			comments.forEach(comment -> {
-				commentService.delete(comment.getId());
-			});
-		}
+		// if (comments != null) {
+		// 	log.info("Apagando os comentários do banco");
+		// 	comments.forEach(comment -> {
+		// 		commentService.delete(comment.getId());
+		// 	});
+		// }
 
 		if (post != null) {
 			log.info("Apagando o post do banco");
@@ -261,7 +261,7 @@ public class PostController {
 		}
 	}
 
-	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<FileInfo> anexos) {
 		PostDTO dto = new PostDTO();
 		dto.setIdUsuario(post.getUser().getLogin());
 		dto.setLikes(post.getLikes());
@@ -272,9 +272,9 @@ public class PostController {
 			dto.getAnexos().add(e.getUrl());
 		});
 
-		comments.forEach(e -> {
-			dto.getComments().add(commentConverter.entityToDTO(e));
-		});
+		// comments.forEach(e -> {
+		// 	dto.getComments().add(commentConverter.entityToDTO(e));
+		// });
 		return dto;
 	}
 

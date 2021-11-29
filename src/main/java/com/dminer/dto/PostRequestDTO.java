@@ -16,9 +16,9 @@ import lombok.ToString;
 @ToString
 public class PostRequestDTO { 
     
-    private String idUsuario;
+    private String login;
     private Integer likes;
     private String content;
     private String type;
-    private List<CommentRequestDTO> comments = new ArrayList<>();
+    //private List<CommentRequestDTO> comments = new ArrayList<>();
 }
