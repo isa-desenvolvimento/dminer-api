@@ -42,6 +42,6 @@ public class Survey {
     @Column
     private Timestamp date;
 
-    @Column(columnDefinition = "default true")
-    private Boolean active;
+    @Column
+    private Boolean active = true;
 }
