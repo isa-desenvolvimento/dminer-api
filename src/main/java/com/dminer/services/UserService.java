@@ -105,13 +105,13 @@ public class UserService implements IUserService {
     }
     
     
-    public Response<List<User>> carregarUsuariosApi(String token) {
+    public Response<List<UserDTO>> carregarUsuariosApi(String token) {
         log.info("Recuperando todos os usuário na api externa");
 
         String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
-        List<User> usuarios = new ArrayList<>();        
+        List<UserDTO> usuarios = new ArrayList<>();        
     	RestTemplate restTemplate = new RestTemplate();
-    	Response<List<User>> myresponse = new Response<>();
+    	Response<List<UserDTO>> myresponse = new Response<>();
     	HttpHeaders headers = new HttpHeaders();
     	headers.add("BAERER_AUTHENTICATION", token);
     	
@@ -133,7 +133,11 @@ public class UserService implements IUserService {
     	arrayjs.forEach(el -> {
     		JSONObject jobj = (JSONObject) el;
     		String login = (String) jobj.get("login");
-    		usuarios.add(new User(login));    		
+            String dtAniversario = (String) jobj.get("birthDate");
+            UserDTO user = new UserDTO();
+            user.setBirthDate(dtAniversario);
+            user.setLogin(login);
+    		usuarios.add(user);    		
     	});
     	
     	myresponse.setData(usuarios);

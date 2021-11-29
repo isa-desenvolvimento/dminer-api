@@ -9,5 +9,4 @@ public class DminerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DminerApplication.class, args);
 	}
-
 }

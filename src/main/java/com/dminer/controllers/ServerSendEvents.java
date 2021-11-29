@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import com.dminer.components.LembreteAgendado;
 import com.dminer.dto.EventsDTO;
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Reminder;
 import com.dminer.services.EmitterService;
@@ -54,6 +55,8 @@ public class ServerSendEvents {
 
     private SseEmitter emitter;
 
+    private List<UserDTO> aniversariantes = new ArrayList<>();
+
 
     @GetMapping("/reminder")
     public  SseEmitter streamSseReminder() {
@@ -96,18 +99,22 @@ public class ServerSendEvents {
     @GetMapping("/birthday")
     public  SseEmitter streamSseBirthday() {        
         
-        String json = "disparando evento sse de aniversário";
+        List<String> anivs = new ArrayList<>();
+        if (aniversariantes.isEmpty()) {
+            aniversariantes.forEach(a -> {
+                anivs.add(a.toJson());
+            });
+        }
 
-        System.out.println(json);
         SseEmitter emitter = new SseEmitter(); 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             try {
-                emitter.send(json);
+                emitter.send(anivs);
                 emitter.complete();
             }catch (Exception ex) {
                 emitter.completeWithError(ex);
-            } 
+            }
         });
         executor.shutdown();
         return emitter;
@@ -123,5 +130,7 @@ public class ServerSendEvents {
         this.notification = notification;
     }
 
-
+    public void addAniversariantes(UserDTO dto) {
+        this.aniversariantes.add(dto);
+    }
 }
