@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
     
-    @Query("SELECT n FROM Notification n WHERE n.notification LIKE %?1%")
+    @Query("SELECT n FROM Notification n WHERE LOWER(n.notification) LIKE LOWER('%?1%')")
     public List<Notification> search(String keyword);
 }

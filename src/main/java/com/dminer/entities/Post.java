@@ -44,8 +44,7 @@ public class Post {
 	@Enumerated(EnumType.STRING)
 	private PostType type;
 	
-	@OneToOne
-    private User user;
+    private String userLogin;
 	
 	public Post(String content) { this.content = content; }
 

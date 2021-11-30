@@ -68,12 +68,7 @@ public class CommentController {
 
         if (dto.getLogin() == null) {
             result.addError(new ObjectError("dto", "Id do usuário precisa estar preenchido."));
-		} else {
-            Optional<User> findById = userService.findByLogin(dto.getLogin());
-            if (!findById.isPresent()) {
-                result.addError(new ObjectError("dto", "Usuário não encontrado."));
-            }
-        }        
+		}     
     }
 
 

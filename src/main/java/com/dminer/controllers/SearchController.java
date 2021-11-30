@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.converters.NoticeConverter;
+import com.dminer.converters.NotificationConverter;
+import com.dminer.converters.ReminderConverter;
 import com.dminer.converters.SurveyConverter;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.SearchDTO;
@@ -66,6 +69,15 @@ public class SearchController {
     private UserConverter userConverter;
 
     @Autowired
+    private NotificationConverter notificationConverter;
+    
+    @Autowired
+    private NoticeConverter noticeConverter;
+    
+    @Autowired
+    private ReminderConverter reminderConverter;
+    
+    @Autowired
     private SurveyService surveyService;
 
     @Autowired
@@ -74,15 +86,18 @@ public class SearchController {
     @Autowired
     private NoticeService noticeService;
 
+    private String token = null;
+    
     @Autowired
     private Environment env;
 
-
+    
+    
+    
     @GetMapping(value = "/{keyword}")
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String keyword) {
         
-        Response<SearchDTO> response = new Response<>();        
-        //List<Object> dados = new ArrayList<>();
+        Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
         
         if (keyword.equalsIgnoreCase("null")) keyword = null;
@@ -91,7 +106,7 @@ public class SearchController {
         Optional<List<Notification>> searchNotification = notificationService.search(keyword);
         if (searchNotification.isPresent() &&  !searchNotification.get().isEmpty()) {
             searchNotification.get().forEach(u -> {
-                searchDTO.getNotificationlist().add(u);
+                searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
             });
         }
 
@@ -99,11 +114,18 @@ public class SearchController {
         Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
         if (searchReminder.isPresent() && !searchReminder.get().isEmpty()) {
             searchReminder.get().forEach(u -> {
-                //dados.add(u);
-                searchDTO.getReminderList().add(u);
+                searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
             });
         }
 
+        // users
+        if (token == null) {
+        	token = userService.getToken();
+        }
+        List<UserDTO> searchUsers = userService.search(keyword, token);            
+        searchUsers.forEach(u -> {            
+            searchDTO.getUsersList().add(u);
+        });
         
 
         if (isProd()) {
@@ -112,44 +134,25 @@ public class SearchController {
             List<Notice> notices = genericRepositoryPostgres.searchNotice(keyword);
             if (!notices.isEmpty()) {
                 notices.forEach(u -> {
-                    searchDTO.getNoticeList().add(u);
+                	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
                 });
             } else {
                 Optional<List<Notice>> result = noticeService.findAll();
                 if (result.isPresent() &&  !result.get().isEmpty()) {
                     result.get().forEach(u -> {
-                        searchDTO.getNoticeList().add(u);
+                    	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
                     });
                 }    
             }
 
-            
             // events
             Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
             if (searchEvents.isPresent() &&  !searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
-                    //dados.add(u);
                     searchDTO.getEventsList().add(u);
                 });
             }
-
-            // users
-            List<UserDTO> searchUsers = genericRepositoryPostgres.searchUsers(keyword);
-            if (! searchUsers.isEmpty()) {
-                searchUsers.forEach(u -> {
-                    //dados.add(u);
-                    searchDTO.getUsersList().add(u);
-                });
-            } else {
-                Optional<List<User>> users = userService.findAll();
-                if (users.isPresent() && !users.get().isEmpty()) {
-                    users.get().forEach(user -> {
-                        //dados.add(userConverter.entityToDto(user));
-                        searchDTO.getUsersList().add(userConverter.entityToDto(user));
-                    });
-                }
-            }
-     
+            
             // surveys
             Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
             if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
@@ -167,32 +170,29 @@ public class SearchController {
 
         } else {
 
+        	// notice
+            List<Notice> notices = genericRepositorySqlServer.searchNotice(keyword);
+            if (!notices.isEmpty()) {
+                notices.forEach(u -> {
+                	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
+                });
+            } else {
+                Optional<List<Notice>> result = noticeService.findAll();
+                if (result.isPresent() &&  !result.get().isEmpty()) {
+                    result.get().forEach(u -> {
+                        searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
+                    });
+                }    
+            }
+            
             // events
             Optional<List<Events>> searchEvents = eventsService.search(keyword);
             if (searchEvents.isPresent() && !searchEvents.get().isEmpty()) {
                 searchEvents.get().forEach(u -> {
-                    //dados.add(u);
                     searchDTO.getEventsList().add(u);
                 });
             }
-
-            // users
-            List<UserDTO> searchUsers = genericRepositorySqlServer.searchUsers(keyword);
-            if (! searchUsers.isEmpty()) {
-                searchUsers.forEach(u -> {
-                    //dados.add(u);
-                    searchDTO.getUsersList().add(u);
-                });
-            } else {
-                Optional<List<User>> users = userService.findAll();
-                if (users.isPresent() && !users.get().isEmpty()) {
-                    users.get().forEach(user -> {
-                        //dados.add(userConverter.entityToDto(user));
-                        searchDTO.getUsersList().add(userConverter.entityToDto(user));
-                    });
-                }
-            }
-
+            
             // surveys
             Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
             if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {

@@ -16,14 +16,16 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class UserDTO {    
-    private Integer id;
+public class UserDTO {
     private String login;
-    private String banner;
     private String avatar;
     private String birthDate;
-
-
+    private String email;
+    private String linkedin;
+    private String area;
+    private String permission;
+    
+    
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {

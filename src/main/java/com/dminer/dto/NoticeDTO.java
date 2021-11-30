@@ -19,7 +19,8 @@ import lombok.ToString;
 public class NoticeDTO {
     
     private Integer id;
-    private List<Integer> users = new ArrayList<>();
+    //private List<Integer> users = new ArrayList<>();
+    private List<UserReductDTO> users = new ArrayList<>();
     private String date;
     private String creator;
     private String warning;

@@ -14,7 +14,7 @@ import lombok.ToString;
 public class NotificationDTO {
     
     private Integer id;
-    private String idUser;
+    private String login;
 	private String notification;
     private Boolean active;
 }

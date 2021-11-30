@@ -19,9 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.dminer.dto.UserDTO;
+import com.dminer.entities.Permission;
 import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
+import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
 import com.dminer.services.interfaces.IUserService;
@@ -30,7 +32,10 @@ import com.dminer.services.interfaces.IUserService;
 public class UserService implements IUserService {
 
     @Autowired
-	private UserRepository userRepository;	
+	private UserRepository userRepository;
+    
+    @Autowired
+	private PermissionRepository permissionRepository;
 	
     @Autowired
 	private GenericRepositorySqlServer genericRepositorySqlServer;
@@ -65,18 +70,33 @@ public class UserService implements IUserService {
         log.info("Excluindo um usuário pelo id {}", id);
 		userRepository.deleteById(id);
     }
-
-
-    public Optional<List<UserDTO>> getBirthDaysOfMonth() {
-        log.info("Buscando todos os usuários que fazem aniversário no mês");
-		return Optional.ofNullable(genericRepositorySqlServer.getBirthDaysOfMonth());
+    
+    public List<UserDTO> search(String termo, String token) {    	
+    	Response<List<UserDTO>> users = carregarUsuariosApi(token);
+    	List<UserDTO> pesquisa = new ArrayList<UserDTO>();
+    	if (!users.getErrors().isEmpty() && users.getData().isEmpty()) {
+    		return pesquisa;
+    	}
+    	
+    	if (termo == null) {
+    		return users.getData();
+    	}
+    	
+    	termo = termo.toLowerCase();
+    	for (UserDTO u : users.getData()) {
+    		String concat = (u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
+    				u.getLinkedin() + " " + u.getLogin() + " " + u.getPermission()).toLowerCase();    		
+    		if (concat.contains(termo)) {
+    			pesquisa.add(u);
+    		}			
+		}
+    	
+    	if (pesquisa.isEmpty()) {
+    		return users.getData();
+    	}    	
+    	return pesquisa;
     }
     
-    public Optional<List<UserDTO>> getBirthDaysOfMonthPostgres() {
-        log.info("[Postgres] Buscando todos os usuários que fazem aniversário no mês");
-		return Optional.ofNullable(genericRepositoryPostgres.getBirthDaysOfMonth());
-    } 
-     
     
     public boolean existsByLogin(String login) {
         log.info("Verificando se usuário existe pelo login, {}", login);
@@ -87,7 +107,7 @@ public class UserService implements IUserService {
         log.info("Recuperando usuário pelo login, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
-    
+
     
     public String getToken() {
     	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
@@ -126,6 +146,7 @@ public class UserService implements IUserService {
     	}
     	
     	JSONObject personJsonObject = new JSONObject(response.getBody());
+    	//System.out.println(personJsonObject.toString());
     	personJsonObject = (JSONObject) personJsonObject.get("output");
     	personJsonObject = (JSONObject) personJsonObject.get("result");
     	
@@ -134,21 +155,30 @@ public class UserService implements IUserService {
     		JSONObject jobj = (JSONObject) el;
     		String login = (String) jobj.get("login");
             String dtAniversario = (String) jobj.get("birthDate");
+            String email = (String) jobj.get("email");
+            String linkedin = (String) jobj.get("linkedinUrl");
+            String area = (String) jobj.get("area");            
+            //String avatar = getAvatar(login, token);
+            
             UserDTO user = new UserDTO();
             user.setBirthDate(dtAniversario);
             user.setLogin(login);
-    		usuarios.add(user);    		
+            user.setArea(area);
+            user.setEmail(email);
+            user.setLinkedin(linkedin);
+            //user.setAvatar(avatar);
+    		usuarios.add(user);
     	});
     	
     	myresponse.setData(usuarios);
     	return myresponse;
     }
     
+
     
     public String getAvatar(String login, String token) {
     	String uri = "https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login;
-    	RestTemplate restTemplate = new RestTemplate();
-    	Response<List<User>> myresponse = new Response<>();
+    	RestTemplate restTemplate = new RestTemplate();    	
     	HttpHeaders headers = new HttpHeaders();
     	headers.add("BAERER_AUTHENTICATION", token);
     	

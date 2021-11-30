@@ -37,6 +37,7 @@ import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.UserRestModel;
 import com.dminer.services.UserService;
+import com.dminer.utils.UtilDataHora;
 
 import lombok.RequiredArgsConstructor;
 
@@ -61,34 +62,8 @@ public class UserController {
     @Autowired
     private Environment env;
 
-
-    //@GetMapping("/rest/all")
-    public ResponseEntity<Response<List<UserRestModel>>> getUsersRest2() {
-    	
-    	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
-    	RestTemplate template = new RestTemplate();
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    	headers.add("BAERER_AUTHENTICATION", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvYmplY3QiOiJ7XCJpZFwiOlwiO1gzQkRcXHUwMDNjQUdCUUtFOFJcXHUwMDNjTzRhWnJXc0RNdTkzcm1QM1BhSkJMTGtsNjhReHpDNnBhZVFtWCNuSmFaVmhWISQxOVwiLFwidHlwZVwiOlwiZ2FtaWZpY2Fkb1wiLFwidXNlclwiOlwibWF0aGV1cy5yaWJlaXJvMVwiLFwibG9naW5UaW1lXCI6XCJOb3YgMjYsIDIwMjEsIDM6MjA6MjggUE1cIixcImV4cGlyZVRva2VuXCI6XCJOb3YgMjYsIDIwMjEsIDM6NTA6MjggUE1cIixcInNlc3Npb25JbmZpbml0eVwiOmZhbHNlLFwiYXR0cmlidXRlc1wiOntcInRva2VuX2hhc2hpZHNcIjpcIjhkZDNlYTgyLWNlMGQtNGRjMi04MjMwLWViOWQ5YjZjYjg1NlwiLFwicmFuZG9tX2lkZW50aWZ5XCI6XCJmY2ViZWUwMy0yNjhlLTQ1NWYtODg5My1lMWZmMjUzYWQ2YzJcIixcImlwXCI6XCIxOTEuMjIzLjIzOS4xMDJcIn19In0.NHXi5-sp_dqeQ6bBnTEvUj3C_zl_ee59r6HvPdqpgyE");
-
-    	HttpEntity<String> entity = new HttpEntity<>("body", headers);
-    	
-    	ResponseEntity<String> response = template.exchange(uri, HttpMethod.GET, entity, String.class);
-    	System.out.println(response);
-    	//String result = template.getForObject(uri, String.class);
-    	//System.out.println(result);
-    	
-//        List<UserRestModel> buscarUsuarios = userRest.buscarUsuarios();
-//        if (buscarUsuarios == null) {
-//            System.out.println("\n\n usuarios vieram null\n\n");
-//        } else {
-//            buscarUsuarios.forEach(usuario -> {
-//                System.out.println(usuario.getLogin());
-//            });
-//        }
-        return null;
-    }
-
+    private String token;
+    
 
     @GetMapping("/rest/all")
     public ResponseEntity<Response<List<UserDTO>>> getUsersRest() {
@@ -109,7 +84,6 @@ public class UserController {
     	response.setData(usuarios);
     	return ResponseEntity.ok(response);        
     }
-
 
 
     private void validateDto(UserDTO userDTO, BindingResult result) {        
@@ -135,8 +109,7 @@ public class UserController {
 
         if (userService.existsByLogin(dto.getLogin())) {            
             Optional<User> findByLogin = userService.findByLogin(dto.getLogin());
-            User user = findByLogin.get();
-            user.setBanner(dto.getBanner());
+            User user = findByLogin.get();            
             user = userService.persist(user);
             response.setData(userConverter.entityToDto(user));
             return ResponseEntity.ok().body(response);
@@ -235,19 +208,29 @@ public class UserController {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        Optional<List<UserDTO>> user;
-        if (isProd()) {
-            user = userService.getBirthDaysOfMonthPostgres();    
-        } else {
-            user = userService.getBirthDaysOfMonth();
+        if (token == null) {
+        	token = userService.getToken();
         }
         
-        if (user.get().isEmpty()) {
+        Response<List<UserDTO>> users = userService.carregarUsuariosApi(token);
+        if (!users.getErrors().isEmpty()) {
+        	response.setErrors(users.getErrors());
+        	return ResponseEntity.badRequest().body(response);
+        }
+        
+        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+        users.getData().forEach(u -> {
+        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+        		aniversariantes.add(u);
+        	}
+        });
+        
+        if (aniversariantes.isEmpty()) {
             response.getErrors().add("Nenhum aniversariante encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
-        response.setData(user.get());
+        response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
     }
 

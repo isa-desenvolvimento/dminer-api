@@ -89,11 +89,7 @@ public class BenefitsController {
         
         if (dto.getCreator() == null) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Responsável precisa estar preenchido."));
-        } else {
-            if(!userService.existsByLogin(dto.getCreator())) {
-                result.addError(new ObjectError("BenefitsRequestDTO", "Usuário não encontrado."));
-            }
-        }
+        } 
 
         if (dto.getDate() == null || dto.getTitle().isEmpty()) {
             result.addError(new ObjectError("BenefitsRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
@@ -129,10 +125,6 @@ public class BenefitsController {
         
         if (dto.getCreator() == null) {
             result.addError(new ObjectError("dto", "Responsável precisa estar preenchido."));
-        } else {
-            if(!userService.existsByLogin(dto.getCreator())) {
-                result.addError(new ObjectError("dto", "Usuário não encontrado."));
-            }
         }
 
         if (dto.getDate() == null || dto.getTitle().isEmpty()) {

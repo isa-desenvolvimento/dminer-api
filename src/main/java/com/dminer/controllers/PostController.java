@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -85,7 +84,7 @@ public class PostController {
 		Response<PostDTO> response = new Response<>();
 		
 		log.info("Verificando se o usuário informado existe");
-		if (postRequestDTO.getLogin() == null || !userService.existsByLogin(postRequestDTO.getLogin())) {
+		if (postRequestDTO.getLogin() == null ) {
 			response.getErrors().add("Usuário não encontrado.");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
@@ -100,22 +99,12 @@ public class PostController {
 
 		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty())
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
-		
-		Optional<User> user = userService.findByLogin(postRequestDTO.getLogin());
-		post.setUser(user.get());
 
-		// List<Comment> comments = new ArrayList<>();
-		// if (!postRequestDTO.getComments().isEmpty()) {
-		// 	log.info("Adicionando comentários");
-		// 	postRequestDTO.getComments().forEach(commentReq -> {
-		// 		Comment comment = commentConverter.requestDtoToEntity(commentReq);
-		// 		comment = commentService.persist(comment);
-		// 		comments.add(comment);
-		// 	});
-		// }
-
+		post.setUserLogin(postRequestDTO.getLogin());
 		post = postService.persist(post);
 
+		
+		
 		String caminhoAbsoluto;
 		try {
 			caminhoAbsoluto = criarDiretorio(post.getId());
@@ -263,7 +252,7 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<FileInfo> anexos) {
 		PostDTO dto = new PostDTO();
-		dto.setIdUsuario(post.getUser().getLogin());
+		dto.setIdUsuario(post.getUserLogin());
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().name());
 		dto.setId(post.getId());		

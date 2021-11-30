@@ -3,32 +3,46 @@ package com.dminer.converters;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
+import com.dminer.services.UserService;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserConverter {
 
+	
+	@Autowired
+    private UserService userService;
+	
+	private String token = null;
+	
     public User dtoToEntity(UserDTO dto) {
         User user = new User();
-        user.setId(dto.getId());
+        Optional<User> opt = userService.findByLogin(dto.getLogin());
+        if (opt.isPresent()) {
+        	user.setId(opt.get().getId());        	
+        }
         user.setLogin(dto.getLogin());
-        user.setBanner(dto.getBanner());
         return user;
     }
-    
-    // public User requestDtoToEntity(UserRequestDTO dto) {
-    //     User user = new User();        
-    //     user.setLogin(dto.getLogin());
-    //     user.setBanner(dto.getBanner());
-    //     return user;
-    // }
+
 
     public UserDTO entityToDto(User user) {
         UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
+        Optional<User> opt = userService.findByLogin(dto.getLogin());
+        if (opt.isPresent()) {
+        	user.setId(opt.get().getId());        	
+        }
+        
         dto.setLogin(user.getLogin());
-        if (user.getBanner() != null)
-            dto.setBanner(user.getBanner());
+        if (token == null) {
+            token = userService.getToken();
+        }
+        String avatar = userService.getAvatar(dto.getLogin(), token);
+        dto.setAvatar(avatar);
         return dto;
     }
    

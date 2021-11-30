@@ -33,7 +33,10 @@ public class GenericRepositoryPostgres {
     private JdbcOperations jdbcSubOperations;
 
     @Autowired
-    private UserRepository userService;
+    private UserRepository userRepository;
+    
+    //@Autowired
+    //private UserService userService;
     
     @Autowired
     private ProfileRepository profileRepository;
@@ -184,7 +187,7 @@ public class GenericRepositoryPostgres {
            "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
            "to_char(e.start_date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
            "to_char(e.end_date , 'yyyy-mm-dd hh:mm:ss'))) " +
-           "LIKE lower('%" +keyword+ "%')";
+           "LOWER(LIKE '%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -211,28 +214,7 @@ public class GenericRepositoryPostgres {
     }
 
 
-    public List<UserDTO> getBirthDaysOfMonth() {
-
-        String query = 
-        "SELECT * " + 
-        "FROM USERS U " +
-        "WHERE " +
-        "   EXTRACT( " +
-        "       month from u.dt_birthday" +
-        ") = EXTRACT ( MONTH FROM TIMESTAMP '" + UtilDataHora.currentFirstDayFormat() + "')";
-        
-        
-
-        log.info("getBirthDaysOfMonth = {}", query);
-
-        return jdbcOperations.query(query, (rs, rowNum) -> {
-            UserDTO e = new UserDTO();
-            e.setId(rs.getInt("ID"));
-            e.setLogin(rs.getString("LOGIN"));
-            e.setBanner(rs.getString("BANNER"));
-            return e;
-        });
-    }
+    private String token = null;
 
 
     public List<Benefits> searchBenefits(String keyword) {
@@ -242,7 +224,7 @@ public class GenericRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "LIKE lower('%" +keyword+ "%')";
+           "LOWER(LIKE '%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -252,7 +234,7 @@ public class GenericRepositoryPostgres {
             e.setTitle(rs.getString("TITLE"));
             e.setContent(rs.getString("CONTENT"));
             e.setDate(rs.getTimestamp("DATE"));
-            Optional<User> findById = userService.findById(rs.getInt("CREATOR_ID"));
+            Optional<User> findById = userRepository.findById(rs.getInt("CREATOR_ID"));
             if (findById.isPresent())
                 e.setCreator(findById.get());
             
@@ -272,7 +254,7 @@ public class GenericRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.profile, ' ', e.category, ' ', e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "LIKE lower('%" +keyword+ "%')";
+           "LOWER(LIKE '%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -294,33 +276,14 @@ public class GenericRepositoryPostgres {
     }
 
 
-    public List<UserDTO> searchUsers(String keyword) {
-        String query =
-        "SELECT * " +
-        "FROM USERS e " +
-        "WHERE lower(e.login)" +
-        "LIKE lower('%" +keyword+ "%')";
-
-        log.info("search = {}", query);
-
-        return jdbcOperations.query(query, (rs, rowNum) -> { 
-            UserDTO e = new UserDTO();
-            e.setId(rs.getInt("ID"));
-            e.setLogin(rs.getString("LOGIN"));
-            e.setBanner(rs.getString("BANNER"));
-            return e;
-        });
-    }
-
-
     public List<Survey> searchSurvey(String keyword) {
         String query =
         "SELECT * " +
         "FROM SURVEY e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.question, ' ', " +
-           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ') " +
-           "LIKE '%" +keyword+ "%'";
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
+           "LOWER(LIKE '%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -340,11 +303,11 @@ public class GenericRepositoryPostgres {
         String query =
         "SELECT * " +
         "FROM NOTICE e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.creator, ' ', " +
            "e.warning, ' ', " +
-           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ') " +
-           "LIKE '%" +keyword+ "%'";
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
+           "LOWER(LIKE '%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -358,9 +321,4 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
-}
-    
-    
-    // Optional<User> findById = userService.findById(rs.getInt("CREATOR_ID"));
-    // if (findById.isPresent())
-    //     e.setCreator(findById.get());
+}    

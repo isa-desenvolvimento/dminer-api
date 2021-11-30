@@ -57,12 +57,7 @@ public class NotificationController {
     private void validateRequestDto(NotificationRequestDTO notificationRequestDTO, BindingResult result) {
         if (notificationRequestDTO.getIdUser() == null) {
             result.addError(new ObjectError("NotificationRequestDTO", "Id do usuário precisa estar preenchido."));
-		} else {
-            Optional<User> findById = userService.findByLogin(notificationRequestDTO.getIdUser());
-            if (!findById.isPresent()) {
-                result.addError(new ObjectError("NotificationRequestDTO", "Usuário não encontrado."));
-            }
-        }
+		}
 
         if (notificationRequestDTO.getNotification() == null || notificationRequestDTO.getNotification().isEmpty()) {
             result.addError(new ObjectError("NotificationRequestDTO", "Descrição da notificação precisa estar preenchido."));			
@@ -80,14 +75,9 @@ public class NotificationController {
             }
         }
         
-        if (dto.getIdUser() == null) {
-            result.addError(new ObjectError("dto", "Id do usuário precisa estar preenchido."));
-		} else {
-            Optional<User> findById = userService.findByLogin(dto.getIdUser());
-            if (!findById.isPresent()) {
-                result.addError(new ObjectError("dto", "Usuário não encontrado."));
-            }
-        }
+        if (dto.getLogin() == null) {
+            result.addError(new ObjectError("dto", "Login do usuário precisa estar preenchido."));
+		} 
 
         if (dto.getNotification() == null || dto.getNotification().isEmpty()) {
             result.addError(new ObjectError("dto", "Descrição da notificação precisa estar preenchido."));			

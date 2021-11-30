@@ -18,6 +18,16 @@ public class UtilDataHora {
 
 
     /**
+     * Recebe uma data no formato dd/mm/yyyy e verifica se faz ou fez aniversário no mês atual
+     * @param String
+     * @return
+     */
+    public static boolean isAniversariante(String date) {
+    	Date date2 = UtilDataHora.stringToDate(date);
+        return (date2.getTime() >= currentFirstDayTimestamp().getTime() || date2.getTime() <= currentLastDayTimestamp().getTime());
+    }
+    
+    /**
      * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna
      * true se for uma data igual ou menor que hoje
      * @return boolean
@@ -149,6 +159,11 @@ public class UtilDataHora {
         return df.format(date);
     }
 
+    public static String dateToFullStringUTC(Timestamp date) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return df.format(date);
+    }
+    
     public static String hourToString(Date hora) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");        
         return sdf.format(hora);

@@ -18,7 +18,8 @@ import lombok.ToString;
 @ToString
 public class NoticeRequestDTO {
     
-    private List<Integer> users = new ArrayList<>();
+    // private List<Integer> users = new ArrayList<>();
+    private List<String> users = new ArrayList<>();
     private String date;
     private String creator;
     private String warning;

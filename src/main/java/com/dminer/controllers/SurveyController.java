@@ -104,12 +104,7 @@ public class SurveyController {
         if (loginUser == null) {
             log.info("Informe o login do usuário que está respondendo o questionário");
             response.getErrors().add("Informe o login do usuário que está respondendo o questionário");
-        } else {
-            if (! userService.existsByLogin(loginUser)) {
-                log.info("Usuário não encontrado");
-                response.getErrors().add("Usuário não encontrado");
-            }
-        }
+        } 
         
         if (option == null || option.isEmpty() || (!option.equalsIgnoreCase("A") && !option.equalsIgnoreCase("B"))) {
             log.info("Informe uma opção válida para a resposta = {}", option);

@@ -3,10 +3,12 @@ package com.dminer.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.converters.NoticeConverter;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Events;
+import com.dminer.entities.Notice;
 import com.dminer.entities.Permission;
 import com.dminer.entities.Survey;
 import com.dminer.entities.Tutorials;
@@ -31,15 +33,11 @@ public class GenericRepositorySqlServer {
     private UserRepository userService;
     
     @Autowired
-    private ProfileRepository profileRepository;
-    
-    @Autowired
     private PermissionRepository permissionRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-
+    
     private static final Logger log = LoggerFactory.getLogger(GenericRepositorySqlServer.class);
 
 
@@ -175,12 +173,12 @@ public class GenericRepositorySqlServer {
         String query =
         "SELECT * " +
         "FROM EVENTS e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.title, ' ', e.location, ' ', e.description, ' ', " +
            "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
            "' ', convert(varchar(100), e.start_date, 120), " +
-           "' ', convert(varchar(100), e.end_date, 120)) " +
-           "LIKE '%" +keyword+ "%'";
+           "' ', convert(varchar(100), e.end_date, 120))) " +
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -207,36 +205,14 @@ public class GenericRepositorySqlServer {
     }
 
 
-    public List<UserDTO> getBirthDaysOfMonth() {
-
-        String query = 
-        "SELECT * " + 
-        "FROM USERS U "+
-        "WHERE "+
-            "(select MONTH(u.dt_birthday)) BETWEEN (select MONTH (cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime))) and (select MONTH (cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)))" ;
-
-        //"U.DT_BIRTHDAY BETWEEN cast('" + UtilDataHora.currentFirstDayFormat() + "' as datetime) "+ " AND " + "cast('" + UtilDataHora.currentLastDayFormat() + "' as datetime)" ;
-
-        log.info("getBirthDaysOfMonth = {}", query);
-
-        return jdbcOperations.query(query, (rs, rowNum) -> {
-            UserDTO e = new UserDTO();
-            e.setId(rs.getInt("ID"));
-            e.setLogin(rs.getString("LOGIN"));
-            e.setBanner(rs.getString("BANNER"));
-            return e;
-        });
-    }
-
-
     public List<Benefits> searchBenefits(String keyword) {
         String query =
         "SELECT * " +
         "FROM BENEFITS e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
-           "' ', convert(varchar(100), e.date, 120)) " +
-           "LIKE '%" +keyword+ "%'";
+           "' ', convert(varchar(100), e.date, 120))) " +
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -264,10 +240,10 @@ public class GenericRepositorySqlServer {
         String query =
         "SELECT * " +
         "FROM BENEFITS e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.profile, ' ', e.category, ' ', e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
-           "' ', convert(varchar(100), e.date, 120)) " +
-           "LIKE '%" +keyword+ "%'";
+           "' ', convert(varchar(100), e.date, 120))) " +
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -289,33 +265,14 @@ public class GenericRepositorySqlServer {
     }
 
 
-    public List<UserDTO> searchUsers(String keyword) {
-        String query =
-        "SELECT * " +
-        "FROM USERS e " +
-        "WHERE lower(e.login)" +
-        "LIKE lower('%" +keyword+ "%')";
-
-        log.info("search = {}", query);
-
-        return jdbcOperations.query(query, (rs, rowNum) -> { 
-            UserDTO e = new UserDTO();
-            e.setId(rs.getInt("ID"));
-            e.setLogin(rs.getString("LOGIN"));
-            e.setBanner(rs.getString("BANNER"));
-            return e;
-        });
-    }
-
-
     public List<Survey> searchSurvey(String keyword) {
         String query =
         "SELECT * " +
         "FROM SURVEY e " +
-        "WHERE CONCAT( " +
+        "WHERE LOWER(CONCAT( " +
            "e.question, ' ', " +
-           " convert(varchar(100), e.date, 120)) " +
-           "LIKE '%" +keyword+ "%'";
+           "convert(varchar(100), e.date, 120))) " +
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -325,6 +282,30 @@ public class GenericRepositorySqlServer {
             e.setOptionA(rs.getString("OPTIONA"));
             e.setOptionB(rs.getString("OPTIONB"));
             e.setQuestion(rs.getString("QUESTION"));
+            e.setDate(rs.getTimestamp("DATE"));
+            return e;
+        });
+    }
+    
+    
+    public List<Notice> searchNotice(String keyword) {
+        String query =
+        "SELECT * " +
+        "FROM NOTICE e " +
+        "WHERE LOWER(CONCAT( " +
+           "e.creator, ' ', " +
+           "e.warning, ' ', " +
+           "convert(varchar(100), e.date, 120))) " +
+           "LIKE LOWER('%" +keyword+ "%')";
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Notice e = new Notice();
+            e.setId(rs.getInt("ID"));
+            e.setCreator(rs.getString("CREATOR"));
+            e.setWarning(rs.getString("WARNING"));
+            e.setPriority(rs.getInt("PRIORITY"));
             e.setDate(rs.getTimestamp("DATE"));
             return e;
         });

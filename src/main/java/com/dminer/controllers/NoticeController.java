@@ -56,10 +56,10 @@ public class NoticeController {
         if (avisosRequestDTO.getUsers() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
 		} else {
-            avisosRequestDTO.getUsers().forEach(id -> {
-                Optional<User> findById = userService.findById(id);
+            avisosRequestDTO.getUsers().forEach(login -> {
+            	Optional<User> findById = userService.findByLogin(login);
                 if (!findById.isPresent()) {
-                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+id+" não encontrado."));
+                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: " + login + " não encontrado."));
                 }
             });
         }
@@ -82,10 +82,10 @@ public class NoticeController {
         if (dto.getUsers() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
 		} else {
-            dto.getUsers().forEach(id -> {
-                Optional<User> findById = userService.findById(id);
+            dto.getUsers().forEach(login -> {
+                Optional<User> findById = userService.findByLogin(login.getLogin());
                 if (!findById.isPresent()) {
-                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+id+" não encontrado."));
+                    result.addError(new ObjectError("NoticeRequestDTO", "Usuário: "+ login.getLogin() +" não encontrado."));
                 }
             });
         }
