@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -22,10 +23,51 @@ public class UtilDataHora {
      * @param String
      * @return
      */
-    public static boolean isAniversariante(String date) {
-    	Date date2 = UtilDataHora.stringToDate(date);
-        return (date2.getTime() >= currentFirstDayTimestamp().getTime() || date2.getTime() <= currentLastDayTimestamp().getTime());
+    public static boolean isAniversariante(String dateStr) {
+    	Date date = UtilDataHora.stringToDate(dateStr);    	
+    	Date currentDate = new Date(currentFirstDayTimestamp().getTime());   	
+    	return date.getMonth() == currentDate.getMonth();
     }
+    
+    
+    public static Date parseDateStringToDate(String dateStr) {
+    	String[] dateArr = dateStr.split("/");
+    	int day = Integer.parseInt(dateArr[0]);
+    	int month = Integer.parseInt(dateArr[1]);
+    	int year = Integer.parseInt(dateArr[2]);
+    	
+    	Calendar cal = Calendar.getInstance();
+		cal.set(year, month, day);
+		Date date = cal.getTime();
+		System.out.println(date);
+		return date;
+    }
+    
+    
+    public static Date alterDay(Date date, int newDay) {
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(date); 
+    	// You can -/+ x months here to go back in history or move forward.
+    	cal.add(Calendar.DAY_OF_MONTH, newDay); 
+    	return cal.getTime();
+    }
+    
+    public static Date alterMonth(Date date, int newMonth) {
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(date); 
+    	// You can -/+ x months here to go back in history or move forward.
+    	cal.add(Calendar.MONTH, newMonth); 
+    	return cal.getTime();
+    }
+    
+    public static Date alterYear(Date date, int newYear) {
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(date); 
+    	// You can -/+ x months here to go back in history or move forward.
+    	cal.add(Calendar.YEAR, newYear); 
+    	return cal.getTime();
+    }
+    
     
     /**
      * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna

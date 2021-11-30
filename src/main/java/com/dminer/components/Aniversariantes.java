@@ -32,12 +32,9 @@ public class Aniversariantes {
         String token = userService.getToken();
         List<UserDTO> usuarios = userService.carregarUsuariosApi(token).getData();
         List<UserDTO> aniversariantes = new ArrayList<>();
-        Timestamp firstDay = UtilDataHora.currentFirstDayTimestamp();
-        Timestamp lastDay = UtilDataHora.currentLastDayTimestamp();
-
-        for (UserDTO userDTO : usuarios) {
-            Date date = UtilDataHora.stringToDate(userDTO.getBirthDate());
-            if (date.getTime() >= firstDay.getTime() || date.getTime() <= lastDay.getTime()) {
+        
+        for (UserDTO userDTO : usuarios) {            
+            if (UtilDataHora.isAniversariante(userDTO.getBirthDate())) {
                 aniversariantes.add(userDTO);
             }
         }
