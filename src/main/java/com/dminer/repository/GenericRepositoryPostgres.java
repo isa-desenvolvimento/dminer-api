@@ -187,7 +187,7 @@ public class GenericRepositoryPostgres {
            "e.start_repeat, ' ', e.end_repeat, ' ', e.reminder, " +
            "to_char(e.start_date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
            "to_char(e.end_date , 'yyyy-mm-dd hh:mm:ss'))) " +
-           "LOWER(LIKE '%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -224,7 +224,7 @@ public class GenericRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "LOWER(LIKE '%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -254,7 +254,7 @@ public class GenericRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.profile, ' ', e.category, ' ', e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
-           "LOWER(LIKE '%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -283,7 +283,7 @@ public class GenericRepositoryPostgres {
         "WHERE LOWER(CONCAT( " +
            "e.question, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
-           "LOWER(LIKE '%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -307,7 +307,7 @@ public class GenericRepositoryPostgres {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
-           "LOWER(LIKE '%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
