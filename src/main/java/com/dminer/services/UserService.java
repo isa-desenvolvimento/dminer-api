@@ -1,6 +1,7 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -158,7 +159,9 @@ public class UserService implements IUserService {
             String email = (String) jobj.get("email");
             String linkedin = (String) jobj.get("linkedinUrl");
             String area = (String) jobj.get("area");            
-            //String avatar = getAvatar(login, token);
+            String avatar = getAvatar(login, token);
+            String encodedAvatar = Base64.getEncoder().encodeToString(avatar.getBytes());
+            
             
             UserDTO user = new UserDTO();
             user.setBirthDate(dtAniversario);
@@ -166,7 +169,7 @@ public class UserService implements IUserService {
             user.setArea(area);
             user.setEmail(email);
             user.setLinkedin(linkedin);
-            //user.setAvatar(avatar);
+            user.setAvatar(encodedAvatar);
     		usuarios.add(user);
     	});
     	
