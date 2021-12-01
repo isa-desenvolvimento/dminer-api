@@ -78,8 +78,8 @@ public class UserController {
     	 
     	usuarios.forEach(usuario -> {
     		String login = usuario.getLogin();
-    		String avatar = userService.getAvatar(login, token);
-    		usuario.setAvatar(avatar);
+    		//String avatar = userService.getAvatar(login, token);
+    		//usuario.setAvatar(avatar);
     	});
     	response.setData(usuarios);
     	return ResponseEntity.ok(response);        

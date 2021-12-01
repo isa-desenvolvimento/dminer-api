@@ -1,9 +1,15 @@
 package com.dminer.services;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+
+import javax.imageio.ImageIO;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Permission;
@@ -139,18 +146,15 @@ public class UserService implements IUserService {
     	headers.setContentType(MediaType.APPLICATION_JSON);
     	HttpEntity<String> entity = new HttpEntity<>("body", headers);
     	
-    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
-    	System.out.println(response);
+    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);    	
     	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {
     		myresponse.getErrors().add(response.toString());
     		return myresponse;
     	}
     	
-    	JSONObject personJsonObject = new JSONObject(response.getBody());
-    	//System.out.println(personJsonObject.toString());
+    	JSONObject personJsonObject = new JSONObject(response.getBody());    	
     	personJsonObject = (JSONObject) personJsonObject.get("output");
-    	personJsonObject = (JSONObject) personJsonObject.get("result");
-    	
+    	personJsonObject = (JSONObject) personJsonObject.get("result");    	
     	JSONArray arrayjs = personJsonObject.getJSONArray("usuarios");
     	arrayjs.forEach(el -> {
     		JSONObject jobj = (JSONObject) el;
@@ -158,10 +162,11 @@ public class UserService implements IUserService {
             String dtAniversario = (String) jobj.get("birthDate");
             String email = (String) jobj.get("email");
             String linkedin = (String) jobj.get("linkedinUrl");
-            String area = (String) jobj.get("area");            
-            //String avatar = getAvatar(login, token);
-            //String encodedAvatar = Base64.getEncoder().encodeToString(avatar.getBytes());
-            
+            String area = (String) jobj.get("area");
+            byte[] avatar = getAvatar(login);
+            String encodedAvatar = "";
+            if (avatar != null)
+            	encodedAvatar = Base64.getEncoder().encodeToString(avatar);
             
             UserDTO user = new UserDTO();
             user.setBirthDate(dtAniversario);
@@ -169,7 +174,7 @@ public class UserService implements IUserService {
             user.setArea(area);
             user.setEmail(email);
             user.setLinkedin(linkedin);
-            //user.setAvatar(encodedAvatar);
+            user.setAvatar(encodedAvatar);
     		usuarios.add(user);
     	});
     	
@@ -178,20 +183,15 @@ public class UserService implements IUserService {
     }
     
 
-    
-    public String getAvatar(String login, String token) {
-    	String uri = "https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login;
-    	RestTemplate restTemplate = new RestTemplate();    	
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.add("BAERER_AUTHENTICATION", token);
-    	
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<String> entity = new HttpEntity<>("body", headers);
-    	
-    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
-    	return response.getBody();    	
-    }
-    
-    
-    
+    public byte[] getAvatar(String login) {
+    	try {
+    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    		if (image != null) {
+    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    			ImageIO.write(image, "png", baos);
+    			return baos.toByteArray();
+    		}
+    	} catch (IOException e) {}
+    	return null;
+    }    
 }

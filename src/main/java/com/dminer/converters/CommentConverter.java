@@ -36,8 +36,8 @@ public class CommentConverter {
         if (token == null) {
             token = userService.getToken();
         }
-        String avatar = userService.getAvatar(dto.getLogin(), token);
-        dto.setAvatar(avatar);
+        //String avatar = userService.getAvatar(dto.getLogin(), token);
+        //dto.setAvatar(avatar);
         return dto;
     }
 

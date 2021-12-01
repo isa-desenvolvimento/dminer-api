@@ -1,9 +1,15 @@
 package com.dminer.controllers;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+
+import javax.imageio.ImageIO;
 
 import com.dminer.converters.NoticeConverter;
 import com.dminer.converters.NotificationConverter;
@@ -93,9 +99,19 @@ public class SearchController {
 
     
     
+    @GetMapping()
+    public ResponseEntity<Response<List<UserDTO>>> getAllEvents() throws IOException {
+    	// users
+        if (token == null) {
+        	token = userService.getToken();
+        }
+        
+        return ResponseEntity.ok(userService.carregarUsuariosApi(token));
+    }
+    
     
     @GetMapping(value = "/{keyword}")
-    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents2(@PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();

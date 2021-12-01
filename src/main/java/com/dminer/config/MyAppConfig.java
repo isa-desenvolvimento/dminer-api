@@ -2,6 +2,7 @@ package com.dminer.config;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -12,10 +13,26 @@ import javax.net.ssl.X509TrustManager;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
 class MyAppConfig {
+	
+	
+	@Bean
+	public RestTemplate restTemplate(List<HttpMessageConverter<?>> messageConverters) {
+	    return new RestTemplate(messageConverters);
+	}
+
+	@Bean
+	public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
+	    return new ByteArrayHttpMessageConverter();
+	}
+	
+	
     @Bean
     public Boolean disableSSLValidation() throws Exception {
         final SSLContext sslContext = SSLContext.getInstance("TLS");

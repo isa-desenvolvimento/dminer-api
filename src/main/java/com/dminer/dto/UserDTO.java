@@ -29,9 +29,7 @@ public class UserDTO {
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            String json = mapper.writeValueAsString(this);
-            System.out.println("ResultingJSONstring = " + json);
-            return json;
+        	return mapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
