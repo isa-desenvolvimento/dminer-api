@@ -196,9 +196,9 @@ public class UserController {
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
         	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token.getToken());
-        	System.out.println(opt.getData());
-        	if (opt.getData() == null || opt.getData().isEmpty()) {
-        		response.getErrors().add("Usuários não encontrados");
+        	
+        	if (!opt.getErrors().isEmpty()) {
+        		response.setErrors(opt.getErrors());
         		return ResponseEntity.badRequest().body(response);
         	}
         	response.setData(opt.getData());
