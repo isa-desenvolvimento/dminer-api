@@ -18,6 +18,7 @@ import lombok.ToString;
 @ToString
 public class UserDTO {
     private String login;
+    private String userName;
     private String avatar;
     private String banner;
     private String birthDate;
