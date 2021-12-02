@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.dminer.converters.UserConverter;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
@@ -187,14 +188,14 @@ public class UserController {
     }
     
     
-    @PostMapping(value = "/dropdown", consumes = {"text/plain"})
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody String token) {
+    @PostMapping(value = "/dropdown")
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
     	
-    	System.out.println(token);
+    	System.out.println(token.getToken());
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
-        	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token);
+        	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token.getToken());
         	if (opt.getData().isEmpty()) {
         		response.getErrors().add("Usuários não encontrados");
         		return ResponseEntity.badRequest().body(response);
