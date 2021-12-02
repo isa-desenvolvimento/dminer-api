@@ -29,22 +29,22 @@ public class Aniversariantes {
     @Scheduled(cron  = "0 0 0 1 1 *")
     public void aniversariantesDoMes() {
 
-        String token = userService.getToken();
-        List<UserDTO> usuarios = userService.carregarUsuariosApi(token).getData();
-        List<UserDTO> aniversariantes = new ArrayList<>();
-        
-        for (UserDTO userDTO : usuarios) {            
-            if (UtilDataHora.isAniversariante(userDTO.getBirthDate())) {
-                aniversariantes.add(userDTO);
-            }
-        }
-
-        if (!aniversariantes.isEmpty()) {
-            aniversariantes.forEach(ani -> {
-                serverSendEvents.addAniversariantes(ani);
-            });
-            serverSendEvents.streamSseBirthday();
-        }
+//        String token = userService.getToken();
+//        List<UserDTO> usuarios = userService.carregarUsuariosApi(token).getData();
+//        List<UserDTO> aniversariantes = new ArrayList<>();
+//        
+//        for (UserDTO userDTO : usuarios) {            
+//            if (UtilDataHora.isAniversariante(userDTO.getBirthDate())) {
+//                aniversariantes.add(userDTO);
+//            }
+//        }
+//
+//        if (!aniversariantes.isEmpty()) {
+//            aniversariantes.forEach(ani -> {
+//                serverSendEvents.addAniversariantes(ani);
+//            });
+//            serverSendEvents.streamSseBirthday();
+//        }
 
     }
 
