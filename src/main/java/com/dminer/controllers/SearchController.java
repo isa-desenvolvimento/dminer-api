@@ -16,12 +16,14 @@ import com.dminer.converters.NotificationConverter;
 import com.dminer.converters.ReminderConverter;
 import com.dminer.converters.SurveyConverter;
 import com.dminer.converters.UserConverter;
+import com.dminer.dto.PostReductDTO;
 import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
+import com.dminer.entities.Post;
 import com.dminer.entities.Reminder;
 import com.dminer.entities.Survey;
 import com.dminer.entities.User;
@@ -29,6 +31,7 @@ import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.response.Response;
 import com.dminer.services.EventsService;
+import com.dminer.services.FeedService;
 import com.dminer.services.NoticeService;
 import com.dminer.services.NotificationService;
 import com.dminer.services.ReminderService;
@@ -92,6 +95,11 @@ public class SearchController {
     @Autowired
     private NoticeService noticeService;
 
+    @Autowired
+    private FeedService feedService;
+    
+    
+    
     private String token = null;
     
     @Autowired
@@ -99,7 +107,7 @@ public class SearchController {
 
     
     
-    @GetMapping()
+    //@GetMapping()
     public ResponseEntity<Response<List<UserDTO>>> getAllEventTeste() throws IOException { 
     	// users
         if (token == null) {
@@ -138,13 +146,13 @@ public class SearchController {
         }
 
         // users
-        if (token == null) {
-        	token = userService.getToken();
-        }
-        List<UserDTO> searchUsers = userService.search(keyword, token);            
-        searchUsers.forEach(u -> {            
-            searchDTO.getUsersList().add(u);
-        });
+//        if (token == null) {
+//        	token = userService.getToken();
+//        }
+//        List<UserDTO> searchUsers = userService.search(keyword, token);            
+//        searchUsers.forEach(u -> {            
+//            searchDTO.getUsersList().add(u);
+//        });
         
 
         if (isProd()) {
@@ -187,6 +195,19 @@ public class SearchController {
                 }
             }
 
+            // feed (post)
+            List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
+            if (!searchFeed.isEmpty()) {
+            	searchFeed.forEach(u -> {
+            		searchDTO.getPostsList().add(u);
+                });
+            } else {
+            	searchFeed = feedService.getReductAll();
+            	searchFeed.forEach(u -> {
+                    searchDTO.getPostsList().add(u);
+                });
+            }
+            
         } else {
 
         	// notice
@@ -225,6 +246,19 @@ public class SearchController {
                         searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
                     });
                 }
+            }
+            
+            // feed (post)
+            List<PostReductDTO> searchFeed = feedService.searchSqlServer(keyword);
+            if (!searchFeed.isEmpty()) {
+            	searchFeed.forEach(u -> {
+                    searchDTO.getPostsList().add(u);
+                });
+            } else {            	
+            	searchFeed = feedService.getReductAll();
+            	searchFeed.forEach(u -> {
+                    searchDTO.getPostsList().add(u);
+                });            
             }
         }
 

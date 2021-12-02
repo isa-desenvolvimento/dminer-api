@@ -3,25 +3,23 @@ package com.dminer.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.dminer.converters.NoticeConverter;
-import com.dminer.dto.UserDTO;
-import com.dminer.entities.Benefits;
-import com.dminer.entities.Category;
-import com.dminer.entities.Events;
-import com.dminer.entities.Notice;
-import com.dminer.entities.Permission;
-import com.dminer.entities.Survey;
-import com.dminer.entities.Tutorials;
-import com.dminer.entities.User;
-import com.dminer.enums.EventsTime;
-import com.dminer.services.UserService;
-import com.dminer.utils.UtilDataHora;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
+
+import com.dminer.entities.Benefits;
+import com.dminer.entities.Category;
+import com.dminer.entities.Events;
+import com.dminer.entities.Notice;
+import com.dminer.entities.Permission;
+import com.dminer.entities.Post;
+import com.dminer.entities.Survey;
+import com.dminer.entities.Tutorials;
+import com.dminer.entities.User;
+import com.dminer.enums.EventsTime;
+import com.dminer.enums.PostType;
 
 @Repository
 public class GenericRepositorySqlServer {
@@ -311,4 +309,30 @@ public class GenericRepositorySqlServer {
         });
     }
 
+    
+    public List<Post> searchPost(String keyword) {
+        String query = 
+        "SELECT * " +
+        "FROM POST e " +
+        "WHERE LOWER(CONCAT( " +
+           "e.content, ' ', " +
+           "e.likes, ' ', " +
+           "e.type, ' ', " +
+           "e.login, ' ', " +
+           "e.title, ' '))" +
+           "LIKE LOWER('%" + keyword + "%')";
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Post e = new Post();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setLikes(rs.getInt("LIKES"));
+            e.setLogin(rs.getString("LOGIN"));
+            e.setTitle(rs.getString("TITLE"));
+            PostType type = PostType.valueOf(rs.getString("TYPE"));
+            e.setType(type);
+            return e;
+        });
+    }
 }
