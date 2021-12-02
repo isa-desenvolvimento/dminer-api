@@ -203,6 +203,7 @@ public class UserService implements IUserService {
     	RestTemplate restTemplate = new RestTemplate();
     	Response<List<UserReductDTO>> myresponse = new Response<>();
     	HttpHeaders headers = new HttpHeaders();
+    	//token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvYmplY3QiOiJ7XCJpZFwiOlwiaFB4S3VSQU5cXHUwMDNjbks3VkhsdjJVI2VOcFhVJWdAcWZIRkBkdEZiazNMVjAxM1lFMmVtelRmRyN2V0RMUkZjcHZuTFwiLFwidHlwZVwiOlwicGFpbmVsXCIsXCJ1c2VyXCI6XCJtYXRoZXVzLnJpYmVpcm8xXCIsXCJsb2dpblRpbWVcIjpcIkRlYyAyLCAyMDIxLCA0OjIzOjI1IFBNXCIsXCJleHBpcmVUb2tlblwiOlwiRGVjIDIsIDIwMjEsIDQ6NTM6MjUgUE1cIixcInNlc3Npb25JbmZpbml0eVwiOmZhbHNlLFwiYXR0cmlidXRlc1wiOntcImZhY2VfYXV0aGVudGljYXRpb25cIjowLFwidG9rZW5faGFzaGlkc1wiOlwiMzQ5MjBhZGItZDVmMC00Yzg1LWExYTItN2UwMzliNWZjMTE1XCIsXCJyYW5kb21faWRlbnRpZnlcIjpcImQyZmZlNjVkLWNmMjYtNGRjMS04YzFmLWE4NjYzNTlkY2RiMlwiLFwiaXBcIjpcIjE3Ny4yMDUuNzQuMTlcIn19In0.P3KcY51G9vNaJlSW4i6NpPuMlpfNepBiYudX7wmsBPA";
     	headers.add("BAERER_AUTHENTICATION", token);
     	
     	headers.setContentType(MediaType.APPLICATION_JSON);

@@ -187,26 +187,18 @@ public class UserController {
     }
     
     
-    @PostMapping(value = "/dropdown")
+    @PostMapping(value = "/dropdown", consumes = {"text/plain"})
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody String token) {
     	
+    	System.out.println(token);
+    	
         Response<List<UserReductDTO>> response = new Response<>();
-
-        //String token = userService.getToken();
         if (token != null) {
         	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token);
         	if (opt.getData().isEmpty()) {
         		response.getErrors().add("Usuários não encontrados");
         		return ResponseEntity.badRequest().body(response);
         	}
-        	
-//        	List<UserReductDTO> usuarios = new ArrayList<>();
-//        	opt.getData().forEach(u -> {
-//        		UserReductDTO udto = new UserReductDTO();
-//        		udto.setLogin(u.getLogin());
-//        		udto.setUsername(u.getUserName());
-//        		usuarios.add(udto);
-//        	});
         	response.setData(opt.getData());
         }
         return ResponseEntity.ok().body(response);
