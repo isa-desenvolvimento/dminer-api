@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -185,12 +186,12 @@ public class UserController {
     }
     
     
-    @GetMapping(value = "/all")
-    public ResponseEntity<Response<List<UserReductDTO>>> getAll2() {
+    @PostMapping(value = "/dropdown/all")
+    public ResponseEntity<Response<List<UserReductDTO>>> getAllDropDown(@RequestParam("token") String token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
 
-        String token = userService.getToken();
+        //String token = userService.getToken();
         if (token != null) {
         	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token);
         	if (opt.getData().isEmpty()) {
