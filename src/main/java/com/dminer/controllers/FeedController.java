@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dminer.dto.PostDTO;
+import com.dminer.dto.PostReductDTO;
 import com.dminer.entities.Post;
 import com.dminer.response.Response;
 import com.dminer.services.PostService;
@@ -29,17 +30,17 @@ public class FeedController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<PostDTO>>> getAll() {
+    public ResponseEntity<Response<List<PostReductDTO>>> getAll() {
         
-        Response<List<PostDTO>> response = new Response<>();
+        Response<List<PostReductDTO>> response = new Response<>();
 
         List<Post> user = postService.findAll();
         if (user.isEmpty()) {
-            response.getErrors().add("Feed não encontrado");
+            response.getErrors().add("Nenhum dado encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
-        List<PostDTO> eventos = new ArrayList<>();
+        List<PostReductDTO> eventos = new ArrayList<>();
         user.forEach(u -> {
             eventos.add(postToDto(u));
         });
@@ -48,13 +49,15 @@ public class FeedController {
         return ResponseEntity.ok().body(response);
     }
 
-    private PostDTO postToDto(Post post) {
-		PostDTO dto = new PostDTO();
-		dto.setIdUsuario(post.getUserLogin());
-		dto.setLikes(post.getLikes());
-		dto.setType(post.getType().name());
-		dto.setId(post.getId());		
+    private PostReductDTO postToDto(Post post) {
+    	PostReductDTO dto = new PostReductDTO();
+//		dto.setLogin(post.getLogin());
+//		dto.setLikes(post.getLikes());
+//		if (post.getType() != null)
+//			dto.setType(post.getType().name());
+//		dto.setId(post.getId());		
 		dto.setContent(post.getContent());
+		dto.setTitle(post.getTitle());
 		return dto;
 	}
 }
