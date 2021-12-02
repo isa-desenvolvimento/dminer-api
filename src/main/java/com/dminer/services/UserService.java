@@ -174,10 +174,10 @@ public class UserService implements IUserService {
             String email = (String) jobj.get("email");
             String linkedin = (String) jobj.get("linkedinUrl");
             String area = (String) jobj.get("area");
-            byte[] avatar = getAvatar(login);
-            String encodedAvatar = "";
-            if (avatar != null)
-            	encodedAvatar = Base64.getEncoder().encodeToString(avatar);
+//            byte[] avatar = getAvatar(login);
+//            String encodedAvatar = "";
+//            if (avatar != null)
+//            	encodedAvatar = Base64.getEncoder().encodeToString(avatar);
             
             UserDTO user = new UserDTO();
             user.setBirthDate(dtAniversario);
@@ -185,7 +185,7 @@ public class UserService implements IUserService {
             user.setArea(area);
             user.setEmail(email);
             user.setLinkedin(linkedin);
-            user.setAvatar(encodedAvatar);
+//            user.setAvatar(encodedAvatar);
     		usuarios.add(user);
     	});
     	
