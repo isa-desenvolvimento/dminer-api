@@ -53,10 +53,10 @@ public class ReminderController {
 
     
     private void validateRequestDto(ReminderRequestDTO reminderRequestDTO, BindingResult result) {
-        if (reminderRequestDTO.getIdUser() == null) {
+        if (reminderRequestDTO.getLogin() == null) {
             result.addError(new ObjectError("ReminderRequestDTO", "Id do usuário precisa estar preenchido."));
 		} else {
-            Optional<User> findById = userService.findById(reminderRequestDTO.getIdUser());
+            Optional<User> findById = userService.findByLogin(reminderRequestDTO.getLogin());
             if (!findById.isPresent()) {
                 result.addError(new ObjectError("ReminderRequestDTO", "Usuário não encontrado."));
             }
@@ -66,11 +66,11 @@ public class ReminderController {
             result.addError(new ObjectError("ReminderRequestDTO", "Descrição do lembrete precisa estar preenchido."));			
 		}
 
-        if (reminderRequestDTO.getDataHora() == null || reminderRequestDTO.getDataHora().isEmpty()) {
+        if (reminderRequestDTO.getDate() == null || reminderRequestDTO.getDate().isEmpty()) {
             result.addError(new ObjectError("ReminderRequestDTO", "Data do lembrete precisa estar preenchido."));
 		} else {
             try {
-                Timestamp.valueOf(reminderRequestDTO.getDataHora());
+                Timestamp.valueOf(reminderRequestDTO.getDate());
             } catch (IllegalArgumentException e) {
                 result.addError(new ObjectError("ReminderRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
             }

@@ -11,10 +11,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class NotificationRequestDTO {    
-        
+public class NotificationRequestDTO {
     private String idUser;
-
-	private String notification; 
-
+	private String notification;
 }

@@ -13,9 +13,9 @@ import lombok.ToString;
 @ToString
 public class ReminderRequestDTO {
     
-    private Integer idUser;
+    private String login;
 
 	private String reminder; 
 
-    private String dataHora;
+    private String date;
 }

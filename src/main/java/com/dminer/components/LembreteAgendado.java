@@ -24,7 +24,7 @@ public class LembreteAgendado {
     
     public void execute(Reminder reminder) {
         log.info("Agendando o lembrete: " + reminder.toString());
-        Date date = new Date(reminder.getDataHora().getTime());
+        Date date = new Date(reminder.getDate().getTime());
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {            
             @Override public void run() {                

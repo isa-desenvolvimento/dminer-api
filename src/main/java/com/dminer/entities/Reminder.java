@@ -47,7 +47,7 @@ public class Reminder {
 
     @Basic
 	@Column
-    private Timestamp dataHora;
+    private Timestamp date;
     
     @Column
     private Boolean active = true;

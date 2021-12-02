@@ -19,7 +19,7 @@ public class ReminderDTO {
 
 	private String reminder; 
 
-    private String dataHora;
+    private String date;
 
     private Boolean active;
 }

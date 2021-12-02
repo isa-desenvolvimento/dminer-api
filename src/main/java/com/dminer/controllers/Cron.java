@@ -54,18 +54,18 @@ public class Cron {
     public ResponseEntity<Response<Reminder>> create(@RequestBody ReminderRequestDTO dto) {
         Response<Reminder> response = new Response<>();
         
-        Timestamp time = UtilDataHora.toTimestamp(dto.getDataHora());
+        Timestamp time = UtilDataHora.toTimestamp(dto.getDate());
         Timestamp agora = new Timestamp(Date.from(Instant.now()).getTime());
         
         if (time.getTime() < agora.getTime()) {
             response.getErrors().add("Data precisa ser superior a data atual");
-            response.getErrors().add("Data informada: " + dto.getDataHora() + "\t Data atual: " + UtilDataHora.dateToStringUTC(agora));
+            response.getErrors().add("Data informada: " + dto.getDate() + "\t Data atual: " + UtilDataHora.dateToStringUTC(agora));
         }
         
-        Optional<User> opt = userService.findById(dto.getIdUser());
+        Optional<User> opt = userService.findByLogin(dto.getLogin());
         if (opt.isPresent()) {
             Reminder reminder = new Reminder();
-            reminder.setDataHora(time);
+            reminder.setDate(time);
             reminder.setReminderDescrible(dto.getReminder());
             reminder.setUser(opt.get());
             reminder.setActive(true);
