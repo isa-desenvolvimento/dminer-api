@@ -114,7 +114,7 @@ public class NoticeController {
         log.info("Salvando um novo aviso {}", avisosRequest);
 
 		Response<NoticeDTO> response = new Response<>();
-        validateRequestDto(avisosRequest, result);
+        //validateRequestDto(avisosRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", avisosRequest);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
@@ -135,7 +135,7 @@ public class NoticeController {
 
         Response<NoticeDTO> response = new Response<>();
 
-        validateDto(dto, result);
+        //validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", dto);
             result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
