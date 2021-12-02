@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
+import javax.ws.rs.HeaderParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,8 +187,8 @@ public class UserController {
     }
     
     
-    @PostMapping(value = "/dropdown/all")
-    public ResponseEntity<Response<List<UserReductDTO>>> getAllDropDown(@RequestParam("token") String token) {
+    @PostMapping(value = "/dropdown")
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody String token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
 
