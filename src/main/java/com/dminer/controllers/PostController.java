@@ -43,6 +43,7 @@ import com.dminer.services.FileStorageService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilNumbers;
+import com.google.gson.Gson;
 
 import lombok.RequiredArgsConstructor;
 
@@ -74,21 +75,33 @@ public class PostController {
 	@Autowired
 	private CommentConverter commentConverter;
     
+	private Gson gson = new Gson();
 
-	@PostMapping(consumes = {"multipart/form-data", "application/json"})
-	public ResponseEntity<Response<PostDTO>> create( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestBody PostRequestDTO postRequestDTO ) {
+	
+	@PostMapping(consumes = {"multipart/form-data", "text/plain"})
+	public ResponseEntity<Response<PostDTO>> create( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
 		
 		log.info("----------------------------------------");
-		log.info("Salvando um novo post {}", postRequestDTO);
+		log.info("Salvando um novo post {}", data);
 
 		Response<PostDTO> response = new Response<>();
 		
+		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
+		
 		log.info("Verificando se o usuário informado existe");
 		if (postRequestDTO.getLogin() == null ) {
-			response.getErrors().add("Usuário não encontrado.");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			response.getErrors().add("Usuário não encontrado.");			
 		}
 		
+		try {
+			PostType.valueOf(postRequestDTO.getType());				
+		} catch (IllegalArgumentException e) {
+			response.getErrors().add("Campo tipo é inválido.");
+		}
+		
+		if (!response.getErrors().isEmpty()) {
+			return ResponseEntity.badRequest().body(response);
+		}
 		
 		Post post = new Post();
 		if (postRequestDTO.getContent() != null) 
@@ -97,19 +110,20 @@ public class PostController {
 		if (UtilNumbers.isNumeric(postRequestDTO.getLikes() + ""))
 			post.setLikes(postRequestDTO.getLikes());
 
-		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty())
+		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty()) {
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
+		}
 
-		post.setUserLogin(postRequestDTO.getLogin());
+		post.setLogin(postRequestDTO.getLogin());
 		post = postService.persist(post);
 
-		
+
 		
 		String caminhoAbsoluto;
 		try {
 			caminhoAbsoluto = criarDiretorio(post.getId());
 		} catch(IOException e) {
-			rollback(post, null);
+			rollback(post, null, null);
 			response.getErrors().add(e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
@@ -159,6 +173,13 @@ public class PostController {
 		if (post.isPresent()) {
 			log.info("Deletando Post {}", post.get());
 
+			Optional<List<Comment>> comments = commentService.findByPost(post.get());
+			if (comments.isPresent() && !comments.get().isEmpty()) {
+				comments.get().forEach(comment -> {
+			 		commentService.delete(comment.getId());
+			 	});
+			}
+			
 			Optional<List<FileInfo>> findByPost = fileDatabaseService.findByPost(post.get());
 			if (findByPost.isPresent()) {
 				findByPost.get().forEach(anexo -> {
@@ -182,26 +203,6 @@ public class PostController {
 	}
 
 
-	// @PutMapping()
-    // public ResponseEntity<Response<PostDTO>> put( @Valid @RequestBody PostDTO dto, BindingResult result) {
-
-        // log.info("Alterando um post {}", dto);
-
-        // Response<PostDTO> response = new Response<>();
-
-        // validateDto(dto, result);
-        // if (result.hasErrors()) {
-        //     log.info("Erro validando NotificationDTO: {}", dto);
-        //     result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-        //     return ResponseEntity.badRequest().body(response);
-        // }
-
-        // Notification notification = notificationService.persist(notificationConverter.dtoToEntity(dto));
-        // response.setData(notificationConverter.entityToDto(notification));
-        // return ResponseEntity.ok().body(response);
-    // }
-
-
 	@PostMapping(value = "/drop-storage")
 	public boolean dropStorage() {
 		fileStorageService.delete(Paths.get(ROOT_UPLOADS));
@@ -210,7 +211,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> getPost(@PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
@@ -222,26 +223,26 @@ public class PostController {
 		}
 
 		Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post.get());
-		// Optional<List<Comment>> comments = commentService.findByPost(post.get());
 		response.setData(postToDto(post.get(), anexos.get()));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 
-	private void rollback(Post post, List<FileInfo> anexos) {
+	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
+				
 		if (anexos != null) {
 			log.info("Apagando os anexos do banco");		
 			anexos.forEach(anexo -> {
-				fileDatabaseService.delete(anexo.getId());
+				fileDatabaseService.delete(anexo.getId());				
 			});
 		}
 
-		// if (comments != null) {
-		// 	log.info("Apagando os comentários do banco");
-		// 	comments.forEach(comment -> {
-		// 		commentService.delete(comment.getId());
-		// 	});
-		// }
+		if (comments != null) {
+			log.info("Apagando os comentários do banco");
+			comments.forEach(comment -> {
+				commentService.delete(comment.getId());
+			});
+		}
 
 		if (post != null) {
 			log.info("Apagando o post do banco");
@@ -252,11 +253,13 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<FileInfo> anexos) {
 		PostDTO dto = new PostDTO();
-		dto.setIdUsuario(post.getUserLogin());
+		System.out.println(post.toString());
+		dto.setLogin(post.getLogin());
 		dto.setLikes(post.getLikes());
-		dto.setType(post.getType().name());
+		dto.setType(post.getType().toString());
 		dto.setId(post.getId());		
 		dto.setContent(post.getContent());
+		dto.setTitle(post.getTitle());
 		anexos.forEach(e -> {
 			dto.getAnexos().add(e.getUrl());
 		});
