@@ -22,7 +22,7 @@ public class ReminderConverter {
         Reminder reminder = new Reminder();
         reminder.setId(dto.getId());
         reminder.setReminderDescrible(dto.getReminder());
-        reminder.setDataHora(UtilDataHora.toTimestamp(dto.getDataHora()));
+        reminder.setDate(UtilDataHora.toTimestamp(dto.getDate()));
         Optional<User> findById = userService.findByLogin(dto.getLogin());
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
@@ -34,8 +34,8 @@ public class ReminderConverter {
     public Reminder requestDtoToEntity(ReminderRequestDTO dto) {
         Reminder reminder = new Reminder();
         reminder.setReminderDescrible(dto.getReminder());
-        reminder.setDataHora(UtilDataHora.toTimestamp(dto.getDataHora()));
-        Optional<User> findById = userService.findById(dto.getIdUser());
+        reminder.setDate(UtilDataHora.toTimestamp(dto.getDate()));
+        Optional<User> findById = userService.findByLogin(dto.getLogin());
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
         }
@@ -48,7 +48,7 @@ public class ReminderConverter {
         notificationDTO.setId(reminder.getId());
         notificationDTO.setLogin(reminder.getUser().getLogin());
         notificationDTO.setReminder(reminder.getReminderDescrible());
-        notificationDTO.setDataHora(UtilDataHora.timestampToString(reminder.getDataHora()));
+        notificationDTO.setDate(UtilDataHora.timestampToString(reminder.getDate()));
         notificationDTO.setActive(reminder.getActive());
         return notificationDTO;
     }
