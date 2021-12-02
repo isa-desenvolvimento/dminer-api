@@ -140,28 +140,29 @@ public class SurveyController {
     }
 
 
-    @PostMapping(value = "/answer/{idSurvey}/{idUser}/{option}")
-    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("loginUser") String loginUser, @PathVariable("option") String option) {
+    @PostMapping(value = "/answer/{idSurvey}/{login}/{option}")
+    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
         if (! response.getErrors().isEmpty()) {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> userOpt = userService.findByLogin(loginUser);
-        if (!userOpt.isPresent()) {
-            response.getErrors().add("Nenhum usuário encontrado com id " + loginUser);
-            return ResponseEntity.badRequest().body(response);
+        User newUser;
+        if (!userService.existsByLogin(loginUser)) {
+        	newUser = userService.persist(new User(loginUser));
+        } else {
+        	Optional<User> userOpt = userService.findByLogin(loginUser);
+        	newUser = userOpt.get();
         }
-
-        User user = userOpt.get();
+        
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
         if (findByIdSurvey == null) {
             response.getErrors().add("Nenhum questionário encontrado com id " + id);
             return ResponseEntity.badRequest().body(response);
         }
-        findByIdSurvey.getUsers().add(user);
-
+        findByIdSurvey.getUsers().add(newUser);
+        
         if (option.equalsIgnoreCase("a")) {
             findByIdSurvey.setCountA(
                 findByIdSurvey.getCountA() + 1
@@ -199,9 +200,7 @@ public class SurveyController {
             response.getErrors().add("Questionário de id: "+ id +", não encontrado!");
             return ResponseEntity.badRequest().body(response);
         }
-
-        System.out.println(findByIdSurvey.toString());
-
+        
         response.setData(surveyConverter.surveyResponseToDTO(findByIdSurvey));
         return ResponseEntity.ok().body(response);
     }
@@ -293,10 +292,6 @@ public class SurveyController {
         response.setData(true);
         return ResponseEntity.ok().body(response);
     }
-
-
-    
-    
 
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);

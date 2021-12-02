@@ -22,4 +22,5 @@ public class SurveyResponseDTO {
     private List<String> users = new ArrayList<>();
     private Integer countA = 0;
     private Integer countB = 0;
+    private Boolean respondeu;
 }
