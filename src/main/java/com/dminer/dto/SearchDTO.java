@@ -21,7 +21,7 @@ public class SearchDTO {
     private List<Object> eventsList;
     private List<Object> usersList;
     private List<Object> quizList;
-    private List<Object> postsList;
+    private List<Object> feedList;
 
     public SearchDTO() {
         noticeList = new ArrayList<>();
@@ -31,6 +31,6 @@ public class SearchDTO {
         eventsList = new ArrayList<>();
         usersList = new ArrayList<>();
         quizList = new ArrayList<>();
-        postsList = new ArrayList<>();
+        feedList = new ArrayList<>();
     }
 }

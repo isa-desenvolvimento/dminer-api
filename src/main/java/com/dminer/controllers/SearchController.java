@@ -199,12 +199,12 @@ public class SearchController {
             List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
             if (!searchFeed.isEmpty()) {
             	searchFeed.forEach(u -> {
-            		searchDTO.getPostsList().add(u);
+            		searchDTO.getFeedList().add(u);
                 });
             } else {
             	searchFeed = feedService.getReductAll();
             	searchFeed.forEach(u -> {
-                    searchDTO.getPostsList().add(u);
+                    searchDTO.getFeedList().add(u);
                 });
             }
             
@@ -252,12 +252,12 @@ public class SearchController {
             List<PostReductDTO> searchFeed = feedService.searchSqlServer(keyword);
             if (!searchFeed.isEmpty()) {
             	searchFeed.forEach(u -> {
-                    searchDTO.getPostsList().add(u);
+                    searchDTO.getFeedList().add(u);
                 });
             } else {            	
             	searchFeed = feedService.getReductAll();
             	searchFeed.forEach(u -> {
-                    searchDTO.getPostsList().add(u);
+                    searchDTO.getFeedList().add(u);
                 });            
             }
         }
