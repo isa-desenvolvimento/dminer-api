@@ -100,13 +100,16 @@ public class SearchController {
     
     
     @GetMapping()
-    public ResponseEntity<Response<List<UserDTO>>> getAllEvents() throws IOException {
+    public ResponseEntity<Response<List<UserDTO>>> getAllEventTeste() throws IOException { 
     	// users
         if (token == null) {
         	token = userService.getToken();
         }
         
-        return ResponseEntity.ok(userService.carregarUsuariosApi(token));
+        //userService.carregarUsuariosApi(token);
+        Response<List<UserDTO>> users = userService.carregarUsuariosApi2(token);
+
+        return ResponseEntity.ok(users);
     }
     
     

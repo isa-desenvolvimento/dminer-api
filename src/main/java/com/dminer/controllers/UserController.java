@@ -69,20 +69,21 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> getUsersRest() {
     	
     	String token = userService.getToken();
-    	Response<List<UserDTO>> retorno = userService.carregarUsuariosApi(token);
-    	if (!retorno.getErrors().isEmpty()) {
-    		return ResponseEntity.badRequest().body(retorno);
-    	}
-    	List<UserDTO> usuarios = retorno.getData();
-    	Response<List<UserDTO>> response = new Response<>();
-    	 
-    	usuarios.forEach(usuario -> {
-    		String login = usuario.getLogin();
-    		//String avatar = userService.getAvatar(login, token);
-    		//usuario.setAvatar(avatar);
-    	});
-    	response.setData(usuarios);
-    	return ResponseEntity.ok(response);        
+//    	Response<List<UserDTO>> retorno = userService.carregarUsuariosApi(token);
+//    	if (!retorno.getErrors().isEmpty()) {
+//    		return ResponseEntity.badRequest().body(retorno);
+//    	}
+//    	List<UserDTO> usuarios = retorno.getData();
+//    	Response<List<UserDTO>> response = new Response<>();
+//    	 
+//    	usuarios.forEach(usuario -> {
+//    		String login = usuario.getLogin();
+//    		//String avatar = userService.getAvatar(login, token);
+//    		//usuario.setAvatar(avatar);
+//    	});
+//    	response.setData(usuarios);
+//    	return ResponseEntity.ok(response);   
+    	return ResponseEntity.ok(null);
     }
 
 
@@ -212,25 +213,25 @@ public class UserController {
         	token = userService.getToken();
         }
         
-        Response<List<UserDTO>> users = userService.carregarUsuariosApi(token);
-        if (!users.getErrors().isEmpty()) {
-        	response.setErrors(users.getErrors());
-        	return ResponseEntity.badRequest().body(response);
-        }
+//        Response<List<UserDTO>> users = userService.carregarUsuariosApi(token);
+//        if (!users.getErrors().isEmpty()) {
+//        	response.setErrors(users.getErrors());
+//        	return ResponseEntity.badRequest().body(response);
+//        }
+//        
+//        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+//        users.getData().forEach(u -> {
+//        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+//        		aniversariantes.add(u);
+//        	}
+//        });
         
-        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        users.getData().forEach(u -> {
-        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
-        		aniversariantes.add(u);
-        	}
-        });
-        
-        if (aniversariantes.isEmpty()) {
-            response.getErrors().add("Nenhum aniversariante encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        response.setData(aniversariantes);
+//        if (aniversariantes.isEmpty()) {
+//            response.getErrors().add("Nenhum aniversariante encontrado");
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//
+//        response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
     }
 
