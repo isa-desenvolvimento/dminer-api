@@ -38,9 +38,10 @@ public class UserConverter {
         }
         
         dto.setLogin(user.getLogin());
-        if (token == null) {
-            token = userService.getToken();
-        }
+        dto.setBanner(user.getBanner());
+//        if (token == null) {
+//            token = userService.getToken();
+//        }
 //        String avatar = userService.getAvatar(dto.getLogin(), token);
 //        dto.setAvatar(avatar);
         return dto;

@@ -19,6 +19,7 @@ import lombok.ToString;
 public class UserDTO {
     private String login;
     private String avatar;
+    private String banner;
     private String birthDate;
     private String email;
     private String linkedin;

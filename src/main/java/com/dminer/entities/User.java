@@ -33,8 +33,8 @@ public class User {
 	@Column(unique = true)
 	private String login;
     
-//	@Column(length = 8000)
-//	private String banner; 
+	@Column(length = 8000)
+	private String banner; 
 
 	@Transient
 	private String avatar;
