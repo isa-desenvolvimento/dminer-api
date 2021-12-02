@@ -35,6 +35,9 @@ public class Post {
 	private Integer id;
 
 	@Column
+	private String title;
+	
+	@Column
 	private String content; 
 
 	@Column
@@ -42,11 +45,10 @@ public class Post {
 
 	@Column
 	@Enumerated(EnumType.STRING)
-	private PostType type;
+	private PostType type;	
 	
-    private String userLogin;
+    private String login;
 	
+    
 	public Post(String content) { this.content = content; }
-
-
 }

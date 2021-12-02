@@ -17,11 +17,12 @@ import lombok.ToString;
 public class PostDTO { 
     
     private Integer id;
-    private String idUsuario;
+    private String login;
     private Integer likes;
     private String content;
+    private String title;
     private String type;
-    private List<CommentDTO> comments = new ArrayList<>();
+    //private List<CommentDTO> comments = new ArrayList<>();
     private List<String> anexos = new ArrayList<>();
 
 }
