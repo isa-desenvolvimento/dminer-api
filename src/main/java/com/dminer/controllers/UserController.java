@@ -192,20 +192,20 @@ public class UserController {
 
         String token = userService.getToken();
         if (token != null) {
-        	Response<List<UserDTO>> opt = userService.carregarUsuariosApiReduct(token);
+        	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token);
         	if (opt.getData().isEmpty()) {
         		response.getErrors().add("Usuários não encontrados");
         		return ResponseEntity.badRequest().body(response);
         	}
         	
-        	List<UserReductDTO> usuarios = new ArrayList<>();
-        	opt.getData().forEach(u -> {
-        		UserReductDTO udto = new UserReductDTO();
-        		udto.setLogin(u.getLogin());
-        		udto.setUsername(u.getUserName());
-        		usuarios.add(udto);
-        	});
-        	response.setData(usuarios);
+//        	List<UserReductDTO> usuarios = new ArrayList<>();
+//        	opt.getData().forEach(u -> {
+//        		UserReductDTO udto = new UserReductDTO();
+//        		udto.setLogin(u.getLogin());
+//        		udto.setUsername(u.getUserName());
+//        		usuarios.add(udto);
+//        	});
+        	response.setData(opt.getData());
         }
         return ResponseEntity.ok().body(response);
     }

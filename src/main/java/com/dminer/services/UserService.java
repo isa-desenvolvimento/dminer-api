@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.UserDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
@@ -194,13 +195,13 @@ public class UserService implements IUserService {
     }
     
     
-    public Response<List<UserDTO>> carregarUsuariosApiReduct(String token) {
+    public Response<List<UserReductDTO>> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário na api externa");
 
         String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
-        List<UserDTO> usuarios = new ArrayList<>();        
+        List<UserReductDTO> usuarios = new ArrayList<>();        
     	RestTemplate restTemplate = new RestTemplate();
-    	Response<List<UserDTO>> myresponse = new Response<>();
+    	Response<List<UserReductDTO>> myresponse = new Response<>();
     	HttpHeaders headers = new HttpHeaders();
     	headers.add("BAERER_AUTHENTICATION", token);
     	
@@ -222,9 +223,9 @@ public class UserService implements IUserService {
     		String login = (String) jobj.get("login");
             String userName = (String) jobj.get("userName");
 
-            UserDTO user = new UserDTO();
+            UserReductDTO user = new UserReductDTO();
             user.setLogin(login);
-            user.setUserName(userName);
+            user.setUsername(userName);
     		usuarios.add(user);
     	});    	
     	myresponse.setData(usuarios);
