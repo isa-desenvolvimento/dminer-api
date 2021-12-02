@@ -193,6 +193,44 @@ public class UserService implements IUserService {
     	return myresponse;
     }
     
+    
+    public Response<List<UserDTO>> carregarUsuariosApiReduct(String token) {
+        log.info("Recuperando todos os usuário na api externa");
+
+        String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
+        List<UserDTO> usuarios = new ArrayList<>();        
+    	RestTemplate restTemplate = new RestTemplate();
+    	Response<List<UserDTO>> myresponse = new Response<>();
+    	HttpHeaders headers = new HttpHeaders();
+    	headers.add("BAERER_AUTHENTICATION", token);
+    	
+    	headers.setContentType(MediaType.APPLICATION_JSON);
+    	HttpEntity<String> entity = new HttpEntity<>("body", headers);
+    	
+    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);    	
+    	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {
+    		myresponse.getErrors().add(response.toString());
+    		return myresponse;
+    	}
+    	
+    	JSONObject personJsonObject = new JSONObject(response.getBody());    	
+    	personJsonObject = (JSONObject) personJsonObject.get("output");
+    	personJsonObject = (JSONObject) personJsonObject.get("result");    	
+    	JSONArray arrayjs = personJsonObject.getJSONArray("usuarios");
+    	arrayjs.forEach(el -> {
+    		JSONObject jobj = (JSONObject) el;
+    		String login = (String) jobj.get("login");
+            String userName = (String) jobj.get("userName");
+
+            UserDTO user = new UserDTO();
+            user.setLogin(login);
+            user.setUserName(userName);
+    		usuarios.add(user);
+    	});    	
+    	myresponse.setData(usuarios);
+    	return myresponse;
+    }
+    
 
     private Gson gson = new Gson();
     

@@ -164,7 +164,7 @@ public class UserController {
     }
 
 
-    @GetMapping(value = "/all")
+    //@GetMapping(value = "/all")
     public ResponseEntity<Response<List<UserDTO>>> getAll() {
         
         Response<List<UserDTO>> response = new Response<>();
@@ -182,6 +182,37 @@ public class UserController {
         response.setData(usuarios);
         return ResponseEntity.ok().body(response);
     }
+    
+    
+    @GetMapping(value = "/all")
+    public ResponseEntity<Response<List<UserDTO>>> getAll2() {
+    	
+        Response<List<UserDTO>> response = new Response<>();
+
+        String token = userService.getToken();
+        if (token == null) {
+        	Response<List<UserDTO>> opt = userService.carregarUsuariosApiReduct(token);
+        	if (opt.getData().isEmpty()) {
+        		response.getErrors().add("Usuários não encontrados");
+        		return ResponseEntity.badRequest().body(response);
+        	}
+        	return ResponseEntity.ok().body(opt);
+        	
+        	
+        	
+//        	List<UserDTO> usuarios = new ArrayList<>();
+//        	opt.getData().forEach(u -> {
+//        		UserDTO udto = new UserDTO();
+//        		udto.setLogin(u.getLogin());
+//        		udto.setUserName(u.getUserName());
+//        		usuarios.add(udto);
+//        	});
+//        	response.setData(usuarios);
+        }
+        return ResponseEntity.ok().body(null);
+    }
+    
+    
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
