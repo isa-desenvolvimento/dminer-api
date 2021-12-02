@@ -218,6 +218,7 @@ public class UserService implements IUserService {
     	personJsonObject = (JSONObject) personJsonObject.get("output");
     	personJsonObject = (JSONObject) personJsonObject.get("result");    	
     	JSONArray arrayjs = personJsonObject.getJSONArray("usuarios");
+    	
     	arrayjs.forEach(el -> {
     		JSONObject jobj = (JSONObject) el;
     		String login = (String) jobj.get("login");
