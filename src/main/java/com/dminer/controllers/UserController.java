@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.UserDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
@@ -185,31 +186,28 @@ public class UserController {
     
     
     @GetMapping(value = "/all")
-    public ResponseEntity<Response<List<UserDTO>>> getAll2() {
+    public ResponseEntity<Response<List<UserReductDTO>>> getAll2() {
     	
-        Response<List<UserDTO>> response = new Response<>();
+        Response<List<UserReductDTO>> response = new Response<>();
 
         String token = userService.getToken();
-        if (token == null) {
+        if (token != null) {
         	Response<List<UserDTO>> opt = userService.carregarUsuariosApiReduct(token);
         	if (opt.getData().isEmpty()) {
         		response.getErrors().add("Usuários não encontrados");
         		return ResponseEntity.badRequest().body(response);
         	}
-        	return ResponseEntity.ok().body(opt);
         	
-        	
-        	
-//        	List<UserDTO> usuarios = new ArrayList<>();
-//        	opt.getData().forEach(u -> {
-//        		UserDTO udto = new UserDTO();
-//        		udto.setLogin(u.getLogin());
-//        		udto.setUserName(u.getUserName());
-//        		usuarios.add(udto);
-//        	});
-//        	response.setData(usuarios);
+        	List<UserReductDTO> usuarios = new ArrayList<>();
+        	opt.getData().forEach(u -> {
+        		UserReductDTO udto = new UserReductDTO();
+        		udto.setLogin(u.getLogin());
+        		udto.setUsername(u.getUserName());
+        		usuarios.add(udto);
+        	});
+        	response.setData(usuarios);
         }
-        return ResponseEntity.ok().body(null);
+        return ResponseEntity.ok().body(response);
     }
     
     
