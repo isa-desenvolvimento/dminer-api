@@ -14,14 +14,14 @@ import lombok.ToString;
 @Builder
 @ToString
 public class PermissionReductDTO {
-	private String token;
+	private String id;
 	private String name;
 	
 	public PermissionDTO toPermissionDTO() {
 		return PermissionDTO
 				.builder()
 				.descrConfig(name)
-				.token(token)
+				.token(id)
 				.build();
 	}
 }

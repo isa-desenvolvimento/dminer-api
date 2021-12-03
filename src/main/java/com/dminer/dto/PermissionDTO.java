@@ -23,7 +23,7 @@ public class PermissionDTO {
 		return PermissionReductDTO
 				.builder()
 				.name(descrConfig)
-				.token(token)
+				.id(token)
 				.build();
 	}
 	
