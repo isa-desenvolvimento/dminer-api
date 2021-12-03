@@ -287,6 +287,31 @@ public class PostController {
 	}
 
 
+	
+	
+	@GetMapping
+	public ResponseEntity<Response<List<PostDTO>>> getAll() {
+		
+		Response<List<PostDTO>> response = new Response<>();
+		log.info("Recuperando todos os Post");
+
+		List<Post> posts = postService.findAll();
+		if (posts == null || posts.isEmpty()) {
+			response.getErrors().add("Nenhum post encontrado na base de dados");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+
+		for (Post post2 : posts) {
+			Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post2);
+			Optional<List<Comment>> comment = commentService.findByPost(post2);
+			PostDTO dto = postToDto(post2, anexos.get(), comment.get());
+			response.getData().add(dto);			
+		}		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	
+	
 	/**
 	 * Cria diretórios organizados pelo id do Post
 	 */
