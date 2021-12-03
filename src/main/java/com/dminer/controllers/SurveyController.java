@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/survey")
-@CrossOrigin(origins = "*/**", maxAge = 3600)
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class SurveyController {
 
@@ -117,6 +117,7 @@ public class SurveyController {
 
 
     @PostMapping()
+    //@CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<SurveyDTO>> create( @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
@@ -141,6 +142,7 @@ public class SurveyController {
 
 
     @PostMapping(value = "/answer/{idSurvey}/{login}/{option}")
+    //@CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
