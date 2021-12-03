@@ -105,7 +105,7 @@ public class UserController {
     }
 
 
-    @GetMapping(value = "/rest/all")
+    @GetMapping(value = "/all")
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
