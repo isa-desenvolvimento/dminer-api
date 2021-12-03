@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/survey")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*/**", maxAge = 3600)
 @RequiredArgsConstructor
 public class SurveyController {
 
