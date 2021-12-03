@@ -18,6 +18,6 @@ public class UserRestModel {
     public boolean hasError() {
     	if (output == null)
     		return false;
-    	return output.getMessages().isEmpty(); 
+    	return !output.getMessages().isEmpty(); 
     }
 }

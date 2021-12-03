@@ -226,6 +226,7 @@ public class UserService implements IUserService {
         
         List<UserReductDTO> usuarios = new ArrayList<>();        
         UserRestModel model = carregarUsuariosApi(token);
+        System.out.println(model.toString());
         if (model == null || model.hasError()) {
         	return null;
         }
@@ -234,6 +235,7 @@ public class UserService implements IUserService {
         	UserReductDTO dto = new UserReductDTO();
         	dto.setLogin(u.getLogin());
         	dto.setUsername(u.getUserName());
+        	usuarios.add(dto);
         });
     	return usuarios;
     }
