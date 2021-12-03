@@ -25,10 +25,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dminer.converters.PermissionConverter;
 import com.dminer.dto.PermissionDTO;
+import com.dminer.dto.PermissionReductDTO;
 import com.dminer.dto.PermissionRequestDTO;
+import com.dminer.dto.Token;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Permission;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
+import com.dminer.rest.model.permission.ConfigRestModel;
+import com.dminer.services.PermissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,132 +52,54 @@ public class PermissionController {
     @Autowired
     private PermissionConverter permissionConverter;
 
-
-    private void validateRequestDto(PermissionRequestDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
-            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));			
-		}
-    }
-
-    private void validateDto(PermissionDTO dto, BindingResult result) {
-        if (dto.getId() == null)  {
-            result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
-		}
-
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
-            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));			
-		}
-    }
+    @Autowired
+    private PermissionService permissionService;
     
-    @PostMapping()
-    public ResponseEntity<Response<PermissionDTO>> create(@Valid @RequestBody PermissionRequestDTO dto, BindingResult result) {        
-
-		log.info("Salvando uma nova permissão {}", dto.getTitle());
-
-        Response<PermissionDTO> response = new Response<>();
-
-        validateRequestDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Permission permission = permissionRepository.save(permissionConverter.requestDtoToEntity(dto));
-        
-        response.setData(permissionConverter.entityToDTO(permission));
-        return ResponseEntity.ok().body(response);
-    }
 
 
-    @PutMapping()
-    public ResponseEntity<Response<PermissionDTO>> put( @Valid @RequestBody PermissionDTO dto, BindingResult result) {
-
-        log.info("Alterando uma permissão {}", dto);
-
-        Response<PermissionDTO> response = new Response<>();
-
-        validateDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando PermissionRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Permission> optUser = permissionRepository.findById(dto.getId());
-        if (! optUser.isPresent()) {
-            log.info("Permissão não encontrada: {}", dto);
-            response.getErrors().add("Permissão não encontrada");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        optUser.get().setPermission(dto.getTitle());
-
-        Permission permission = permissionRepository.save(optUser.get());
-        response.setData(permissionConverter.entityToDTO(permission));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<PermissionDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando usuário {}", id);
-        
-        Response<PermissionDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Permission> permission = permissionRepository.findById(id);
-        if (!permission.isPresent()) {
-            response.getErrors().add("Permissão não encontrada");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        response.setData(permissionConverter.entityToDTO(permission.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping(value = "/all")
-    public ResponseEntity<Response<List<PermissionDTO>>> getAll() {
+    @PostMapping(value = "/all")
+    public ResponseEntity<Response<List<PermissionDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<PermissionDTO>> response = new Response<>();
 
-        List<Permission> permission = permissionRepository.findAll();
-        if (permission == null || permission.isEmpty()) {
+        ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
+        if (model == null || model.hasError()) {
             response.getErrors().add("Permissões não encontradas");
+            model.getOutput().getMessages().forEach(u -> {
+    			response.getErrors().add(u);
+    		});
             return ResponseEntity.badRequest().body(response);
         }
 
         List<PermissionDTO> ps = new ArrayList<>();
-        permission.forEach(p -> {
-            ps.add(permissionConverter.entityToDTO(p));
+        model.getOutput().getResult().getConfigs().forEach(p -> {
+            ps.add(p.toPermissionDTO());
         });
         response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
-        log.info("Deletando permissão {}", id);
-        
-        Response<Boolean> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
+    
+    @PostMapping(value = "/dropdown")
+    public ResponseEntity<Response<List<PermissionReductDTO>>> getDropDown(@RequestBody Token token) {
+    	
+    	Response<List<PermissionReductDTO>> response = new Response<>();
+
+        ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
+        if (model == null || model.hasError()) {
+            response.getErrors().add("Permissões não encontradas");
+            model.getOutput().getMessages().forEach(u -> {
+    			response.getErrors().add(u);
+    		});
             return ResponseEntity.badRequest().body(response);
         }
 
-        try {permissionRepository.deleteById(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Permissão não encontrada");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        response.setData(true);
+        List<PermissionReductDTO> ps = new ArrayList<>();
+        model.getOutput().getResult().getConfigs().forEach(p -> {
+            ps.add(p.toPermissionReductDTO());
+        });
+        response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
-
 
 }

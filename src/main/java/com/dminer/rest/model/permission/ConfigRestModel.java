@@ -1,6 +1,6 @@
 package com.dminer.rest.model.permission;
 
-import java.util.List;
+import com.dminer.rest.model.permission.Output;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +14,11 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ConfigRestModel {
-	private Result result;
+	private Output output;
+	
+	public boolean hasError() {
+    	if (output == null)
+    		return false;
+    	return !output.getMessages().isEmpty(); 
+    }
 }

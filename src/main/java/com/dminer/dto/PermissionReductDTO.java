@@ -1,7 +1,5 @@
 package com.dminer.dto;
 
-
-//import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,16 +13,15 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-public class PermissionDTO {
-    private String token;
-	private String descrConfig;
+public class PermissionReductDTO {
+	private String token;
+	private String name;
 	
-	public PermissionReductDTO toPermissionReductDTO() {
-		return PermissionReductDTO
+	public PermissionDTO toPermissionDTO() {
+		return PermissionDTO
 				.builder()
-				.name(descrConfig)
+				.descrConfig(name)
 				.token(token)
 				.build();
 	}
-	
 }
