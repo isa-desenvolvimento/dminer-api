@@ -31,6 +31,7 @@ import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.Post;
@@ -89,7 +90,7 @@ public class PostController {
 		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
 		
 		log.info("Verificando se o usuário informado existe");
-		if (postRequestDTO.getLogin() == null ) {
+		if (postRequestDTO.getUser().getLogin() == null ) {
 			response.getErrors().add("Usuário não encontrado.");			
 		}
 		
@@ -114,7 +115,7 @@ public class PostController {
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
 		}
 
-		post.setLogin(postRequestDTO.getLogin());
+		post.setLogin(postRequestDTO.getUser().getLogin());
 		post = postService.persist(post);
 
 
@@ -159,7 +160,7 @@ public class PostController {
 		Post temp = postService.persist(post);
 		log.info("Adicionando anexos ao post e atualizando. {}", temp);
 		
-		response.setData(postToDto(temp, anexos));
+		response.setData(postToDto(temp, anexos, null));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
     
@@ -223,7 +224,9 @@ public class PostController {
 		}
 
 		Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post.get());
-		response.setData(postToDto(post.get(), anexos.get()));
+		
+		Optional<List<Comment>> comment = commentService.findByPost(post.get());
+		response.setData(postToDto(post.get(), anexos.get(), comment.get()));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -251,10 +254,10 @@ public class PostController {
 		}
 	}
 
-	private PostDTO postToDto(Post post, List<FileInfo> anexos) {
+	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
 		System.out.println(post.toString());
-		dto.setLogin(post.getLogin());
+		dto.setUser(new UserReductDTO(post.getLogin()));
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());		
@@ -264,9 +267,12 @@ public class PostController {
 			dto.getAnexos().add(e.getUrl());
 		});
 
-		// comments.forEach(e -> {
-		// 	dto.getComments().add(commentConverter.entityToDTO(e));
-		// });
+		if (comments != null && !comments.isEmpty()) {
+			comments.forEach(e -> {
+				dto.getComments().add(commentConverter.entityToDTO(e));
+			});			
+		}
+		 
 		return dto;
 	}
 

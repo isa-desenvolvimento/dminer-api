@@ -1,9 +1,11 @@
 package com.dminer.converters;
 
+import java.util.Base64;
 import java.util.Optional;
 
 import com.dminer.dto.CommentDTO;
 import com.dminer.dto.CommentRequestDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Post;
 import com.dminer.entities.User;
@@ -33,14 +35,16 @@ public class CommentConverter {
         dto.setContent(comment.getContent() != null ? comment.getContent() : "");
         dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
         dto.setId(comment.getId());
-        dto.setLogin(comment.getUser().getLogin());
-        Optional<Post> opt = postService.findById(dto.getIdPost()); 
-        dto.setIdPost(opt.get().getId());
-//        if (token == null) {
-//            token = userService.getToken();
-//        }
-        //String avatar = userService.getAvatar(dto.getLogin(), token);
-        //dto.setAvatar(avatar);
+        if (comment.getPost() != null) {
+        	Optional<Post> opt = postService.findById(comment.getPost().getId()); 
+        	dto.setIdPost(opt.get().getId());        	
+        }
+        if (token == null) {
+            token = userService.getToken();
+        }
+        byte[] avatar = userService.getAvatar(comment.getUser().getLogin());
+        String encodedString = Base64.getEncoder().encodeToString(avatar);        
+        dto.setUser(new UserReductDTO(comment.getUser().getLogin(), null, encodedString));        
         return dto;
     }
 
@@ -49,7 +53,7 @@ public class CommentConverter {
         c.setId(UtilNumbers.isNumeric(commentDTO.getId()+"") ? commentDTO.getId() : null);
         c.setContent(commentDTO.getContent() != null ? commentDTO.getContent() : "");
         c.setTimestamp(commentDTO.getDate() != null ? UtilDataHora.toTimestamp(commentDTO.getDate()) : null);
-        Optional<User> user = userService.findByLogin(commentDTO.getLogin());
+        Optional<User> user = userService.findByLogin(commentDTO.getUser().getLogin());
         if (user.isPresent()) {
             c.setUser(user.get());
         }
@@ -70,7 +74,7 @@ public class CommentConverter {
             c.setUser(user.get());
         }
         
-        Optional<Post> post = postService.findById(user.get().getId());
+        Optional<Post> post = postService.findById(commentRequestDTO.getIdPost());
         if (post.isPresent()) {
             c.setPost(post.get());
         }

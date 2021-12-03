@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostReductDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Post;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
@@ -87,7 +88,7 @@ public class FeedService {
     
     private PostDTO postToDto(Post post) {
     	PostDTO dto = new PostDTO();
-		dto.setLogin(post.getLogin());
+		dto.setUser(new UserReductDTO(post.getLogin()));
 		dto.setLikes(post.getLikes());
 		if (post.getType() != null)
 			dto.setType(post.getType().name());

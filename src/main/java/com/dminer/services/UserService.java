@@ -1,22 +1,29 @@
 package com.dminer.services;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.net.ssl.HttpsURLConnection;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,13 +42,10 @@ import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
-import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.interfaces.IUserService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import lombok.ToString;
 
 @Service
 public class UserService implements IUserService {
@@ -199,16 +201,16 @@ public class UserService implements IUserService {
     
     
     public byte[] getAvatar(String login) {
-    	return "123".getBytes();
-//    	try {
-//    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
-//    		if (image != null) {
-//    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//    			ImageIO.write(image, "png", baos);
-//    			return baos.toByteArray();
-//    		}
-//    	} catch (IOException e) {}
-//    	return null;
+//    	return "123".getBytes();
+    	try {
+    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    		if (image != null) {
+    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    			ImageIO.write(image, "png", baos);
+    			return baos.toByteArray();
+    		}
+    	} catch (IOException e) {}
+    	return null;
     }
     
     public byte[] getBanner(String login) {
@@ -218,5 +220,62 @@ public class UserService implements IUserService {
 //		if (user == null || user.getBanner() == null) 
 //			return null;
 //		return user.getBanner().getBytes();
+    }
+    
+    public void compress(byte[] bytes) throws IOException {
+    	
+    	InputStream is = new ByteArrayInputStream(bytes);
+        BufferedImage image = ImageIO.read(is);
+        OutputStream os = new FileOutputStream("compressed_image.png");
+
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
+        ImageWriter writer = (ImageWriter) writers.next();
+
+        ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+        writer.setOutput(ios);
+
+        ImageWriteParam param = writer.getDefaultWriteParam();
+
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        param.setCompressionQuality(0.0f);  // Change the quality value you prefer
+        writer.write(null, new IIOImage(image, null, null), param);
+
+        os.close();
+        ios.close();
+        writer.dispose();
+    }
+    
+    
+    public static void resize(String inputImagePath,
+            String outputImagePath, double percent) throws IOException {
+        File inputFile = new File(inputImagePath);
+        BufferedImage inputImage = ImageIO.read(inputFile);
+        int scaledWidth = (int) (inputImage.getWidth() * percent);
+        int scaledHeight = (int) (inputImage.getHeight() * percent);
+        resize(inputImagePath, outputImagePath, scaledWidth, scaledHeight);
+    }
+    
+    public static void resize(String inputImagePath,
+            String outputImagePath, int scaledWidth, int scaledHeight)
+            throws IOException {
+        // reads input image
+        File inputFile = new File(inputImagePath);
+        BufferedImage inputImage = ImageIO.read(inputFile);
+ 
+        // creates output image
+        BufferedImage outputImage = new BufferedImage(scaledWidth,
+                scaledHeight, inputImage.getType());
+ 
+        // scales the input image to the output image
+        Graphics2D g2d = outputImage.createGraphics();
+        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+        g2d.dispose();
+ 
+        // extracts extension of output file
+        String formatName = outputImagePath.substring(outputImagePath
+                .lastIndexOf(".") + 1);
+ 
+        // writes to output file
+        ImageIO.write(outputImage, formatName, new File(outputImagePath));
     }
 }

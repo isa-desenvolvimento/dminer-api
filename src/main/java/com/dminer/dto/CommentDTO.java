@@ -16,9 +16,10 @@ import lombok.ToString;
 public class CommentDTO { 
     
     private Integer id;
-    private String login;
+//    private String login;
     private String content;
     private String date;
-    private String avatar;
+//    private String avatar;
     private Integer idPost;
+    private UserReductDTO user;
 }

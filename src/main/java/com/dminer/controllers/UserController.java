@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -77,11 +78,12 @@ public class UserController {
         }
     }
 
-    @GetMapping
-    public void teste() {
+    @GetMapping("/teste")
+    public void teste() throws IOException {
         
-//    	String token = userService.getToken();
-//        userService.carregarUsuariosApi3(token);
+    	
+        byte[] avatar = userService.getAvatar("matheus.ribeiro1");
+        userService.compress(avatar);
         
     }
     
