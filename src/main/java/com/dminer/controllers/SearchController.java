@@ -30,6 +30,7 @@ import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.response.Response;
+import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.EventsService;
 import com.dminer.services.FeedService;
 import com.dminer.services.NoticeService;
@@ -37,6 +38,7 @@ import com.dminer.services.NotificationService;
 import com.dminer.services.ReminderService;
 import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
+import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -107,6 +109,35 @@ public class SearchController {
 
 
     
+    private Response<List<UserDTO>> aniversariantes() {
+    	Response<List<UserDTO>> response = new Response<>();
+    	UserRestModel model = userService.carregarUsuariosApi(token);
+        if (model == null) {
+    		response.getErrors().add("Nenhum usuario encontrado");    		
+    		return response;
+    	}
+        
+        if (model.hasError()) {
+        	model.getOutput().getMessages().forEach(u -> {
+    			response.getErrors().add(u);
+    		});
+        	return response;
+        }
+        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+        		aniversariantes.add(u.toUserDTO());
+        	}
+        });
+        
+        if (aniversariantes.isEmpty()) {
+            response.getErrors().add("Nenhum aniversariante encontrado");
+            return response;
+        }
+
+        response.setData(aniversariantes);
+        return response;
+    }
     
     @GetMapping(value = "/{login}/{keyword}")
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
@@ -141,7 +172,14 @@ public class SearchController {
             searchDTO.getUsersList().add(u);
         });
         
-
+        
+        Response<List<UserDTO>> aniversariantes = aniversariantes();
+        if (!aniversariantes.getData().isEmpty()) {
+        	aniversariantes.getData().forEach(ani -> {
+        		searchDTO.getBirthdayList().add(ani);
+        	});
+        }
+        
         if (isProd()) {
             
             // notice
