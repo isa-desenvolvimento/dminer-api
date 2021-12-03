@@ -199,21 +199,24 @@ public class UserService implements IUserService {
     
     
     public byte[] getAvatar(String login) {
-    	try {
-    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
-    		if (image != null) {
-    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    			ImageIO.write(image, "png", baos);
-    			return baos.toByteArray();
-    		}
-    	} catch (IOException e) {}
-    	return null;
+    	return "123".getBytes();
+//    	try {
+//    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+//    		if (image != null) {
+//    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//    			ImageIO.write(image, "png", baos);
+//    			return baos.toByteArray();
+//    		}
+//    	} catch (IOException e) {}
+//    	return null;
     }
     
-    public byte[] getBanner(String login) {    	
-		User user = userRepository.findByLogin(login);
-		if (user == null || user.getBanner() == null) 
-			return null;
-		return user.getBanner().getBytes();
+    public byte[] getBanner(String login) {
+    	return "123".getBytes();
+    	
+//		User user = userRepository.findByLogin(login);
+//		if (user == null || user.getBanner() == null) 
+//			return null;
+//		return user.getBanner().getBytes();
     }
 }
