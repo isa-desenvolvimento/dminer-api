@@ -108,8 +108,8 @@ public class SearchController {
 
     
     
-    @GetMapping(value = "/{keyword}")
-    public ResponseEntity<Response<SearchDTO>> getAllEvents2(@PathVariable String keyword) {
+    @GetMapping(value = "/{login}/{keyword}")
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
