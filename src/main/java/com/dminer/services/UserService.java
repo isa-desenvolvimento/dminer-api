@@ -159,9 +159,13 @@ public class UserService implements IUserService {
 				response += scanner.next();
 			}
 			scanner.close();
+			if (response.contains("expirou")) {
+				return null;
+			}
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			UserRestModel staff = gson.fromJson(response, UserRestModel.class);
+			System.out.println(staff.toString());
 			return staff;
 			
 		} catch (MalformedURLException e1) {
@@ -172,53 +176,6 @@ public class UserService implements IUserService {
         return null;
     }
     
-    
-    
-    public List<UserDTO> carregarUsuariosApi2(String token) {
-        log.info("Recuperando todos os usuário na api externa");
-
-        String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
-        List<UserDTO> usuarios = new ArrayList<>();        
-    	RestTemplate restTemplate = new RestTemplate();    	
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.add("BAERER_AUTHENTICATION", token);
-    	
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<String> entity = new HttpEntity<>("body", headers);
-    	
-    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);    	
-    	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {    		
-    		return null;
-    	}
-    	
-    	JSONObject personJsonObject = new JSONObject(response.getBody());    	
-    	personJsonObject = (JSONObject) personJsonObject.get("output");
-    	personJsonObject = (JSONObject) personJsonObject.get("result");    	
-    	JSONArray arrayjs = personJsonObject.getJSONArray("usuarios");
-    	arrayjs.forEach(el -> {
-    		JSONObject jobj = (JSONObject) el;
-    		String login = (String) jobj.get("login");
-            String dtAniversario = (String) jobj.get("birthDate");
-            String email = (String) jobj.get("email");
-            String linkedin = (String) jobj.get("linkedinUrl");
-            String area = (String) jobj.get("area");
-//            byte[] avatar = getAvatar(login);
-//            String encodedAvatar = "";
-//            if (avatar != null)
-//            	encodedAvatar = Base64.getEncoder().encodeToString(avatar);
-            
-            UserDTO user = new UserDTO();
-            user.setBirthDate(dtAniversario);
-            user.setLogin(login);
-            user.setArea(area);
-            user.setEmail(email);
-            user.setLinkedinUrl(linkedin);
-//            user.setAvatar(encodedAvatar);
-    		usuarios.add(user);
-    	});
-    	
-    	return usuarios;
-    }
     
     
     public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
@@ -251,5 +208,12 @@ public class UserService implements IUserService {
     		}
     	} catch (IOException e) {}
     	return null;
-    }    
+    }
+    
+    public byte[] getBanner(String login) {    	
+		User user = userRepository.findByLogin(login);
+		if (user == null || user.getBanner() == null) 
+			return null;
+		return user.getBanner().getBytes();
+    }
 }

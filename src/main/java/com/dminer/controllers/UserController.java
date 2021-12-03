@@ -2,6 +2,7 @@ package com.dminer.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -94,13 +95,42 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> user = userService.findByLogin(login);
-        if (!user.isPresent()) {
-            response.getErrors().add("Usuário não encontrado");
-            return ResponseEntity.badRequest().body(response);
+        if (token == null) {
+        	token = userService.getToken();
         }
-
-        response.setData(userConverter.entityToDto(user.get()));
+        
+        UserRestModel model = userService.carregarUsuariosApi(token);
+        if (model == null) {
+        	response.getErrors().add("Token inválido ou expirado!");
+        	return ResponseEntity.badRequest().body(response);
+        }
+        
+        if (model.hasError()) {
+        	model.getOutput().getMessages().forEach(e -> {
+        		response.getErrors().add(e);
+        	});
+        	return ResponseEntity.badRequest().body(response);
+        }
+        
+        if (model.getOutput().getResult().getUsuarios().isEmpty()) {
+            response.getErrors().add("Usuário não encontrado");
+        }
+        
+        byte[] banner = userService.getBanner(login);
+        UserDTO dto = model.getOutput().getResult().getUsuarios().get(0).toUserDTO();
+        if (banner != null) {
+        	String encodedString = Base64.getEncoder().encodeToString(banner);
+        	dto.setBanner(encodedString);
+        }
+        
+        byte[] avatar = userService.getAvatar(login);
+        dto = model.getOutput().getResult().getUsuarios().get(0).toUserDTO();
+        if (avatar != null) {
+        	String encodedString = Base64.getEncoder().encodeToString(avatar);
+        	dto.setAvatar(encodedString);
+        }        
+        
+        response.setData(dto);
         return ResponseEntity.ok().body(response);
     }
 
@@ -113,18 +143,32 @@ public class UserController {
         	response.getErrors().add("Token precisa ser informado");
         }
         
-        List<UserDTO> userList = userService.carregarUsuariosApi2(token.getToken());
-        if (userList == null) {
+        UserRestModel model = userService.carregarUsuariosApi(token.getToken());
+        if (model == null) {
         	response.getErrors().add("Token inválido ou expirado!");
+        	return ResponseEntity.badRequest().body(response);
         }
         
-        if (userList.isEmpty()) {
+        if (model.hasError()) {
+        	model.getOutput().getMessages().forEach(e -> {
+        		response.getErrors().add(e);
+        	});
+        	return ResponseEntity.badRequest().body(response);
+        }
+        
+        if (model.getOutput().getResult().getUsuarios().isEmpty()) {
             response.getErrors().add("Usuários não encontrados");
         }
         
         if (!response.getErrors().isEmpty()) {
         	return ResponseEntity.badRequest().body(response);        	
-        }        
+        }
+        
+        List<UserDTO> userList = new ArrayList<>();
+        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        	userList.add(u.toUserDTO());
+        });
+        
         response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
