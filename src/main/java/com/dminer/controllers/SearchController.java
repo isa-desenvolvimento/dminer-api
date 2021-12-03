@@ -168,11 +168,13 @@ public class SearchController {
         	token = userService.getToken();
         }
         List<UserDTO> searchUsers = userService.search(keyword, token);            
-        searchUsers.forEach(u -> {            
+        searchUsers.forEach(u -> {
+        	byte[] avatar = userService.getAvatar(login);
+        	String encodedString = Base64.getEncoder().encodeToString(avatar);
+        	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
-        
-        
+                
         Response<List<UserDTO>> aniversariantes = aniversariantes();
         if (!aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
