@@ -92,7 +92,7 @@ public class UserService implements IUserService {
     
     
     
-    public List<UserDTO> search(String termo, String token) {    	
+    public List<UserDTO> search(String termo, String token) {
     	UserRestModel model = carregarUsuariosApi(token);    	
     	List<UserDTO> pesquisa = new ArrayList<UserDTO>();
     	
