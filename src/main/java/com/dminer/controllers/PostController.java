@@ -297,6 +297,7 @@ public class PostController {
 	public ResponseEntity<Response<List<PostDTO>>> getAll() {
 		
 		Response<List<PostDTO>> response = new Response<>();
+		response.setData(new ArrayList<PostDTO>());
 		log.info("Recuperando todos os Post");
 
 		List<Post> posts = postService.findAll();
