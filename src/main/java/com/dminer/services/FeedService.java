@@ -98,7 +98,8 @@ public class FeedService {
 	}
     
     private PostReductDTO postToReductDto(Post post) {
-    	PostReductDTO dto = new PostReductDTO();		
+    	PostReductDTO dto = new PostReductDTO();
+    	dto.setIdPost(post.getId());
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		return dto;
