@@ -94,7 +94,7 @@ public class ReminderController {
             result.addError(new ObjectError("dto", "Login do usuário precisa estar preenchido."));
 		} else {
             Optional<User> findById = userService.findByLogin(dto.getLogin());
-            if (!findById.isPresent()) {
+            if (findById == null || !findById.isPresent()) {
                 result.addError(new ObjectError("dto", "Usuário não encontrado."));
             }
         }
