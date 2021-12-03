@@ -2,15 +2,14 @@ package com.dminer.services;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -31,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.dminer.dto.PostDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
@@ -40,11 +38,10 @@ import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
+import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.interfaces.IUserService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import lombok.ToString;
 
@@ -91,29 +88,31 @@ public class UserService implements IUserService {
 		userRepository.deleteById(id);
     }
     
+    
+    
     public List<UserDTO> search(String termo, String token) {    	
-//    	Response<List<UserDTO>> users = carregarUsuariosApi(token);
+    	UserRestModel model = carregarUsuariosApi(token);    	
     	List<UserDTO> pesquisa = new ArrayList<UserDTO>();
-//    	if (!users.getErrors().isEmpty() && users.getData().isEmpty()) {
-//    		return pesquisa;
-//    	}
-//    	
-//    	if (termo == null) {
-//    		return users.getData();
-//    	}
     	
-//    	termo = termo.toLowerCase();
-//    	for (UserDTO u : users.getData()) {
-//    		String concat = (u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
-//    				u.getLinkedin() + " " + u.getLogin() + " " + u.getPermission()).toLowerCase();    		
-//    		if (concat.contains(termo)) {
-//    			pesquisa.add(u);
-//    		}			
-//		}
-//    	
-//    	if (pesquisa.isEmpty()) {
-//    		return users.getData();
-//    	}    	
+    	if (model == null || model.hasError()) {
+        	return pesquisa;
+        }
+    	
+    	if (termo == null) {
+    		model.getOutput().getResult().getUsuarios().forEach(m -> {
+    			pesquisa.add(m.toUserDTO());
+    		});
+    		return pesquisa;
+    	}
+    	
+    	termo = termo.toLowerCase();
+    	for (UserDTO u : pesquisa) {
+    		String concat = (u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
+    				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getPermission()).toLowerCase();    		
+    		if (concat.contains(termo)) {
+    			pesquisa.add(u);
+    		}
+		}    	    	
     	return pesquisa;
     }
     
@@ -145,13 +144,42 @@ public class UserService implements IUserService {
     }
     
     
-    public Response<List<UserDTO>> carregarUsuariosApi2(String token) {
+    public UserRestModel carregarUsuariosApi(String token) {
+    	
+    	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";		
+		try {
+			URL url = new URL(uri);
+			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+			connection.setRequestProperty("BAERER_AUTHENTICATION", token);
+			InputStream stream = connection.getInputStream();
+			Scanner scanner = new Scanner(stream);
+			
+			String response = "";
+			while (scanner.hasNext()) {
+				response += scanner.next();
+			}
+			scanner.close();
+			
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			UserRestModel staff = gson.fromJson(response, UserRestModel.class);
+			return staff;
+			
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+        return null;
+    }
+    
+    
+    
+    public List<UserDTO> carregarUsuariosApi2(String token) {
         log.info("Recuperando todos os usuário na api externa");
 
         String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
         List<UserDTO> usuarios = new ArrayList<>();        
-    	RestTemplate restTemplate = new RestTemplate();
-    	Response<List<UserDTO>> myresponse = new Response<>();
+    	RestTemplate restTemplate = new RestTemplate();    	
     	HttpHeaders headers = new HttpHeaders();
     	headers.add("BAERER_AUTHENTICATION", token);
     	
@@ -159,9 +187,8 @@ public class UserService implements IUserService {
     	HttpEntity<String> entity = new HttpEntity<>("body", headers);
     	
     	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);    	
-    	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {
-    		myresponse.getErrors().add(response.toString());
-    		return myresponse;
+    	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {    		
+    		return null;
     	}
     	
     	JSONObject personJsonObject = new JSONObject(response.getBody());    	
@@ -185,83 +212,31 @@ public class UserService implements IUserService {
             user.setLogin(login);
             user.setArea(area);
             user.setEmail(email);
-            user.setLinkedin(linkedin);
+            user.setLinkedinUrl(linkedin);
 //            user.setAvatar(encodedAvatar);
     		usuarios.add(user);
     	});
     	
-    	myresponse.setData(usuarios);
-    	return myresponse;
+    	return usuarios;
     }
     
     
-    public Response<List<UserReductDTO>> carregarUsuariosApiReduct(String token) {
-        log.info("Recuperando todos os usuário na api externa");
-
-        String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
+        log.info("Recuperando todos os usuário reduzidos na api externa");
+        
         List<UserReductDTO> usuarios = new ArrayList<>();        
-    	RestTemplate restTemplate = new RestTemplate();
-    	Response<List<UserReductDTO>> myresponse = new Response<>();
-    	HttpHeaders headers = new HttpHeaders();
-    	//token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvYmplY3QiOiJ7XCJpZFwiOlwiaFB4S3VSQU5cXHUwMDNjbks3VkhsdjJVI2VOcFhVJWdAcWZIRkBkdEZiazNMVjAxM1lFMmVtelRmRyN2V0RMUkZjcHZuTFwiLFwidHlwZVwiOlwicGFpbmVsXCIsXCJ1c2VyXCI6XCJtYXRoZXVzLnJpYmVpcm8xXCIsXCJsb2dpblRpbWVcIjpcIkRlYyAyLCAyMDIxLCA0OjIzOjI1IFBNXCIsXCJleHBpcmVUb2tlblwiOlwiRGVjIDIsIDIwMjEsIDQ6NTM6MjUgUE1cIixcInNlc3Npb25JbmZpbml0eVwiOmZhbHNlLFwiYXR0cmlidXRlc1wiOntcImZhY2VfYXV0aGVudGljYXRpb25cIjowLFwidG9rZW5faGFzaGlkc1wiOlwiMzQ5MjBhZGItZDVmMC00Yzg1LWExYTItN2UwMzliNWZjMTE1XCIsXCJyYW5kb21faWRlbnRpZnlcIjpcImQyZmZlNjVkLWNmMjYtNGRjMS04YzFmLWE4NjYzNTlkY2RiMlwiLFwiaXBcIjpcIjE3Ny4yMDUuNzQuMTlcIn19In0.P3KcY51G9vNaJlSW4i6NpPuMlpfNepBiYudX7wmsBPA";
-    	headers.add("BAERER_AUTHENTICATION", token);
-    	
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<String> entity = new HttpEntity<>("body", headers);
-    	
-    	ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);    	
-    	if (response.toString().contains("O token informado é inválido") || response.toString().contains("expirou")) {
-    		myresponse.getErrors().add(response.toString());
-    		return myresponse;
-    	}
-    	
-    	JSONObject personJsonObject = new JSONObject(response.getBody());    	
-    	personJsonObject = (JSONObject) personJsonObject.get("output");
-    	personJsonObject = (JSONObject) personJsonObject.get("result");    	
-    	JSONArray arrayjs = personJsonObject.getJSONArray("usuarios");
-    	
-    	arrayjs.forEach(el -> {
-    		JSONObject jobj = (JSONObject) el;
-    		String login = (String) jobj.get("login");
-            String userName = (String) jobj.get("userName");
-
-            UserReductDTO user = new UserReductDTO();
-            user.setLogin(login);
-            user.setUsername(userName);
-    		usuarios.add(user);
-    	});    	
-    	myresponse.setData(usuarios);
-    	return myresponse;
+        UserRestModel model = carregarUsuariosApi(token);
+        if (model == null || model.hasError()) {
+        	return null;
+        }
+        
+        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        	UserReductDTO dto = new UserReductDTO();
+        	dto.setLogin(u.getLogin());
+        	dto.setUsername(u.getUserName());
+        });
+    	return usuarios;
     }
-    
-
-    private Gson gson = new Gson();
-    
-    public void carregarUsuariosApi(String token) {
-    	try {
-    		
-    		String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
-    		URL url = new URL(uri);    		
-            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-            connection.setRequestProperty("BAERER_AUTHENTICATION", token);
-            InputStream stream = connection.getInputStream();
-            Scanner scanner = new Scanner(stream);
-            
-            String response = "";
-            while (scanner.hasNext()) {
-            	response += scanner.next();
-            }
-            
-            if (response != null) {            	
-            	System.out.println(response);
-            	Output postRequestDTO = gson.fromJson(response, Output.class);
-            	//System.out.println(postRequestDTO.result.usuarios.get(0).login);
-            	//System.out.println(postRequestDTO.result.usuarios.get(0).dtAniversario);
-            }
-            scanner.close();
-    	} catch (IOException e) {}
-    	
-    } 
     
     
     public byte[] getAvatar(String login) {
@@ -276,51 +251,3 @@ public class UserService implements IUserService {
     	return null;
     }    
 }
-
-@ToString
-class Output {
-    List<String> messages;
-    Result result;
-    
-}
-
-class Result {
-	List<Usuario> usuarios;
-}
-
-class Usuario {
-	String login;
-	String token;
-    String dtAniversario;
-    String email;
-    String linkedin;
-    String area;
-    byte[] avatar;
-}
-//
-//"output": {
-//    "messages": [],
-//    "result": {
-//        "usuarios": [
-//            {
-//                "token": "MW1rNnQ4ZDI5cjZ0N25sOGJoYmdndmtjYjU4",
-//                "sunday": 0,
-//                "wednesday": 1,
-//                "thursday": 1,
-//                "saturday": 0,
-//                "monday": 1,
-//                "friday": 1,
-//                "tuesday": 1,
-//                "document": "36933084892",
-//                "email": "matheus.santos@dminer.com.br",
-//                "endTime": "00:00",
-//                "beginTime": "02:15",
-//                "idStatus": 1,
-//                "login": "DANILO.COLLADO",
-//                "userName": "Matheus Ribeiro",
-//                "administrator": 0,
-//                "nameGroup": "GRUPO DCNH MANHA",
-//                "birthDate": "23/08/1960",
-//                "area": "ADMINISTRATIVO",
-//                "linkedinUrl": "https://www.google.com/"
-//            }

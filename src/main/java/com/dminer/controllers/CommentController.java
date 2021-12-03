@@ -3,11 +3,13 @@ package com.dminer.controllers;
 import java.util.Optional;
 
 import javax.validation.Valid;
+import javax.ws.rs.POST;
 
 import com.dminer.converters.CommentConverter;
 import com.dminer.dto.CommentDTO;
 import com.dminer.dto.CommentRequestDTO;
 import com.dminer.entities.Comment;
+import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.CommentService;
@@ -61,14 +63,20 @@ public class CommentController {
         if (dto.getIdPost() == null)  {
             result.addError(new ObjectError("dto", "Id do Post precisa estar preenchido."));
 		} else {
-            if (postService.findById(dto.getIdPost()) == null) {
-                result.addError(new ObjectError("dto", "Id do Post não encontrado."));
+			Optional<Post> opt = postService.findById(dto.getIdPost()); 
+            if (!opt.isPresent()) {
+                result.addError(new ObjectError("dto", "Post não encontrado."));
             }
         }
 
         if (dto.getLogin() == null) {
             result.addError(new ObjectError("dto", "Id do usuário precisa estar preenchido."));
-		}     
+		} else {
+		    String login = dto.getLogin();
+		    if (!userService.existsByLogin(login)) {
+		        result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
+		    }
+		} 
     }
 
 

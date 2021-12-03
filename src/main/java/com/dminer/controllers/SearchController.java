@@ -105,20 +105,7 @@ public class SearchController {
     @Autowired
     private Environment env;
 
-    
-    
-    //@GetMapping()
-    public ResponseEntity<Response<List<UserDTO>>> getAllEventTeste() throws IOException { 
-    	// users
-        if (token == null) {
-        	token = userService.getToken();
-        }
-        
-        //userService.carregarUsuariosApi(token);
-        Response<List<UserDTO>> users = userService.carregarUsuariosApi2(token);
 
-        return ResponseEntity.ok(users);
-    }
     
     
     @GetMapping(value = "/{keyword}")

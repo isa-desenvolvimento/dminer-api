@@ -39,7 +39,7 @@ import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
-import com.dminer.rest.model.UserRestModel;
+import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
@@ -69,27 +69,6 @@ public class UserController {
     private String token;
     
 
-    @GetMapping("/rest/all")
-    public ResponseEntity<Response<List<UserDTO>>> getUsersRest() {
-    	
-    	String token = userService.getToken();
-//    	Response<List<UserDTO>> retorno = userService.carregarUsuariosApi(token);
-//    	if (!retorno.getErrors().isEmpty()) {
-//    		return ResponseEntity.badRequest().body(retorno);
-//    	}
-//    	List<UserDTO> usuarios = retorno.getData();
-//    	Response<List<UserDTO>> response = new Response<>();
-//    	 
-//    	usuarios.forEach(usuario -> {
-//    		String login = usuario.getLogin();
-//    		//String avatar = userService.getAvatar(login, token);
-//    		//usuario.setAvatar(avatar);
-//    	});
-//    	response.setData(usuarios);
-//    	return ResponseEntity.ok(response);   
-    	return ResponseEntity.ok(null);
-    }
-
 
     private void validateDto(UserDTO userDTO, BindingResult result) {        
         if (userDTO.getLogin() == null) {
@@ -97,56 +76,14 @@ public class UserController {
         }
     }
 
-
-    @PostMapping()
-    public ResponseEntity<Response<UserDTO>> persist(@Valid @RequestBody UserDTO dto, BindingResult result) {        
-
-	    log.info("Persistindo um usuário {}", dto.getLogin());
-
-        Response<UserDTO> response = new Response<>();
-
-        validateDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando userRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        if (userService.existsByLogin(dto.getLogin())) {            
-            Optional<User> findByLogin = userService.findByLogin(dto.getLogin());
-            User user = findByLogin.get();            
-            user = userService.persist(user);
-            response.setData(userConverter.entityToDto(user));
-            return ResponseEntity.ok().body(response);
-        }
-
-        User u = userConverter.dtoToEntity(dto);
-        User user = userService.persist(u);
-        response.setData(userConverter.entityToDto(user));
-        return ResponseEntity.ok().body(response);
+    @GetMapping
+    public void teste() {
+        
+//    	String token = userService.getToken();
+//        userService.carregarUsuariosApi3(token);
+        
     }
-
-
-    // @PutMapping()
-    // public ResponseEntity<Response<UserDTO>> put( @Valid @RequestBody UserDTO userDto, BindingResult result) {
-
-    //     log.info("Alterando um usuário {}", userDto);
-
-    //     Response<UserDTO> response = new Response<>();
-
-    //     validateDto(userDto, result);
-    //     if (result.hasErrors()) {
-    //         log.info("Erro validando UserRequestDTO: {}", userDto);
-    //         result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-
-    //     User user = userService.persist(userConverter.dtoToEntity(userDto));
-    //     response.setData(userConverter.entityToDto(user));
-    //     return ResponseEntity.ok().body(response);
-    // }
-
-
+    
     @GetMapping(value = "/{login}")
     public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
@@ -168,22 +105,27 @@ public class UserController {
     }
 
 
-    //@GetMapping(value = "/all")
-    public ResponseEntity<Response<List<UserDTO>>> getAll() {
+    @GetMapping(value = "/rest/all")
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
-
-        Optional<List<User>> user = userService.findAll();
-        if (user.get().isEmpty()) {
-            response.getErrors().add("Usuários não encontrados");
-            return ResponseEntity.badRequest().body(response);
+        if (token == null) {
+        	response.getErrors().add("Token precisa ser informado");
         }
-
-        List<UserDTO> usuarios = new ArrayList<>();
-        user.get().forEach(u -> {
-            usuarios.add(userConverter.entityToDto(u));
-        });
-        response.setData(usuarios);
+        
+        List<UserDTO> userList = userService.carregarUsuariosApi2(token.getToken());
+        if (userList == null) {
+        	response.getErrors().add("Token inválido ou expirado!");
+        }
+        
+        if (userList.isEmpty()) {
+            response.getErrors().add("Usuários não encontrados");
+        }
+        
+        if (!response.getErrors().isEmpty()) {
+        	return ResponseEntity.badRequest().body(response);        	
+        }        
+        response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
     
@@ -195,39 +137,18 @@ public class UserController {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
-        	Response<List<UserReductDTO>> opt = userService.carregarUsuariosApiReduct(token.getToken());
+        	List<UserReductDTO> users = userService.carregarUsuariosApiReduct(token.getToken());
         	
-        	if (!opt.getErrors().isEmpty()) {
-        		response.setErrors(opt.getErrors());
+        	if (users == null || users.isEmpty()) {
+        		response.getErrors().add("Nenhum usuario encontrado");
         		return ResponseEntity.badRequest().body(response);
         	}
-        	response.setData(opt.getData());
+        	response.setData(users);
         }
         return ResponseEntity.ok().body(response);
     }
     
     
-
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
-        log.info("Deletando usuário {}", id);
-        
-        Response<Boolean> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        try {userService.delete(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Usuário não encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        response.setData(true);
-        return ResponseEntity.ok().body(response);
-    }
-
 
     @GetMapping("/birthdays")
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
@@ -238,25 +159,28 @@ public class UserController {
         	token = userService.getToken();
         }
         
-//        Response<List<UserDTO>> users = userService.carregarUsuariosApi(token);
-//        if (!users.getErrors().isEmpty()) {
-//        	response.setErrors(users.getErrors());
-//        	return ResponseEntity.badRequest().body(response);
-//        }
-//        
-//        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-//        users.getData().forEach(u -> {
-//        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
-//        		aniversariantes.add(u);
-//        	}
-//        });
+        UserRestModel model = userService.carregarUsuariosApi(token);
+        if (model == null || model.hasError()) {
+    		response.getErrors().add("Nenhum usuario encontrado");
+    		model.getOutput().getMessages().forEach(u -> {
+    			response.getErrors().add(u);
+    		});
+    		return ResponseEntity.badRequest().body(response);
+    	}
         
-//        if (aniversariantes.isEmpty()) {
-//            response.getErrors().add("Nenhum aniversariante encontrado");
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//
-//        response.setData(aniversariantes);
+        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+        		aniversariantes.add(u.toUserDTO());
+        	}
+        });
+        
+        if (aniversariantes.isEmpty()) {
+            response.getErrors().add("Nenhum aniversariante encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
     }
 

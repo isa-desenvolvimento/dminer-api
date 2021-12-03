@@ -20,4 +20,5 @@ public class CommentDTO {
     private String content;
     private String date;
     private String avatar;
+    private Integer idPost;
 }

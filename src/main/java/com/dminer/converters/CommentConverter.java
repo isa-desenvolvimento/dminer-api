@@ -14,6 +14,7 @@ import com.dminer.utils.UtilNumbers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.ObjectError;
 
 @Service
 public class CommentConverter {
@@ -33,9 +34,11 @@ public class CommentConverter {
         dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
         dto.setId(comment.getId());
         dto.setLogin(comment.getUser().getLogin());
-        if (token == null) {
-            token = userService.getToken();
-        }
+        Optional<Post> opt = postService.findById(dto.getIdPost()); 
+        dto.setIdPost(opt.get().getId());
+//        if (token == null) {
+//            token = userService.getToken();
+//        }
         //String avatar = userService.getAvatar(dto.getLogin(), token);
         //dto.setAvatar(avatar);
         return dto;

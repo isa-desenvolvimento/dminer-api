@@ -3,8 +3,10 @@ package com.dminer.converters;
 
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.User;
+import com.dminer.response.Response;
 import com.dminer.services.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +48,7 @@ public class UserConverter {
 //        dto.setAvatar(avatar);
         return dto;
     }
-   
+    
+    
+      
 }

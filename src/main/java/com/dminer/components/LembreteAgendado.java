@@ -26,13 +26,12 @@ public class LembreteAgendado {
         log.info("Agendando o lembrete: " + reminder.toString());
         Date date = new Date(reminder.getDate().getTime());
         Timer timer = new Timer();
-        timer.schedule(new TimerTask() {            
-            @Override public void run() {                
+        timer.schedule(new TimerTask() {
+            @Override public void run() {
                 serverSendEvents.setReminder(reminder);
                 serverSendEvents.streamSseReminder();
                 reminder.desactivate();
             }
         }, date);
     }
-
 }
