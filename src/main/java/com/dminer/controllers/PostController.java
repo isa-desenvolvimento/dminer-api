@@ -265,16 +265,21 @@ public class PostController {
 		dto.setId(post.getId());		
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
-		anexos.forEach(e -> {
-			dto.getAnexos().add(e.getUrl());
-		});
+		if (anexos != null && !anexos.isEmpty()) {
+			anexos.forEach(e -> {
+				dto.getAnexos().add(e.getUrl());
+			});			
+		}
 
 		if (token == null) {
             token = userService.getToken();
         }
+		
+		String encodedString = "";
         byte[] avatar = userService.getAvatar(post.getLogin());
-        String encodedString = Base64.getEncoder().encodeToString(avatar);  
-        
+        if (avatar != null) {
+        	encodedString = Base64.getEncoder().encodeToString(avatar);        	
+        }        
         dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
         
 		if (comments != null && !comments.isEmpty()) {
@@ -282,7 +287,6 @@ public class PostController {
 				dto.getComments().add(commentConverter.entityToDTO(e));
 			});			
 		}
-		 
 		return dto;
 	}
 
