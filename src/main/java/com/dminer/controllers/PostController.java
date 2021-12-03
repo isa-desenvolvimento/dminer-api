@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -254,10 +255,11 @@ public class PostController {
 		}
 	}
 
+	private String token = null;
 	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
 		System.out.println(post.toString());
-		dto.setUser(new UserReductDTO(post.getLogin()));
+		
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());		
@@ -267,6 +269,14 @@ public class PostController {
 			dto.getAnexos().add(e.getUrl());
 		});
 
+		if (token == null) {
+            token = userService.getToken();
+        }
+        byte[] avatar = userService.getAvatar(post.getLogin());
+        String encodedString = Base64.getEncoder().encodeToString(avatar);  
+        
+        dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
+        
 		if (comments != null && !comments.isEmpty()) {
 			comments.forEach(e -> {
 				dto.getComments().add(commentConverter.entityToDTO(e));
