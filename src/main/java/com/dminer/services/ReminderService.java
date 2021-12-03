@@ -45,9 +45,9 @@ public class ReminderService implements IReminderService {
 		reminderRepository.deleteById(id);        
     }
 
-    public Optional<List<Reminder>> search(String keyword) {
+    public Optional<List<Reminder>> search(String keyword, String login) {
         if (keyword != null) {
-            return Optional.ofNullable(reminderRepository.search(keyword));
+            return Optional.ofNullable(reminderRepository.search(keyword, login));
         }
         return Optional.ofNullable(reminderRepository.findAll());
     }

@@ -125,7 +125,7 @@ public class SearchController {
         }
 
         // reminder
-        Optional<List<Reminder>> searchReminder = reminderService.search(keyword);
+        Optional<List<Reminder>> searchReminder = reminderService.search(keyword, login);
         if (searchReminder.isPresent() && !searchReminder.get().isEmpty()) {
             searchReminder.get().forEach(u -> {
                 searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
