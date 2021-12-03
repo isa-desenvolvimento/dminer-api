@@ -133,13 +133,13 @@ public class SearchController {
         }
 
         // users
-//        if (token == null) {
-//        	token = userService.getToken();
-//        }
-//        List<UserDTO> searchUsers = userService.search(keyword, token);            
-//        searchUsers.forEach(u -> {            
-//            searchDTO.getUsersList().add(u);
-//        });
+        if (token == null) {
+        	token = userService.getToken();
+        }
+        List<UserDTO> searchUsers = userService.search(keyword, token);            
+        searchUsers.forEach(u -> {            
+            searchDTO.getUsersList().add(u);
+        });
         
 
         if (isProd()) {
