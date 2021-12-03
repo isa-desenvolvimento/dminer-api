@@ -84,7 +84,7 @@ public class UserController {
         
     }
     
-    @GetMapping(value = "/{login}")
+    @PostMapping(value = "/{login}")
     public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
         
@@ -105,7 +105,7 @@ public class UserController {
     }
 
 
-    @GetMapping(value = "/all")
+    @PostMapping(value = "/all")
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
