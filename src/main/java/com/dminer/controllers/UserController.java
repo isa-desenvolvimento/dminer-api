@@ -169,6 +169,13 @@ public class UserController {
         	userList.add(u.toUserDTO());
         });
         
+        userList.forEach(u -> {
+        	byte[] avatar = userService.getAvatar(u.getLogin());            
+            if (avatar != null) {
+            	String encodedString = Base64.getEncoder().encodeToString(avatar);
+            	u.setAvatar(encodedString);
+            }
+        });
         response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
@@ -203,13 +210,17 @@ public class UserController {
         }
         
         UserRestModel model = userService.carregarUsuariosApi(token);
-        if (model == null || model.hasError()) {
-    		response.getErrors().add("Nenhum usuario encontrado");
-    		model.getOutput().getMessages().forEach(u -> {
+        if (model == null) {
+    		response.getErrors().add("Nenhum usuario encontrado");    		
+    		return ResponseEntity.badRequest().body(response);
+    	}
+        
+        if (model.hasError()) {
+        	model.getOutput().getMessages().forEach(u -> {
     			response.getErrors().add(u);
     		});
     		return ResponseEntity.badRequest().body(response);
-    	}
+        }
         
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
         model.getOutput().getResult().getUsuarios().forEach(u -> {
