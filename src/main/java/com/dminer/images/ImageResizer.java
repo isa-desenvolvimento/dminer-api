@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -95,5 +96,8 @@ public class ImageResizer {
         resize(inputImagePath, outputImagePath, scaledWidth, scaledHeight);
     }
  
+    public void getResource() {
+    	URL path = getClass().getResource("/images/yourImageName.extension");    	
+    }
         
 }
