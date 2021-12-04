@@ -44,6 +44,7 @@ import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.interfaces.IUserService;
+import com.dminer.utils.UtilFilesStorage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -199,18 +200,36 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
+    public String getAvatarDir(String login) {
+    	try {    		
+    		String name = login.replace('.', '-') + ".png";
+    		String root = UtilFilesStorage.getProjectPath() + "\\avatares";
+    		String path = root + "\\" + name;
+    		
+    		if (UtilFilesStorage.fileExists(root, name)) {
+    			return path;
+    		}
+    		
+    		UtilFilesStorage.createDirectory(root);
+    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    		if (image != null) {
+    			UtilFilesStorage.saveImage(path, image);
+    			return path;
+    		}
+    	} catch (IOException e) {}
+    	return null;
+    }
     
     public byte[] getAvatar(String login) {
-    	return "123".getBytes();
-//    	try {
-//    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
-//    		if (image != null) {
-//    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//    			ImageIO.write(image, "png", baos);
-//    			return baos.toByteArray();
-//    		}
-//    	} catch (IOException e) {}
-//    	return null;
+    	try {
+    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    		if (image != null) {
+    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    			ImageIO.write(image, "png", baos);
+    			return baos.toByteArray();
+    		}
+    	} catch (IOException e) {}
+    	return null;
     }
     
     public byte[] getBanner(String login) {
@@ -222,60 +241,5 @@ public class UserService implements IUserService {
 //		return user.getBanner().getBytes();
     }
     
-    public void compress(byte[] bytes) throws IOException {
-    	
-    	InputStream is = new ByteArrayInputStream(bytes);
-        BufferedImage image = ImageIO.read(is);
-        OutputStream os = new FileOutputStream("compressed_image.png");
 
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
-        ImageWriter writer = (ImageWriter) writers.next();
-
-        ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-        writer.setOutput(ios);
-
-        ImageWriteParam param = writer.getDefaultWriteParam();
-
-        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        param.setCompressionQuality(0.0f);  // Change the quality value you prefer
-        writer.write(null, new IIOImage(image, null, null), param);
-
-        os.close();
-        ios.close();
-        writer.dispose();
-    }
-    
-    
-    public static void resize(String inputImagePath,
-            String outputImagePath, double percent) throws IOException {
-        File inputFile = new File(inputImagePath);
-        BufferedImage inputImage = ImageIO.read(inputFile);
-        int scaledWidth = (int) (inputImage.getWidth() * percent);
-        int scaledHeight = (int) (inputImage.getHeight() * percent);
-        resize(inputImagePath, outputImagePath, scaledWidth, scaledHeight);
-    }
-    
-    public static void resize(String inputImagePath,
-            String outputImagePath, int scaledWidth, int scaledHeight)
-            throws IOException {
-        // reads input image
-        File inputFile = new File(inputImagePath);
-        BufferedImage inputImage = ImageIO.read(inputFile);
- 
-        // creates output image
-        BufferedImage outputImage = new BufferedImage(scaledWidth,
-                scaledHeight, inputImage.getType());
- 
-        // scales the input image to the output image
-        Graphics2D g2d = outputImage.createGraphics();
-        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
-        g2d.dispose();
- 
-        // extracts extension of output file
-        String formatName = outputImagePath.substring(outputImagePath
-                .lastIndexOf(".") + 1);
- 
-        // writes to output file
-        ImageIO.write(outputImage, formatName, new File(outputImagePath));
-    }
 }
