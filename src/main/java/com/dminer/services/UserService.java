@@ -1,28 +1,18 @@
 package com.dminer.services;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.net.ssl.HttpsURLConnection;
 
 import org.json.JSONObject;
@@ -39,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
+import com.dminer.images.ImageResizer;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
@@ -201,6 +192,12 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
+    
+    /**
+     * Recupera o avatar no diretório "avatares" e transoforma em Base64
+     * @param pathFile
+     * @return String
+     */
     public String getAvatarBase64(String pathFile) {
     	try {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
@@ -208,30 +205,48 @@ public class UserService implements IUserService {
     			String base = Base64.getEncoder().encodeToString(image);
     			System.out.println(base);
     			return base;
-    		}     		
+    		}
     	} catch (IOException e) {}
     	return null;
     }
     
+    
+    /**
+     * Verifica se o avatar existe no diretório "avatares", caso não existe, recupera na api
+     * https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=?
+     * salva no diretório e retorna uma string contendo a url do arquivo
+     * @param login
+     * @return String
+     */
     public String getAvatarDir(String login) {
-    	try {    		
-    		String name = login.replace('.', '-') + ".png";
+    	try {
     		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
-    		String path = root + UtilFilesStorage.separator + name;
-    		if (UtilFilesStorage.fileExists(root, name)) {
-    			return path;
+    		String name = login.replace('.', '-') + "-resized.png";
+    		String imagemRedimensionadaPath = root + UtilFilesStorage.separator + name;
+
+    		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
+    			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
+    			return imagemRedimensionadaPath;
     		}
     		
     		UtilFilesStorage.createDirectory(root);
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
     		if (image != null) {
-    			UtilFilesStorage.saveImage(path, image);
-    			return path;
+    			UtilFilesStorage.saveImage(imagemRedimensionadaPath, image);
+    			ImageResizer.resize(imagemRedimensionadaPath, imagemRedimensionadaPath, 0.5);
+    			return imagemRedimensionadaPath;
     		}
     	} catch (IOException e) {}
     	return null;
     }
     
+   
+    /**
+     * Recupera o avatar do usuário pelo endpoint do cliente
+     * https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=?
+     * @param login
+     * @return byte[]
+     */
     public byte[] getAvatar(String login) {
     	try {
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
@@ -244,14 +259,16 @@ public class UserService implements IUserService {
     	return null;
     }
     
-    public byte[] getBanner(String login) {
-    	return "123".getBytes();
-    	
-//		User user = userRepository.findByLogin(login);
-//		if (user == null || user.getBanner() == null) 
-//			return null;
-//		return user.getBanner().getBytes();
-    }
     
-
+    /**
+     * Recupera o banner do usuário no banco de dados
+     * @param login
+     * @return byte[]
+     */
+    public byte[] getBanner(String login) {
+		User user = userRepository.findByLogin(login);
+		if (user == null || user.getBanner() == null) 
+			return null;
+		return user.getBanner().getBytes();
+    }
 }

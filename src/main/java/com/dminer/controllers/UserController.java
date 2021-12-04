@@ -72,19 +72,17 @@ public class UserController {
 
     @GetMapping("/teste")
     public ResponseEntity<String> teste() throws IOException {
-                
-        String avatar = userService.getAvatarDir("matheus.ribeiro2");
-        if (avatar == null) {
-        	System.out.println("Não recuperou o avatar");
-        	return ResponseEntity.internalServerError().body("Não recuperou o avatar");
+        String avatarPath = userService.getAvatarDir("matheus.ribeiro2");
+        if (avatarPath == null) {
+        	return ResponseEntity.internalServerError().body("Não recuperou o avatar em: " + avatarPath);
         } else {
-        	System.out.println(avatar);        	
-        	//ImageResizer.resize(avatar, avatar, 0.5);
-        	String base64 = userService.getAvatarBase64(avatar);
+        	System.out.println(avatarPath);
+        	ImageResizer.resize(avatarPath, avatarPath, 0.5);
+        	String base64 = userService.getAvatarBase64(avatarPath);
         	if (base64 == null)
         		return ResponseEntity.internalServerError().body("Não converteu o avatar");
         	return ResponseEntity.ok().body(base64);
-        }                
+        }
     }
     
     @PostMapping(value = "/{login}")
@@ -125,12 +123,11 @@ public class UserController {
         	dto.setBanner(encodedString);
         }
         
-        byte[] avatar = userService.getAvatar(login);
-        dto = model.getOutput().getResult().getUsuarios().get(0).toUserDTO();
-        if (avatar != null) {
-        	String encodedString = Base64.getEncoder().encodeToString(avatar);
-        	dto.setAvatar(encodedString);
-        }        
+        String avatarPath = userService.getAvatarDir(login);            
+        if (avatarPath != null) {
+        	String avatarBase64 = userService.getAvatarBase64(avatarPath);        	
+        	dto.setAvatar(avatarBase64);
+        }
         
         response.setData(dto);
         return ResponseEntity.ok().body(response);
@@ -172,12 +169,19 @@ public class UserController {
         });
         
         userList.forEach(u -> {
-        	byte[] avatar = userService.getAvatar(u.getLogin());            
-            if (avatar != null) {
-            	String encodedString = Base64.getEncoder().encodeToString(avatar);
-            	u.setAvatar(encodedString);
+        	String avatarPath = userService.getAvatarDir(u.getLogin());            
+            if (avatarPath != null) {
+            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
+            	u.setAvatar(avatarBase64);
+            }
+            
+            byte[] banner = userService.getBanner(u.getLogin());
+            if (banner != null) {
+            	String encodedString = Base64.getEncoder().encodeToString(banner);
+            	u.setBanner(encodedString);
             }
         });
+        
         response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
