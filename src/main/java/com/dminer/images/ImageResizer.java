@@ -56,16 +56,14 @@ public class ImageResizer {
      * @param scaledHeight absolute height in pixels
      * @throws IOException
      */
-    public static void resize(String inputImagePath,
-            String outputImagePath, int scaledWidth, int scaledHeight)
-            throws IOException {
+    public static void resize(String inputImagePath, String outputImagePath, int scaledWidth, int scaledHeight) throws IOException {
+    	
         // reads input image
         File inputFile = new File(inputImagePath);
         BufferedImage inputImage = ImageIO.read(inputFile);
  
         // creates output image
-        BufferedImage outputImage = new BufferedImage(scaledWidth,
-                scaledHeight, inputImage.getType());
+        BufferedImage outputImage = new BufferedImage(scaledWidth, scaledHeight, inputImage.getType());
  
         // scales the input image to the output image
         Graphics2D g2d = outputImage.createGraphics();
@@ -73,8 +71,7 @@ public class ImageResizer {
         g2d.dispose();
  
         // extracts extension of output file
-        String formatName = outputImagePath.substring(outputImagePath
-                .lastIndexOf(".") + 1);
+        String formatName = outputImagePath.substring(outputImagePath.lastIndexOf(".") + 1);
  
         // writes to output file
         ImageIO.write(outputImage, formatName, new File(outputImagePath));
@@ -96,8 +93,5 @@ public class ImageResizer {
         resize(inputImagePath, outputImagePath, scaledWidth, scaledHeight);
     }
  
-    public void getResource() {
-    	URL path = getClass().getResource("/images/yourImageName.extension");    	
-    }
-        
+            
 }

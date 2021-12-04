@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -200,14 +201,23 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
+    public String getAvatarBase64(String pathFile) {
+    	try {
+    		byte[] image = UtilFilesStorage.loadImage(pathFile);
+    		if (image != null) {
+    			String base = Base64.getEncoder().encodeToString(image);
+    			System.out.println(base);
+    			return base;
+    		}     		
+    	} catch (IOException e) {}
+    	return null;
+    }
+    
     public String getAvatarDir(String login) {
     	try {    		
     		String name = login.replace('.', '-') + ".png";
-    		String root = UtilFilesStorage.getProjectPath() + "/" + "avatares";
-    		String path = root + "/" + name;
-    		
-    		System.out.println(path);    		
-    		
+    		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
+    		String path = root + UtilFilesStorage.separator + name;
     		if (UtilFilesStorage.fileExists(root, name)) {
     			return path;
     		}

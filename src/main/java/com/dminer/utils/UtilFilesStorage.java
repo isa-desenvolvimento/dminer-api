@@ -15,7 +15,7 @@ import javax.imageio.ImageIO;
 public class UtilFilesStorage {
 
 		
-	public final static String separator = File.pathSeparator;
+	public final static String separator = File.separator;
 	
 	public static boolean createDirectory(String path) {
         if (! new File(path).exists()) {
@@ -41,16 +41,17 @@ public class UtilFilesStorage {
         return new File(path + separator + nameFile).exists();
     }
     
+    public static boolean fileExists(String pathAbsolute) {
+        return new File(pathAbsolute).exists();
+    }
     
     public static void saveFile(String path, String nameFile) {
         new File(path + separator + nameFile);
-    }
-    
+    }    
     
     public static void saveImage(String path, String formatName, BufferedImage image) throws IOException {
     	ImageIO.write(image, formatName, new File(path));
-    }
-    
+    }    
     
     public static void saveImage(String pathAbsolute, BufferedImage image) throws IOException {
     	try {
@@ -65,4 +66,13 @@ public class UtilFilesStorage {
     		}
     	} catch (Exception e) {}
     }
+    
+    public static byte[] loadImage(String absolutePath) throws IOException {
+    	ByteArrayOutputStream os = new ByteArrayOutputStream();
+    	File inputFile = new File(absolutePath);
+    	BufferedImage inputImage = ImageIO.read(inputFile);
+    	ImageIO.write(inputImage, "png", os);
+    	return os.toByteArray();
+    }
+    
 }

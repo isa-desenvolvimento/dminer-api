@@ -71,19 +71,20 @@ public class UserController {
     }
 
     @GetMapping("/teste")
-    public void teste() throws IOException {
+    public ResponseEntity<String> teste() throws IOException {
                 
-        String avatar = userService.getAvatarDir("matheus.ribeiro1");
+        String avatar = userService.getAvatarDir("matheus.ribeiro2");
         if (avatar == null) {
         	System.out.println("Não recuperou o avatar");
-        	return;
+        	return ResponseEntity.internalServerError().body("Não recuperou o avatar");
         } else {
         	System.out.println(avatar);        	
-        	ImageResizer.resize(avatar, avatar, 0.5);
-        }
-        
-
-        
+        	//ImageResizer.resize(avatar, avatar, 0.5);
+        	String base64 = userService.getAvatarBase64(avatar);
+        	if (base64 == null)
+        		return ResponseEntity.internalServerError().body("Não converteu o avatar");
+        	return ResponseEntity.ok().body(base64);
+        }                
     }
     
     @PostMapping(value = "/{login}")
