@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 
 public class UtilFilesStorage {
 
+		
+	public final static String separator = File.pathSeparator;
 	
 	public static boolean createDirectory(String path) {
         if (! new File(path).exists()) {
@@ -23,8 +25,8 @@ public class UtilFilesStorage {
     }    
     
     public static String getNomeArquivo(String arq) {
-        arq = arq.replace("\\", "/");
-        String[] explode = arq.split("/");
+        //arq = arq.replace("\\", "/");
+        String[] explode = arq.split(separator);
         String nomeArq = explode[explode.length-1];
         return nomeArq;
     }
@@ -36,12 +38,12 @@ public class UtilFilesStorage {
     
     
     public static boolean fileExists(String path, String nameFile) {
-        return new File(path + "\\" + nameFile).exists();
+        return new File(path + separator + nameFile).exists();
     }
     
     
     public static void saveFile(String path, String nameFile) {
-        new File(path + "\\" + nameFile);
+        new File(path + separator + nameFile);
     }
     
     

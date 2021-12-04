@@ -203,8 +203,8 @@ public class UserService implements IUserService {
     public String getAvatarDir(String login) {
     	try {    		
     		String name = login.replace('.', '-') + ".png";
-    		String root = UtilFilesStorage.getProjectPath() + "\\avatares";
-    		String path = root + "\\" + name;
+    		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
+    		String path = root + UtilFilesStorage.separator + name;
     		
     		if (UtilFilesStorage.fileExists(root, name)) {
     			return path;
