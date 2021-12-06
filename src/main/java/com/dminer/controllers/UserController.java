@@ -35,6 +35,7 @@ import com.dminer.images.ImageResizer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
+import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
@@ -86,7 +87,7 @@ public class UserController {
         }
     }
     
-    @PostMapping(value = "/{login}")
+    @GetMapping(value = "/{login}")
     public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
         
@@ -117,8 +118,21 @@ public class UserController {
             response.getErrors().add("Usuário não encontrado");
         }
         
+        UserDTO dto = null;
+        List<Usuario> users = model.getOutput().getResult().getUsuarios();
+        for (Usuario usuario : users) {
+        	if (usuario.getLogin().equals(login)) {
+        		dto = usuario.toUserDTO();
+        		break;
+        	}
+		}
+        
+        if (dto == null) {
+            response.getErrors().add("Usuário não encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
         byte[] banner = userService.getBanner(login);
-        UserDTO dto = model.getOutput().getResult().getUsuarios().get(0).toUserDTO();
         if (banner != null) {
         	String encodedString = Base64.getEncoder().encodeToString(banner);
         	dto.setBanner(encodedString);
