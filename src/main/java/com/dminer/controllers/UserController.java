@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -135,6 +136,7 @@ public class UserController {
 
 
     @PostMapping(value = "/all")
+    @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
@@ -188,6 +190,7 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
+    @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
     	
     	System.out.println(token.getToken());
@@ -207,6 +210,7 @@ public class UserController {
     
 
     @GetMapping("/birthdays")
+    @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
         
         Response<List<UserDTO>> response = new Response<>();
