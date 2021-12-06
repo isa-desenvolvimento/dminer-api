@@ -138,11 +138,11 @@ public class UserController {
         	dto.setBanner(encodedString);
         }
         
-        String avatarPath = userService.getAvatarDir(login);            
-        if (avatarPath != null) {
-        	String avatarBase64 = userService.getAvatarBase64(avatarPath);        	
-        	dto.setAvatar(avatarBase64);
-        }
+//        String avatarPath = userService.getAvatarDir(login);            
+//        if (avatarPath != null) {
+//        	String avatarBase64 = userService.getAvatarBase64(avatarPath);        	
+//        	dto.setAvatar(avatarBase64);
+//        }
         
         response.setData(dto);
         return ResponseEntity.ok().body(response);
