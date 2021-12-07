@@ -39,7 +39,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder;
 
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/server-send-events")

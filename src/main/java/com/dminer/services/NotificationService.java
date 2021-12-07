@@ -20,7 +20,7 @@ public class NotificationService implements INotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-
+    
     @Override
     public Notification persist(Notification notification) {
         log.info("Persistindo notificação: {}", notification);
@@ -47,7 +47,12 @@ public class NotificationService implements INotificationService {
     
     public Optional<List<Notification>> search(String keyword) {
         if (keyword != null) {
-            return Optional.ofNullable(notificationRepository.search(keyword));
+            List<Notification> result = notificationRepository.search(keyword);
+            System.out.println(result.size());
+            if (result.isEmpty()) {
+                return Optional.ofNullable(notificationRepository.findAll()); 
+            }
+            return Optional.of(result);
         }
         return Optional.ofNullable(notificationRepository.findAll());
     }

@@ -35,6 +35,7 @@ import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
 import com.dminer.rest.model.users.UserRestModel;
+import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.interfaces.IUserService;
 import com.dminer.utils.UtilFilesStorage;
 import com.google.gson.Gson;
@@ -86,13 +87,17 @@ public class UserService implements IUserService {
     
     
     public List<UserDTO> search(String termo, String token) {
+
+		// carrega os usuario da api
     	UserRestModel model = carregarUsuariosApi(token);    	
     	List<UserDTO> pesquisa = new ArrayList<UserDTO>();
     	
+		// se vier null ou conter erros, retorna lista vazia
     	if (model == null || model.hasError()) {
         	return pesquisa;
         }
     	
+		// se pesquisa for por null, retorna todos os usuário
     	if (termo == null) {
     		model.getOutput().getResult().getUsuarios().forEach(m -> {
     			pesquisa.add(m.toUserDTO());
@@ -100,14 +105,28 @@ public class UserService implements IUserService {
     		return pesquisa;
     	}
     	
+		// passa o termo de busca pra lowercase e sai procurando alguma
+		// ocorrencia em algum dos atributos do objeto
     	termo = termo.toLowerCase();
-    	for (UserDTO u : pesquisa) {
-    		String concat = (u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
-    				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getPermission()).toLowerCase();    		
+    	for (Usuario u : model.getOutput().getResult().getUsuarios()) {
+    		String concat = (
+				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
+    			u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
+			).toLowerCase();
+
     		if (concat.contains(termo)) {
-    			pesquisa.add(u);
+    			pesquisa.add(u.toUserDTO());
     		}
-		}    	    	
+		}
+
+		// se não encontrar nada na pesquisa, retorna todos os usuários
+		if (pesquisa.isEmpty()) {
+			model.getOutput().getResult().getUsuarios().forEach(m -> {
+				pesquisa.add(m.toUserDTO());
+    		});
+    		return pesquisa;
+		}
+
     	return pesquisa;
     }
     

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
@@ -31,6 +32,7 @@ import com.dminer.converters.UserConverter;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
+import com.dminer.entities.User;
 import com.dminer.images.ImageResizer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
@@ -65,28 +67,31 @@ public class UserController {
     private String token;
     
 
-
-    private void validateDto(UserDTO userDTO, BindingResult result) {        
-        if (userDTO.getLogin() == null) {
-            result.addError(new ObjectError("userDTO", "Login precisa estar preenchido."));			
-        }
-    }
-
-    @GetMapping("/teste")
-    public ResponseEntity<String> teste() throws IOException {
-        String avatarPath = userService.getAvatarDir("matheus.ribeiro2");
-        if (avatarPath == null) {
-        	return ResponseEntity.internalServerError().body("Não recuperou o avatar em: " + avatarPath);
-        } else {
-        	System.out.println(avatarPath);
-        	ImageResizer.resize(avatarPath, avatarPath, 0.5);
-        	String base64 = userService.getAvatarBase64(avatarPath);
-        	if (base64 == null)
-        		return ResponseEntity.internalServerError().body("Não converteu o avatar");
-        	return ResponseEntity.ok().body(base64);
-        }
-    }
     
+    private UserDTO checarBancoLocal(String login) {
+        log.info("checando se o login: {} existe no banco de dados", login);
+        if (!userService.existsByLogin(login)) {
+            log.info("checando se o login: NÃO");
+            return null;
+        }
+        Optional<User> findByLogin = userService.findByLogin(login);
+        if (findByLogin.isPresent()) {
+            log.info("checando se o login: SIM");
+            return userConverter.entityToDto(findByLogin.get());
+        }
+        log.info("checando se o login: NÃO");
+        return  null;
+    }
+
+
+    private String getBannerBase64(String login) {
+        byte[] banner = userService.getBanner(login);
+        if (banner != null) {
+        	return Base64.getEncoder().encodeToString(banner);        	
+        }
+        return null;
+    }
+
     @GetMapping(value = "/{login}")
     public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
@@ -97,6 +102,16 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        UserDTO user = checarBancoLocal(login);
+        if (user != null) {
+            String banner = getBannerBase64(login);
+            if (banner != null) {        	
+                user.setBanner(banner);
+            }
+            response.setData(user);
+            return ResponseEntity.ok().body(response);
+        }            
+        
         if (token == null) {
         	token = userService.getToken();
         }
@@ -132,18 +147,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        byte[] banner = userService.getBanner(login);
-        if (banner != null) {
-        	String encodedString = Base64.getEncoder().encodeToString(banner);
-        	dto.setBanner(encodedString);
+        String banner = getBannerBase64(login);
+        if (banner != null) {        	
+        	dto.setBanner(banner);
         }
-        
-//        String avatarPath = userService.getAvatarDir(login);            
-//        if (avatarPath != null) {
-//        	String avatarBase64 = userService.getAvatarBase64(avatarPath);        	
-//        	dto.setAvatar(avatarBase64);
-//        }
-        
+          
+        userService.persist(userConverter.dtoToEntity(dto));
         response.setData(dto);
         return ResponseEntity.ok().body(response);
     }
@@ -154,10 +163,10 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
-        if (token == null) {
+        if (token == null) { 
         	response.getErrors().add("Token precisa ser informado");
         }
-        
+                
         UserRestModel model = userService.carregarUsuariosApi(token.getToken());
         if (model == null) {
         	response.getErrors().add("Token inválido ou expirado!");

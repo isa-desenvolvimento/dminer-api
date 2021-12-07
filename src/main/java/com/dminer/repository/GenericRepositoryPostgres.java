@@ -13,8 +13,10 @@ import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
+import com.dminer.entities.Notification;
 import com.dminer.entities.Permission;
 import com.dminer.entities.Post;
+import com.dminer.entities.Reminder;
 import com.dminer.entities.Survey;
 import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
@@ -343,6 +345,67 @@ public class GenericRepositoryPostgres {
             e.setTitle(rs.getString("TITLE"));
             PostType type = PostType.valueOf(rs.getString("TYPE"));
             e.setType(type);
+            return e;
+        });
+    }
+
+
+    public List<Notification> searchNotification(String keyword) {
+        String query = 
+        "select " +
+        "   notificati0_.id as id, " +
+        "   notificati0_.active as active, " +
+        "   notificati0_.notification as notification, " +
+        "   notificati0_.user_id as user_id " +
+        "from " +
+        "   notification notificati0_ cross  " +
+        "join " +
+        "   users user1_  " +
+        "where " +
+        "   notificati0_.user_id=user1_.id  " +
+        "and ( " +
+        "    lower(notificati0_.notification) like lower('%" + keyword + "%')  " +
+        "    or lower(user1_.login) like lower('%" + keyword + "%') " +
+        ");";
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Notification e = new Notification();
+            e.setId(rs.getInt("ID"));
+            e.setActive(rs.getBoolean("ACTIVE"));
+            e.setNotification(rs.getString("NOTIFICATION"));
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
+            return e;
+        });
+    }
+
+
+    public List<Reminder> searchReminder(String keyword, String login) {
+        String query = 
+        "select * " +
+        "from " +
+        "   reminder reminder_1 cross  " +
+        "join " +
+        "   users user1_  " +
+        "where " +
+        "   reminder_1.user_id=user1_.id  " +
+        "and ( " +
+        
+        "    lower(concat(reminder_1.reminder_describle, ' ', to_char(reminder_1.date, 'yyyy-mm-dd hh:mm:ss'), ' ', reminder_1.active, ' ', user1_.login, ' ')) like lower('%" + keyword + "%')  " +
+        "    and user1_.login = '" + login + "' " +
+        ");";
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Reminder e = new Reminder();
+            e.setId(rs.getInt("ID"));
+            e.setActive(rs.getBoolean("ACTIVE"));
+            e.setReminderDescrible(rs.getString("REMINDER_DESCRIBLE"));
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
             return e;
         });
     }

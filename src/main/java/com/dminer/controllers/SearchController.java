@@ -148,42 +148,56 @@ public class SearchController {
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         // notification
-        Optional<List<Notification>> searchNotification = notificationService.search(keyword);
-        if (searchNotification.isPresent() &&  !searchNotification.get().isEmpty()) {
-            searchNotification.get().forEach(u -> {
-                searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
-            });
-        }
+        // Optional<List<Notification>> searchNotification = notificationService.search(keyword);
+        // if (searchNotification.isPresent() &&  !searchNotification.get().isEmpty()) {
+        //     searchNotification.get().forEach(u -> {
+        //         searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+        //     });
+        // }
 
         // reminder
-        Optional<List<Reminder>> searchReminder = reminderService.search(keyword, login);
-        if (searchReminder.isPresent() && !searchReminder.get().isEmpty()) {
-            searchReminder.get().forEach(u -> {
+        List<Reminder> searchReminder = genericRepositoryPostgres.searchReminder(keyword, login);
+        if (searchReminder != null && !searchReminder.isEmpty()) {
+            searchReminder.forEach(u -> {
                 searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
             });
+        } else {
+            Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
+            if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
+                searchReminder2.get().forEach(u -> {
+                    searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
+                });
+            }
         }
 
-        // users
-        if (token == null) {
-        	token = userService.getToken();
-        }
-        List<UserDTO> searchUsers = userService.search(keyword, token);            
-        searchUsers.forEach(u -> {
-        	byte[] avatar = userService.getAvatar(login);
-        	String encodedString = Base64.getEncoder().encodeToString(avatar);
-        	u.setAvatar(encodedString);
-            searchDTO.getUsersList().add(u);
-        });
+        // // users
+        // if (token == null) {
+        // 	token = userService.getToken();
+        // }
+        // List<UserDTO> searchUsers = userService.search(keyword, token);            
+        // searchUsers.forEach(u -> {
+        // 	byte[] avatar = userService.getAvatar(login);
+        // 	String encodedString = Base64.getEncoder().encodeToString(avatar);
+        // 	u.setAvatar(encodedString);
+        //     searchDTO.getUsersList().add(u);
+        // });
                 
-        Response<List<UserDTO>> aniversariantes = aniversariantes();
-        if (!aniversariantes.getData().isEmpty()) {
-        	aniversariantes.getData().forEach(ani -> {
-        		searchDTO.getBirthdayList().add(ani);
-        	});
-        }
+        // Response<List<UserDTO>> aniversariantes = aniversariantes();
+        // if (!aniversariantes.getData().isEmpty()) {
+        // 	aniversariantes.getData().forEach(ani -> {
+        // 		searchDTO.getBirthdayList().add(ani);
+        // 	});
+        // }
         
-        if (isProd()) {
+        // if (isProd()) {
             
+            List<Notification> searchNotification = genericRepositoryPostgres.searchNotification(keyword);
+            if (searchNotification != null &&  !searchNotification.isEmpty()) {
+                searchNotification.forEach(u -> {
+                    searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+                });
+            }
+
             // notice
             List<Notice> notices = genericRepositoryPostgres.searchNotice(keyword);
             if (!notices.isEmpty()) {
@@ -199,95 +213,95 @@ public class SearchController {
                 }    
             }
 
-            // events
-            Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
-            if (searchEvents.isPresent() &&  !searchEvents.get().isEmpty()) {
-                searchEvents.get().forEach(u -> {
-                    searchDTO.getEventsList().add(u);
-                });
-            }
+        //     // events
+        //     Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
+        //     if (searchEvents.isPresent() &&  !searchEvents.get().isEmpty()) {
+        //         searchEvents.get().forEach(u -> {
+        //             searchDTO.getEventsList().add(u);
+        //         });
+        //     }
             
-            // surveys
-            Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
-            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                searchSurvey.get().forEach(u -> {
-                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                });
-            } else {
-                searchSurvey = surveyService.findAll();
-                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                    searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                    });
-                }
-            }
+        //     // surveys
+        //     Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
+        //     if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+        //         searchSurvey.get().forEach(u -> {
+        //             searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
+        //         });
+        //     } else {
+        //         searchSurvey = surveyService.findAll();
+        //         if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+        //             searchSurvey.get().forEach(u -> {
+        //                 searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
+        //             });
+        //         }
+        //     }
 
-            // feed (post)
-            List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
-            if (!searchFeed.isEmpty()) {
-            	searchFeed.forEach(u -> {
-            		searchDTO.getFeedList().add(u);
-                });
-            } else {
-            	searchFeed = feedService.getReductAll();
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });
-            }
+        //     // feed (post)
+        //     List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
+        //     if (!searchFeed.isEmpty()) {
+        //     	searchFeed.forEach(u -> {
+        //     		searchDTO.getFeedList().add(u);
+        //         });
+        //     } else {
+        //     	searchFeed = feedService.getReductAll();
+        //     	searchFeed.forEach(u -> {
+        //             searchDTO.getFeedList().add(u);
+        //         });
+        //     }
             
-        } else {
+        // } else {
 
-        	// notice
-            List<Notice> notices = genericRepositorySqlServer.searchNotice(keyword);
-            if (!notices.isEmpty()) {
-                notices.forEach(u -> {
-                	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                });
-            } else {
-                Optional<List<Notice>> result = noticeService.findAll();
-                if (result.isPresent() &&  !result.get().isEmpty()) {
-                    result.get().forEach(u -> {
-                        searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                    });
-                }    
-            }
+        // 	// notice
+        //     List<Notice> notices = genericRepositorySqlServer.searchNotice(keyword);
+        //     if (!notices.isEmpty()) {
+        //         notices.forEach(u -> {
+        //         	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
+        //         });
+        //     } else {
+        //         Optional<List<Notice>> result = noticeService.findAll();
+        //         if (result.isPresent() &&  !result.get().isEmpty()) {
+        //             result.get().forEach(u -> {
+        //                 searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
+        //             });
+        //         }    
+        //     }
             
-            // events
-            Optional<List<Events>> searchEvents = eventsService.search(keyword);
-            if (searchEvents.isPresent() && !searchEvents.get().isEmpty()) {
-                searchEvents.get().forEach(u -> {
-                    searchDTO.getEventsList().add(u);
-                });
-            }
+        //     // events
+        //     Optional<List<Events>> searchEvents = eventsService.search(keyword);
+        //     if (searchEvents.isPresent() && !searchEvents.get().isEmpty()) {
+        //         searchEvents.get().forEach(u -> {
+        //             searchDTO.getEventsList().add(u);
+        //         });
+        //     }
             
-            // surveys
-            Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
-            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                searchSurvey.get().forEach(u -> {                    
-                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                });
-            } else {
-                searchSurvey = surveyService.findAll();
-                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                    searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                    });
-                }
-            }
+        //     // surveys
+        //     Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
+        //     if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+        //         searchSurvey.get().forEach(u -> {                    
+        //             searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
+        //         });
+        //     } else {
+        //         searchSurvey = surveyService.findAll();
+        //         if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+        //             searchSurvey.get().forEach(u -> {
+        //                 searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
+        //             });
+        //         }
+        //     }
             
-            // feed (post)
-            List<PostReductDTO> searchFeed = feedService.searchSqlServer(keyword);
-            if (!searchFeed.isEmpty()) {
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });
-            } else {            	
-            	searchFeed = feedService.getReductAll();
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });            
-            }
-        }
+        //     // feed (post)
+        //     List<PostReductDTO> searchFeed = feedService.searchSqlServer(keyword);
+        //     if (!searchFeed.isEmpty()) {
+        //     	searchFeed.forEach(u -> {
+        //             searchDTO.getFeedList().add(u);
+        //         });
+        //     } else {            	
+        //     	searchFeed = feedService.getReductAll();
+        //     	searchFeed.forEach(u -> {
+        //             searchDTO.getFeedList().add(u);
+        //         });            
+        //     }
+        // }
 
         response.setData(searchDTO);
         return ResponseEntity.ok().body(response);
