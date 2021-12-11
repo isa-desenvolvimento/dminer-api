@@ -87,9 +87,14 @@ public class UserController {
     private String getBannerBase64(String login) {
         byte[] banner = userService.getBanner(login);
         if (banner != null) {
+
         	return Base64.getEncoder().encodeToString(banner);        	
         }
         return null;
+    }
+
+    private String getBannerString(String login) {
+        return userService.getBannerString(login);        
     }
 
     @GetMapping(value = "/{login}")
@@ -104,7 +109,7 @@ public class UserController {
 
         UserDTO user = checarBancoLocal(login);
         if (user != null) {
-            String banner = getBannerBase64(login);
+            String banner = getBannerString(login);
             if (banner != null) {        	
                 user.setBanner(banner);
             }
@@ -147,7 +152,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        String banner = getBannerBase64(login);
+        String banner = getBannerString(login);
         if (banner != null) {        	
         	dto.setBanner(banner);
         }

@@ -290,4 +290,11 @@ public class UserService implements IUserService {
 			return null;
 		return user.getBanner().getBytes();
     }
+
+	public String getBannerString(String login) {
+		User user = userRepository.findByLogin(login);
+		if (user == null || user.getBanner() == null) 
+			return null;
+		return user.getBanner();
+    }
 }

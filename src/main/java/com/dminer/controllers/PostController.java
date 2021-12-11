@@ -90,10 +90,10 @@ public class PostController {
 		
 		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
 		
-		log.info("Verificando se o usuário informado existe");
-		if (postRequestDTO.getUser().getLogin() == null ) {
-			response.getErrors().add("Usuário não encontrado.");			
-		}
+		// log.info("Verificando se o usuário informado existe");
+		// if (postRequestDTO.getUser().getLogin() == null ) {
+		// 	response.getErrors().add("Usuário não encontrado.");			
+		// }
 		
 		try {
 			PostType.valueOf(postRequestDTO.getType());				
