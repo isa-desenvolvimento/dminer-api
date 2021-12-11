@@ -191,7 +191,7 @@ public class TutorialsController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping(value = "/seacrh/{search}")
+    @GetMapping(value = "/search/{search}")
     public ResponseEntity<Response<TutorialsDTO>> search(@PathVariable("search") String search) {
         
         Response<TutorialsDTO> response = new Response<>();

@@ -29,9 +29,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dminer.converters.UserConverter;
+import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
+import com.dminer.entities.Document;
 import com.dminer.entities.User;
 import com.dminer.images.ImageResizer;
 import com.dminer.repository.PermissionRepository;
@@ -276,7 +278,21 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
+    
+    @GetMapping(value = "/search/{keyword}")
+    @Transactional(timeout = 10000)
+    public ResponseEntity<Response<List<UserDTO>>> search(@PathVariable String keyword) {
+        
+        Response<List<UserDTO>> response = new Response<>();
+        if (keyword == null || keyword.isBlank()) {
+            response.getErrors().add("Informe um termo");
+            return ResponseEntity.badRequest().body(response);
+        }
+        response.setData(userService.search(keyword));
+        return ResponseEntity.ok().body(response);
+    }
 
+    
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);
         return Arrays.asList(env.getActiveProfiles()).contains("prod");

@@ -85,6 +85,10 @@ public class UserService implements IUserService {
     }
     
     
+    public List<UserDTO> search(String termo) {
+    	String token = getToken();
+    	return search(termo, token);
+    }
     
     public List<UserDTO> search(String termo, String token) {
 
