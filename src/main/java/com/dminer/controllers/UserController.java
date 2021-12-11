@@ -69,7 +69,7 @@ public class UserController {
 
     
     private UserDTO checarBancoLocal(String login) {
-        log.info("checando se o login: {} existe no banco de dados", login);
+        log.info("checando o login: {} existe no banco de dados", login);
         if (!userService.existsByLogin(login)) {
             log.info("checando se o login: NÃO");
             return null;
@@ -205,11 +205,11 @@ public class UserController {
             	u.setAvatar(avatarBase64);
             }
             
-            byte[] banner = userService.getBanner(u.getLogin());
-            if (banner != null) {
-            	String encodedString = Base64.getEncoder().encodeToString(banner);
-            	u.setBanner(encodedString);
-            }
+            String banner = userService.getBannerString(u.getLogin());
+            u.setBanner(banner);
+            // if (banner != null) {
+            // 	String encodedString = Base64.getEncoder().encodeToString(banner);
+            // }
         });
         
         response.setData(userList);
