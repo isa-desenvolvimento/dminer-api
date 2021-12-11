@@ -279,6 +279,30 @@ public class UserService implements IUserService {
     	return null;
     }
     
+    
+    public String getAvatarBase64ByLogin(String login) {
+    	try {
+    		
+    		String dir = this.getAvatarDir(login);
+    		if (dir == null) {
+    			BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    			if (image != null) {
+    				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    				ImageIO.write(image, "png", baos);
+    				byte[] bytes = baos.toByteArray();
+    				String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(bytes));
+        			System.out.println(base64AsString);
+        			return base64AsString;
+    			} else {
+    				return this.getAvatarBase64(dir);
+    			}
+    		}
+    		
+    	} catch (IOException e) {}
+    	return null;
+    }
+    
+    
    
     /**
      * Recupera o avatar do usuário pelo endpoint do cliente
@@ -286,7 +310,7 @@ public class UserService implements IUserService {
      * @param login
      * @return byte[]
      */
-    public byte[] getAvatar(String login) {
+    public byte[] getAvatar2(String login) {
     	try {
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
     		if (image != null) {

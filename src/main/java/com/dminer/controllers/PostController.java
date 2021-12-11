@@ -275,12 +275,10 @@ public class PostController {
             token = userService.getToken();
         }
 		
-		String encodedString = "";
-        byte[] avatar = userService.getAvatar(post.getLogin());
-        if (avatar != null) {
-        	encodedString = Base64.getEncoder().encodeToString(avatar);        	
+		String encodedString = userService.getAvatarBase64ByLogin(post.getLogin());        
+        if (encodedString != null) {        	
+        	dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
         }        
-        dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
         
 		if (comments != null && !comments.isEmpty()) {
 			comments.forEach(e -> {

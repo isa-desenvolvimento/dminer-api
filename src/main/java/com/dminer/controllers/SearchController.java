@@ -154,9 +154,8 @@ public class SearchController {
         	token = userService.getToken();
         }
         List<UserDTO> searchUsers = userService.search(keyword, token);            
-        searchUsers.forEach(u -> {
-        	byte[] avatar = userService.getAvatar(login);
-        	String encodedString = Base64.getEncoder().encodeToString(avatar);
+        searchUsers.forEach(u -> {        	
+        	String encodedString = userService.getAvatarBase64ByLogin(login);
         	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
