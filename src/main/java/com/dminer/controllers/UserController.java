@@ -288,7 +288,17 @@ public class UserController {
             response.getErrors().add("Informe um termo");
             return ResponseEntity.badRequest().body(response);
         }
-        response.setData(userService.search(keyword));
+        
+        List<UserDTO> userList = userService.search(keyword);
+        userList.forEach(u -> {
+        	String avatarPath = userService.getAvatarDir(u.getLogin());            
+            if (avatarPath != null) {
+            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
+            	u.setAvatar(avatarBase64);
+            }            
+        });       
+        
+        response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
 
