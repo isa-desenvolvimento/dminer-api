@@ -237,7 +237,7 @@ public class UserService implements IUserService {
     	try {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
     		if (image != null) {    			
-    			String base64AsString = new String(org.bouncycastle.util.encoders.Base64.encode(image));
+    			String base64AsString = "data:image/png;base64;" + new String(org.bouncycastle.util.encoders.Base64.encode(image));
     			System.out.println(base64AsString);
     			return base64AsString;
     		}
