@@ -178,9 +178,12 @@ public class UserService implements IUserService {
 			}
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			UserRestModel staff = gson.fromJson(response, UserRestModel.class);
-			//System.out.println(staff.toString());
-			return staff;
+			try {
+				UserRestModel staff = gson.fromJson(response, UserRestModel.class);
+				return staff;				
+			} catch (IllegalStateException e) {
+				return null;
+			}
 			
 		} catch (MalformedURLException e1) {
 			e1.printStackTrace();
@@ -217,13 +220,26 @@ public class UserService implements IUserService {
      * @param pathFile
      * @return String
      */
-    public String getAvatarBase64(String pathFile) {
+    public String getAvatarBase64_old(String pathFile) {
     	try {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
     		if (image != null) {
     			String base = Base64.getEncoder().encodeToString(image);
     			System.out.println(base);
     			return base;
+    		}
+    	} catch (IOException e) {}
+    	return null;
+    }
+
+
+	public String getAvatarBase64(String pathFile) {
+    	try {
+    		byte[] image = UtilFilesStorage.loadImage(pathFile);
+    		if (image != null) {    			
+    			String base64AsString = new String(org.bouncycastle.util.encoders.Base64.encode(image));
+    			System.out.println(base64AsString);
+    			return base64AsString;
     		}
     	} catch (IOException e) {}
     	return null;
