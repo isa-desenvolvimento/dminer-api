@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
+import com.dminer.entities.Document;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
@@ -409,4 +410,35 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
+    
+    
+    
+    public List<Document> searchDocuments(String keyword) {
+        String query = 
+        "SELECT * " +
+        "FROM DOCUMENT e " +
+        "WHERE LOWER(CONCAT( " +
+           "e.content_link, ' ', " +
+           "e.title, ' ', " +
+           "e.category_id, ' ', " +           
+           "e.permission_id, ' '))" +
+           " LIKE LOWER('%" + keyword + "%')";
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Document e = new Document();
+            e.setId(rs.getInt("ID"));
+            e.setContentLink(rs.getString("CONTENT_LINK"));
+            e.setTitle(rs.getString("TITLE"));
+            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
+            if (p.isPresent())
+                e.setPermission(p.get());
+            Optional<Category> c = categoryRepository.findById(rs.getInt("CATEGORY_ID"));
+            if (c.isPresent())
+                e.setCategory(c.get());
+            return e;
+        });
+    }
+    
+    
 }    

@@ -12,6 +12,7 @@ import com.dminer.dto.DocumentDTO;
 import com.dminer.entities.Document;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.DocumentRepository;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
 
@@ -54,6 +55,8 @@ public class DocumentController {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private GenericRepositorySqlServer genericRepositorySqlServer;
     
     private void validateRequestDto(DocumentRequestDTO dto, BindingResult result) {
         if (dto.getCategory() == null) {
@@ -214,4 +217,31 @@ public class DocumentController {
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
+    
+    
+    @GetMapping(value = "/search/{keyword}")
+    public ResponseEntity<Response<List<DocumentDTO>>> search(@PathVariable String keyword) {
+        
+        Response<List<DocumentDTO>> response = new Response<>();
+        if (keyword == null || keyword.isBlank()) {
+            response.getErrors().add("Informe um termo");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        List<Document> doc = genericRepositorySqlServer.searchDocuments(keyword);
+        if (doc == null || doc.isEmpty()) {
+            response.getErrors().add("Nenhum documento não encontrado");
+            return ResponseEntity.status(404).body(response);
+        }
+        
+        List<DocumentDTO> ret = new ArrayList<>();
+        for (Document document : doc) {        	
+        	ret.add(documentConverter.entityToDto(document));
+		}
+        
+        response.setData(ret);
+        return ResponseEntity.ok().body(response);
+    }
+    
+    
 }
