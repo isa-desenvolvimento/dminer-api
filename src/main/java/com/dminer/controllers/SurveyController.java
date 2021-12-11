@@ -45,7 +45,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/survey")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class SurveyController {
 
     private static final Logger log = LoggerFactory.getLogger(SurveyController.class);
@@ -117,7 +116,7 @@ public class SurveyController {
 
 
     @PostMapping()
-    //@CrossOrigin("http://localhost:3000")
+    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<SurveyDTO>> create( @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
@@ -142,7 +141,7 @@ public class SurveyController {
 
 
     @PostMapping(value = "/answer/{idSurvey}/{login}/{option}")
-    //@CrossOrigin("http://localhost:3000")
+    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
@@ -209,6 +208,7 @@ public class SurveyController {
 
 
     @PutMapping()
+    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO surveyDto, BindingResult result ) {
 
         log.info("Alterando um questionário {}", surveyDto);
