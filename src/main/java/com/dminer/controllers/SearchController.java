@@ -185,7 +185,7 @@ public class SearchController {
             }
 
             // Notification
-            List<Notification> searchNotification = genericRepositoryPostgres.searchNotification(keyword);
+            List<Notification> searchNotification = genericRepositoryPostgres.searchNotification(keyword, login);
             if (searchNotification != null &&  !searchNotification.isEmpty()) {
                 searchNotification.forEach(u -> {
                     searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );

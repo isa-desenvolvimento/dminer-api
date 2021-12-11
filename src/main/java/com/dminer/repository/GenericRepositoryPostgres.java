@@ -351,24 +351,27 @@ public class GenericRepositoryPostgres {
     }
 
 
-    public List<Notification> searchNotification(String keyword) {
-        String query = 
-        "select " +
-        "   notificati0_.id as id, " +
-        "   notificati0_.active as active, " +
-        "   notificati0_.notification as notification, " +
-        "   notificati0_.user_id as user_id " +
-        "from " +
-        "   notification notificati0_ cross  " +
-        "join " +
-        "   users user1_  " +
-        "where " +
-        "   notificati0_.user_id=user1_.id  " +
-        "and ( " +
-        "    lower(notificati0_.notification) like lower('%" + keyword + "%')  " +
-        "    or lower(user1_.login) like lower('%" + keyword + "%') " +
-        ");";
-        log.info("search = {}", query);
+    public List<Notification> searchNotification(String keyword, String login) {
+    	String query = 
+    			"select " +
+    					"   notificati0_.id as id, " +
+    					"   notificati0_.active as active, " +
+    					"   notificati0_.notification as notification, " +
+    					"   notificati0_.user_id as user_id " +
+    					"from " +
+    					"   notification notificati0_ cross  " +
+    					"join " +
+    					"   users user1_  " +
+    					"where " +
+    					"   notificati0_.user_id=user1_.id  " +
+    					"   and user1_.login='" + login + "'";
+    					
+    	if (keyword != null) {
+    		query += "and ( " ;
+    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
+    	}
+    	
+    	log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Notification e = new Notification();
@@ -391,12 +394,15 @@ public class GenericRepositoryPostgres {
         "join " +
         "   users user1_  " +
         "where " +
-        "   reminder_1.user_id=user1_.id  " +
-        "and ( " +
+        "   reminder_1.user_id=user1_.id  ";
+        if (keyword != null) {
+        	query +=
+        			"and ( " +        
+					"    lower(concat(reminder_1.reminder_describle, ' ', to_char(reminder_1.date, 'yyyy-mm-dd hh:mm:ss'), ' ', reminder_1.active, ' ', user1_.login, ' ')) like lower('%" + keyword + "%')  " +
+					") ";
+        }
+        query += "    and user1_.login = '" + login + "' " ;
         
-        "    lower(concat(reminder_1.reminder_describle, ' ', to_char(reminder_1.date, 'yyyy-mm-dd hh:mm:ss'), ' ', reminder_1.active, ' ', user1_.login, ' ')) like lower('%" + keyword + "%')  " +
-        "    and user1_.login = '" + login + "' " +
-        ");";
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 

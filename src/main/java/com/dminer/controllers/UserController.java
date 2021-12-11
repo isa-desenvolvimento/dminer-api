@@ -263,8 +263,8 @@ public class UserController {
         }
         
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        model.getOutput().getResult().getUsuarios().forEach(u -> {
-        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+        model.getOutput().getResult().getUsuarios().forEach(u -> {        	
+        	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
         		aniversariantes.add(u.toUserDTO());
         	}
         });
