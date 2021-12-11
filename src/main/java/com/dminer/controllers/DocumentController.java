@@ -230,7 +230,7 @@ public class DocumentController {
 
         List<Document> doc = genericRepositorySqlServer.searchDocuments(keyword);
         if (doc == null || doc.isEmpty()) {
-            response.getErrors().add("Nenhum documento não encontrado");
+            response.getErrors().add("Nenhum documento encontrado");
             return ResponseEntity.status(404).body(response);
         }
         

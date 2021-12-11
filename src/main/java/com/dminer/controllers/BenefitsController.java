@@ -9,8 +9,10 @@ import javax.validation.Valid;
 
 import com.dminer.converters.BenefitsConverter;
 import com.dminer.dto.BenefitsRequestDTO;
+import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.entities.Benefits;
+import com.dminer.entities.Document;
 import com.dminer.entities.User;
 import com.dminer.repository.BenefitsRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
@@ -285,8 +287,32 @@ public class BenefitsController {
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
+    
 
+    @GetMapping(value = "/search/{keyword}")
+    public ResponseEntity<Response<List<BenefitsDTO>>> search(@PathVariable String keyword) {
+        
+        Response<List<BenefitsDTO>> response = new Response<>();
+        if (keyword == null || keyword.isBlank()) {
+            response.getErrors().add("Informe um termo");
+            return ResponseEntity.badRequest().body(response);
+        }
 
+        List<Benefits> doc = genericRepositorySqlServer.searchBenefits(keyword);
+        if (doc == null || doc.isEmpty()) {
+            response.getErrors().add("Nenhum documento encontrado");
+            return ResponseEntity.status(404).body(response);
+        }
+        
+        List<BenefitsDTO> ret = new ArrayList<>();
+        for (Benefits document : doc) {        	
+        	ret.add(benefitsConverter.entityToDTO(document));
+		}
+        
+        response.setData(ret);
+        return ResponseEntity.ok().body(response);
+    }
+    
     public boolean isProd() {
         return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
