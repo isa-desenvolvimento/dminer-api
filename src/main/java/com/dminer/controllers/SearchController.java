@@ -43,6 +43,7 @@ import com.dminer.utils.UtilDataHora;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -140,6 +141,7 @@ public class SearchController {
     }
     
     @GetMapping(value = "/{login}/{keyword}")
+    @Transactional(timeout = 50000)
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
