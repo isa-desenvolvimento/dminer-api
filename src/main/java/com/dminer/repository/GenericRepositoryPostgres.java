@@ -223,8 +223,8 @@ public class GenericRepositoryPostgres {
         "SELECT * " +
         "FROM BENEFITS e " +
         "WHERE lower(CONCAT( " +
-           "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
-           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ', " +
+           "e.title, ' ', e.content, ' ', " +
+           "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
            " LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);

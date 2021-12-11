@@ -298,7 +298,12 @@ public class BenefitsController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<Benefits> doc = genericRepositorySqlServer.searchBenefits(keyword);
+        List<Benefits> doc = new ArrayList<>();
+        if (isProd()) {
+        	doc = genericRepositoryPostgres.searchBenefits(keyword);        	
+        } else {
+        	doc = genericRepositorySqlServer.searchBenefits(keyword);
+        }
         if (doc == null || doc.isEmpty()) {
             response.getErrors().add("Nenhum documento encontrado");
             return ResponseEntity.status(404).body(response);

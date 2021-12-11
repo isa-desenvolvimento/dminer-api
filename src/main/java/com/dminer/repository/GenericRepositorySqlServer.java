@@ -209,8 +209,8 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM BENEFITS e " +
         "WHERE LOWER(CONCAT( " +
-           "e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
-           "' ', convert(varchar(100), e.date, 120))) " +
+        "e.title, ' ', e.content, ' ', " +
+           "convert(varchar(100), e.date, 120))) " +
            "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
