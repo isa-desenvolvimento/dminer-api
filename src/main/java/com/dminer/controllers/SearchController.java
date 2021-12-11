@@ -125,7 +125,7 @@ public class SearchController {
         }
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
         model.getOutput().getResult().getUsuarios().forEach(u -> {
-        	if (UtilDataHora.isAniversariante(u.getBirthDate())) {
+        	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
         		aniversariantes.add(u.toUserDTO());
         	}
         });
@@ -160,7 +160,7 @@ public class SearchController {
         });
                 
         Response<List<UserDTO>> aniversariantes = aniversariantes();
-        if (!aniversariantes.getData().isEmpty()) {
+        if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
         		searchDTO.getBirthdayList().add(ani);
         	});
