@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,8 @@ import com.dminer.entities.FileInfo;
 import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.enums.PostType;
+import com.dminer.repository.CommentRepository;
+import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.response.Response;
 import com.dminer.services.CommentService;
 import com.dminer.services.FileDatabaseService;
@@ -83,8 +86,15 @@ public class PostController {
 	private CommentService commentService;
 	
 	@Autowired
-	private CommentConverter commentConverter;
-    
+	private CommentRepository commentRepository;
+	
+	@Autowired
+	private CommentConverter commentConverter;    
+	
+	@Autowired
+	private GenericRepositoryPostgres genericRepositoryPostgres;
+	
+	
 	private Gson gson = new Gson();
 
 	
@@ -381,8 +391,6 @@ public class PostController {
 		}
 		return dto;
 	}
-
-
 	
 	
 	@GetMapping
@@ -407,12 +415,10 @@ public class PostController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	
-	///api/post/search/2?date=&user=
-	///api/post/search/3?date=2021-12-11%2009:08:35&user=matheus.ribeiro1
+		
 	@GetMapping(value = "/search/{id}")
-    @Transactional(timeout = 10000)
-    public ResponseEntity<Response<PostDTO>> search(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    @Transactional(timeout = 50000)
+    public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -450,6 +456,91 @@ public class PostController {
 	
 	
 	
+	@GetMapping(value = "/search/all")
+    @Transactional(timeout = 50000)
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date) {
+        
+        Response<List<PostDTO>> response = new Response<>();
+        if (date == null || date.isBlank()) {
+            response.getErrors().add("Data precisa ser informada");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        List<Comment> comm = genericRepositoryPostgres.searchCommentsByDate(date);
+        List<PostDTO> posts = new ArrayList<>();
+        List<Integer> idsPosts = new ArrayList<>();
+        
+        // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
+        comm.forEach(c -> {
+        	if (idsPosts.contains(c.getPost().getId()) == false) {
+        		idsPosts.add(c.getPost().getId());
+        	}
+        });
+        
+        
+        // pelos posts vou verificando na coleção de comentários quais pertecem ao post
+        idsPosts.forEach(idPost -> {
+        	Optional<Post> p = postService.findById(idPost);
+        	PostDTO dto = postToDto(p.get(), null);
+        	comm.forEach(c -> {
+            	if (c.getPost().getId() == idPost) {
+            		dto.getComments().add(commentConverter.entityToDTO(c));
+            		//comm.remove(c);
+            	}
+            });
+        	posts.add(dto);
+        });
+        
+        response.setData(posts);
+        return ResponseEntity.ok().body(response);
+	}
+	
+	
+	///api/post/search/all?date=&user=
+	@GetMapping(value = "/search/all-date-user")
+    @Transactional(timeout = 50000)
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date, @RequestParam(name = "user", required = true) String user) {
+        
+        Response<List<PostDTO>> response = new Response<>();
+        if (date == null || date.isBlank() || user == null || user.isBlank()) {
+            response.getErrors().add("Data/Usuário precisam ser informados");
+            return ResponseEntity.badRequest().body(response);
+        }
+        Optional<User> opt = userService.findByLoginApi(user);
+        if (!opt.isPresent()) {
+        	response.getErrors().add("Nenhum usuário encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Integer userId = opt.get().getId();
+        List<Comment> comm = genericRepositoryPostgres.searchCommentsByDateAndUser(date, userId);
+        List<PostDTO> posts = new ArrayList<>();
+        List<Integer> idsPosts = new ArrayList<>();
+        
+        // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
+        comm.forEach(c -> {
+        	if (idsPosts.contains(c.getPost().getId()) == false) {
+        		idsPosts.add(c.getPost().getId());
+        	}
+        });
+        
+        
+        // pelos posts vou verificando na coleção de comentários quais pertecem ao post
+        idsPosts.forEach(idPost -> {
+        	Optional<Post> p = postService.findById(idPost);
+        	PostDTO dto = postToDto(p.get(), null);
+        	comm.forEach(c -> {
+            	if (c.getPost().getId() == idPost) {
+            		dto.getComments().add(commentConverter.entityToDTO(c));
+            		//comm.remove(c);
+            	}
+            });
+        	posts.add(dto);
+        });
+        
+        response.setData(posts);
+        return ResponseEntity.ok().body(response);
+	}
 	
 	/**
 	 * Cria diretórios organizados pelo id do Post

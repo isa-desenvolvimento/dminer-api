@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
+import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -447,4 +448,49 @@ public class GenericRepositoryPostgres {
     }
     
     
+    public List<Comment> searchCommentsByDate(String date) {
+        String query = 
+        "SELECT * " +
+        "FROM comment e " +
+        "WHERE e.timestamp='" + date + "'";
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Comment e = new Comment();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+            Post p = new Post();
+            p.setId(rs.getInt("POST_ID"));
+            e.setPost(p);
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
+            return e;
+        });
+    }
+    
+    
+    public List<Comment> searchCommentsByDateAndUser(String date, Integer user) {
+        String query = 
+        "SELECT * " +
+        "FROM comment e " +
+        "WHERE e.timestamp='" + date + "' and e.user_id=" + user;
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Comment e = new Comment();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+            Post p = new Post();
+            p.setId(rs.getInt("POST_ID"));
+            e.setPost(p);
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
+            return e;
+        });
+    }
+       
 }    

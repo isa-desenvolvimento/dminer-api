@@ -145,6 +145,24 @@ public class UserService implements IUserService {
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
+    public Optional<User> findByLoginApi(String login) {
+        log.info("Recuperando usuário pelo login da api, {}", login);
+        if (existsByLogin(login)) {			        			
+			return findByLogin(login);
+		}
+        
+        List<UserReductDTO> users = carregarUsuariosApiReduct(getToken());
+        for (UserReductDTO u : users) {
+        	if (u.getLogin().equals(login)) {
+        		if (! existsByLogin(u.getLogin())) {
+        			User user = persist(new User(u.getLogin()));        			
+        			return Optional.ofNullable(user);
+        		}
+        	}			
+		}
+        return Optional.empty();
+    }
+    
     
     public String getToken() {
     	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
