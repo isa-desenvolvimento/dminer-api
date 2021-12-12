@@ -3,6 +3,7 @@ package com.dminer.controllers;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +34,7 @@ import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
+import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
@@ -80,8 +83,72 @@ public class PostController {
 	private Gson gson = new Gson();
 
 	
-	@PostMapping(consumes = {"multipart/form-data", "text/plain"})
-	public ResponseEntity<Response<PostDTO>> create( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
+	
+	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
+        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
+            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
+        } 
+        
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
+        } 
+
+        if (dto.getContent() == null || dto.getContent().isBlank()) {
+            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
+        }
+        
+        if (dto.getType() == null || dto.getType().isBlank()) {
+            result.addError(new ObjectError("dto", "Tipo precisa estar preenchido."));
+        } else {
+        	try {
+    			PostType.valueOf(dto.getType());				
+    		} catch (IllegalArgumentException e) {
+    			result.addError(new ObjectError("dto", "Campo tipo é inválido."));
+    		}
+        }
+        
+        if (dto.getLikes() == null || !UtilNumbers.isNumeric(dto.getLikes() + "")) {
+        	result.addError(new ObjectError("dto", "Campo likes é inválido."));
+        }
+    }
+	
+	@PostMapping()
+	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
+	
+		Response<PostDTO> response = new Response<>();
+		validateRequestDto(dto, result);
+		if (result.hasErrors()) {
+            log.info("Erro validando PostRequestDTO: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+		
+		Post post = new Post();
+		post.setAnexo(dto.getAnexo());
+		post.setContent(dto.getContent());
+		post.setLikes(dto.getLikes());
+		post.setLogin(dto.getLogin());
+		post.setTitle(dto.getTitle());
+		post.setType(PostType.valueOf(dto.getType()));
+		post = postService.persist(post);
+		
+		List<String> anexos = new ArrayList<>();
+		if (dto.getAnexo() != null && !dto.getAnexo().isBlank()) {
+			anexos.add(dto.getAnexo());
+		}
+		response.setData(postToDto(post, anexos));
+		return ResponseEntity.ok().body(response);
+	}
+	
+	
+	/**
+	 * Método para futura melhorias
+	 * @param files
+	 * @param data
+	 * @return
+	 */
+	//@PostMapping(consumes = {"multipart/form-data", "text/plain"})
+	public ResponseEntity<Response<PostDTO>> create_old( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
 		
 		log.info("----------------------------------------");
 		log.info("Salvando um novo post {}", data);
@@ -255,6 +322,28 @@ public class PostController {
 		}
 	}
 
+	private PostDTO postToDto(Post post, List<String> anexos) {
+		PostDTO dto = new PostDTO();
+		System.out.println(post.toString());
+		
+		dto.setLikes(post.getLikes());
+		dto.setType(post.getType().toString());
+		dto.setId(post.getId());		
+		dto.setContent(post.getContent());
+		dto.setTitle(post.getTitle());
+		dto.setAnexos(anexos);
+		if (token == null) {
+            token = userService.getToken();
+        }
+		
+		String encodedString = userService.getAvatarBase64ByLogin(post.getLogin());        
+        if (encodedString != null) {        	
+        	dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
+        }
+		return dto;
+	}
+	
+	
 	private String token = null;
 	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
 		PostDTO dto = new PostDTO();

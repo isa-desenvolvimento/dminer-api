@@ -49,6 +49,8 @@ public class Post {
 	
     private String login;
 	
+    @Column
+    private String anexo;
     
 	public Post(String content) { this.content = content; }
 }
