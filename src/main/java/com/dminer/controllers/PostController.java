@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,9 +34,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
+import com.dminer.dto.CommentDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
@@ -47,6 +51,7 @@ import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
+import com.dminer.utils.UtilDataHora;
 import com.dminer.utils.UtilNumbers;
 import com.google.gson.Gson;
 
@@ -401,6 +406,48 @@ public class PostController {
 		}		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
+	
+	///api/post/search/2?date=&user=
+	///api/post/search/3?date=2021-12-11%2009:08:35&user=matheus.ribeiro1
+	@GetMapping(value = "/search/{id}")
+    @Transactional(timeout = 10000)
+    public ResponseEntity<Response<PostDTO>> search(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+        
+        Response<PostDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Id precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Optional<Post> opt = postService.findById(id);
+        if (!opt.isPresent()) {
+        	response.getErrors().add("Post não encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Optional<List<Comment>> comments = commentService.findByPost(opt.get());
+        Timestamp paramDate = null;
+        if (date != null) {
+        	paramDate = UtilDataHora.toTimestamp(date);
+        }
+        
+        List<CommentDTO> dtos = new ArrayList<>();
+        if (comments.isPresent() && !comments.get().isEmpty()) {        	
+        	for (Comment comm : comments.get()) {        		
+        		if ((user != null && comm.getUser().getLogin().equalsIgnoreCase(user)) || (paramDate != null && paramDate.equals(comm.getTimestamp()))) {
+        			dtos.add(commentConverter.entityToDTO(comm));
+        		}
+			}
+        }
+        
+        PostDTO dto = postToDto(opt.get(), null);
+        dto.setComments(dtos);
+        
+        response.setData(dto);
+        return ResponseEntity.ok().body(response);
+	}
+	
 	
 	
 	
