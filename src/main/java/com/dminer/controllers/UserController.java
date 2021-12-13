@@ -201,7 +201,7 @@ public class UserController {
         });
         
         userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());            
+        	String avatarPath = userService.getAvatarDir(u.getLogin());
             if (avatarPath != null) {
             	String avatarBase64 = userService.getAvatarBase64(avatarPath);
             	u.setAvatar(avatarBase64);

@@ -116,7 +116,6 @@ public class SurveyController {
 
 
     @PostMapping()
-    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<SurveyDTO>> create( @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
@@ -140,19 +139,7 @@ public class SurveyController {
     }
 
 
-
-    @PostMapping("/answer/teste/{idSurvey}/{login}/{option}")
-    @CrossOrigin("http://localhost:3000")
-    public ResponseEntity<Response<String>> answerQuestionTesteCross( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
-
-        Response<String> response = new Response<>();
-        response.setData("teste questionário cross origin");
-        return ResponseEntity.ok().body(response);
-    } 
-
-
     @PostMapping("/answer/{idSurvey}/{login}/{option}")
-    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
@@ -219,7 +206,6 @@ public class SurveyController {
 
 
     @PutMapping()
-    @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO surveyDto, BindingResult result ) {
 
         log.info("Alterando um questionário {}", surveyDto);

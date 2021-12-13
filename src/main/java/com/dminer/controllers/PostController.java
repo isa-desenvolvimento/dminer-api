@@ -456,63 +456,65 @@ public class PostController {
 	
 	
 	
-	@GetMapping(value = "/search/all")
-    @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date) {
+	// @GetMapping(value = "/search/all")
+    // @Transactional(timeout = 50000)
+    // public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date) {
         
-        Response<List<PostDTO>> response = new Response<>();
-        if (date == null || date.isBlank()) {
-            response.getErrors().add("Data precisa ser informada");
-            return ResponseEntity.badRequest().body(response);
-        }
+    //     Response<List<PostDTO>> response = new Response<>();
+    //     if (date == null || date.isBlank()) {
+    //         response.getErrors().add("Data precisa ser informada");
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
         
-        List<Comment> comm = genericRepositoryPostgres.searchCommentsByDate(date);
-        List<PostDTO> posts = new ArrayList<>();
-        List<Integer> idsPosts = new ArrayList<>();
+    //     List<Comment> comm = genericRepositoryPostgres.searchCommentsByDate(date);
+    //     List<PostDTO> posts = new ArrayList<>();
+    //     List<Integer> idsPosts = new ArrayList<>();
         
-        // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
-        comm.forEach(c -> {
-        	if (idsPosts.contains(c.getPost().getId()) == false) {
-        		idsPosts.add(c.getPost().getId());
-        	}
-        });
+    //     // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
+    //     comm.forEach(c -> {
+    //     	if (idsPosts.contains(c.getPost().getId()) == false) {
+    //     		idsPosts.add(c.getPost().getId());
+    //     	}
+    //     });
         
         
-        // pelos posts vou verificando na coleção de comentários quais pertecem ao post
-        idsPosts.forEach(idPost -> {
-        	Optional<Post> p = postService.findById(idPost);
-        	PostDTO dto = postToDto(p.get(), null);
-        	comm.forEach(c -> {
-            	if (c.getPost().getId() == idPost) {
-            		dto.getComments().add(commentConverter.entityToDTO(c));
-            		//comm.remove(c);
-            	}
-            });
-        	posts.add(dto);
-        });
+    //     // pelos posts vou verificando na coleção de comentários quais pertecem ao post
+    //     idsPosts.forEach(idPost -> {
+    //     	Optional<Post> p = postService.findById(idPost);
+    //     	PostDTO dto = postToDto(p.get(), null);
+    //     	comm.forEach(c -> {
+    //         	if (c.getPost().getId() == idPost) {
+    //         		dto.getComments().add(commentConverter.entityToDTO(c));
+    //         		//comm.remove(c);
+    //         	}
+    //         });
+    //     	posts.add(dto);
+    //     });
         
-        response.setData(posts);
-        return ResponseEntity.ok().body(response);
-	}
+    //     response.setData(posts);
+    //     return ResponseEntity.ok().body(response);
+	// }
 	
 	
 	///api/post/search/all?date=&user=
-	@GetMapping(value = "/search/all-date-user")
+	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date, @RequestParam(name = "user", required = true) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
-        if (date == null || date.isBlank() || user == null || user.isBlank()) {
-            response.getErrors().add("Data/Usuário precisam ser informados");
-            return ResponseEntity.badRequest().body(response);
-        }
-        Optional<User> opt = userService.findByLoginApi(user);
-        if (!opt.isPresent()) {
-        	response.getErrors().add("Nenhum usuário encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
         
-        Integer userId = opt.get().getId();
+		Optional<User> opt = null;
+		Integer userId = null;
+
+		if (user != null && !user.isBlank()) {
+			opt = userService.findByLoginApi(user);
+			if (!opt.isPresent()) {
+				response.getErrors().add("Nenhum usuário encontrado");
+				return ResponseEntity.badRequest().body(response);
+			}
+			userId = opt.get().getId();
+		}
+        
         List<Comment> comm = genericRepositoryPostgres.searchCommentsByDateAndUser(date, userId);
         List<PostDTO> posts = new ArrayList<>();
         List<Integer> idsPosts = new ArrayList<>();

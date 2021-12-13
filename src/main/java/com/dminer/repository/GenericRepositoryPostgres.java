@@ -3,6 +3,7 @@ package com.dminer.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,8 @@ public class GenericRepositoryPostgres {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    
+    private org.bouncycastle.util.Arrays ArraysBouncy;
+
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
 
     
@@ -474,8 +476,18 @@ public class GenericRepositoryPostgres {
     public List<Comment> searchCommentsByDateAndUser(String date, Integer user) {
         String query = 
         "SELECT * " +
-        "FROM comment e " +
-        "WHERE e.timestamp='" + date + "' and e.user_id=" + user;
+        "FROM comment e ";
+        String[] conditions = new String[]{};
+
+        if (date != null)
+            conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
+        if (user != null)
+            conditions = Arrays.append(conditions, " e.user_id=" + user);
+
+        if (!Arrays.isNullOrEmpty(conditions)) {
+            query += "WHERE " + String.join(" and ", conditions);            
+        }
+
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
