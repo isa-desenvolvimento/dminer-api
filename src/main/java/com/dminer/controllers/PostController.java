@@ -425,29 +425,40 @@ public class PostController {
             response.getErrors().add("Id precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
-        
-        Optional<Post> opt = postService.findById(id);
-        if (!opt.isPresent()) {
+
+		Optional<Post> optPost = postService.findById(id);
+        if (!optPost.isPresent()) {
         	response.getErrors().add("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
         
-        Optional<List<Comment>> comments = commentService.findByPost(opt.get());
-        Timestamp paramDate = null;
-        if (date != null) {
-        	paramDate = UtilDataHora.toTimestamp(date);
-        }
+		Optional<User> opt = null;
+		Integer userId = null;
+
+		if (user != null && !user.isBlank()) {
+			opt = userService.findByLoginApi(user);
+			if (!opt.isPresent()) {
+				response.getErrors().add("Nenhum usuário encontrado");
+				return ResponseEntity.badRequest().body(response);
+			}
+			userId = opt.get().getId();
+		}
+       
+        
+        List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(id, date, userId);
         
         List<CommentDTO> dtos = new ArrayList<>();
-        if (comments.isPresent() && !comments.get().isEmpty()) {        	
-        	for (Comment comm : comments.get()) {        		
-        		if ((user != null && comm.getUser().getLogin().equalsIgnoreCase(user)) || (paramDate != null && paramDate.equals(comm.getTimestamp()))) {
-        			dtos.add(commentConverter.entityToDTO(comm));
-        		}
+        if (comments != null && !comments.isEmpty()) {        	
+        	for (Comment comm : comments) {        		
+      			dtos.add(commentConverter.entityToDTO(comm));
 			}
         }
         
-        PostDTO dto = postToDto(opt.get(), null);
+		if (dtos.isEmpty()) {
+			return ResponseEntity.notFound().build();
+		}
+
+        PostDTO dto = postToDto(comments.get(0).getPost(), null);
         dto.setComments(dtos);
         
         response.setData(dto);
@@ -455,46 +466,7 @@ public class PostController {
 	}
 	
 	
-	
-	// @GetMapping(value = "/search/all")
-    // @Transactional(timeout = 50000)
-    // public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = true) String date) {
-        
-    //     Response<List<PostDTO>> response = new Response<>();
-    //     if (date == null || date.isBlank()) {
-    //         response.getErrors().add("Data precisa ser informada");
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-        
-    //     List<Comment> comm = genericRepositoryPostgres.searchCommentsByDate(date);
-    //     List<PostDTO> posts = new ArrayList<>();
-    //     List<Integer> idsPosts = new ArrayList<>();
-        
-    //     // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
-    //     comm.forEach(c -> {
-    //     	if (idsPosts.contains(c.getPost().getId()) == false) {
-    //     		idsPosts.add(c.getPost().getId());
-    //     	}
-    //     });
-        
-        
-    //     // pelos posts vou verificando na coleção de comentários quais pertecem ao post
-    //     idsPosts.forEach(idPost -> {
-    //     	Optional<Post> p = postService.findById(idPost);
-    //     	PostDTO dto = postToDto(p.get(), null);
-    //     	comm.forEach(c -> {
-    //         	if (c.getPost().getId() == idPost) {
-    //         		dto.getComments().add(commentConverter.entityToDTO(c));
-    //         		//comm.remove(c);
-    //         	}
-    //         });
-    //     	posts.add(dto);
-    //     });
-        
-    //     response.setData(posts);
-    //     return ResponseEntity.ok().body(response);
-	// }
-	
+		
 	
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")

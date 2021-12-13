@@ -48,6 +48,9 @@ public class GenericRepositoryPostgres {
     private PermissionRepository permissionRepository;
 
     @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
     private CategoryRepository categoryRepository;
 
     private org.bouncycastle.util.Arrays ArraysBouncy;
@@ -472,6 +475,40 @@ public class GenericRepositoryPostgres {
         });
     }
     
+
+    public List<Comment> searchCommentsByPostIdAndDateAndUser(Integer idPost, String date, Integer user) {
+        String query = 
+        "SELECT * " +
+        "FROM comment e WHERE ";
+        String[] conditions = new String[]{};
+
+        conditions = Arrays.append(conditions, " e.post_id=" + idPost);
+        if (date != null)
+            conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
+        if (user != null)
+            conditions = Arrays.append(conditions, " e.user_id=" + user);
+
+        if (!Arrays.isNullOrEmpty(conditions)) {
+            query += String.join(" and ", conditions);
+        }
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Comment e = new Comment();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+            Post p = postRepository.getById(idPost);
+            if (p != null) {
+                e.setPost(p);
+            }
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
+            return e;
+        });
+    }
     
     public List<Comment> searchCommentsByDateAndUser(String date, Integer user) {
         String query = 
