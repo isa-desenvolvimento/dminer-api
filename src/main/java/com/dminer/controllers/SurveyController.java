@@ -140,7 +140,18 @@ public class SurveyController {
     }
 
 
-    @PostMapping(value = "/answer/{idSurvey}/{login}/{option}")
+
+    @PostMapping("/answer/teste/{idSurvey}/{login}/{option}")
+    @CrossOrigin("http://localhost:3000")
+    public ResponseEntity<Response<String>> answerQuestionTesteCross( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
+
+        Response<String> response = new Response<>();
+        response.setData("teste questionário cross origin");
+        return ResponseEntity.ok().body(response);
+    } 
+
+
+    @PostMapping("/answer/{idSurvey}/{login}/{option}")
     @CrossOrigin("http://localhost:3000")
     public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
 
