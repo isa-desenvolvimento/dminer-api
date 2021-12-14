@@ -145,6 +145,14 @@ public class PostController {
 		post.setLogin(dto.getLogin());
 		post.setTitle(dto.getTitle());
 		post.setType(PostType.valueOf(dto.getType()));
+		if (PostType.valueOf(dto.getType()) == PostType.EXTERNAL) {
+			// salvar na api externa
+			HttpStatus code = postService.salvarApiExterna(post);
+			if (code.value() == 201) {
+				return ResponseEntity.ok().body(null);
+			}
+			return ResponseEntity.internalServerError().body(null);
+		}
 		post = postService.persist(post);
 		
 		List<String> anexos = new ArrayList<>();

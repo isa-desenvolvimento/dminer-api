@@ -12,6 +12,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.dminer.enums.PostType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -53,4 +55,16 @@ public class Post {
     private String anexo;
     
 	public Post(String content) { this.content = content; }
+
+	public String toJson() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writeValueAsString(this);
+            System.out.println("ResultingJSONstring = " + json);
+            return json;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

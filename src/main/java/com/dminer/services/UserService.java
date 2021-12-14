@@ -242,6 +242,7 @@ public class UserService implements IUserService {
      * @param pathFile
      * @return String
      */
+	@Deprecated
     public String getAvatarBase64_old(String pathFile) {
     	try {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
@@ -314,6 +315,7 @@ public class UserService implements IUserService {
      * @param login
      * @return byte[]
      */
+	@Deprecated
     public byte[] getAvatar2(String login) {
     	try {
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));

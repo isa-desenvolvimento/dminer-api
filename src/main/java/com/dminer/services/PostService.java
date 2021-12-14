@@ -3,11 +3,21 @@ package com.dminer.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.dminer.dto.PostDTO;
+import com.dminer.dto.PostExternalApiDTO;
 import com.dminer.entities.Post;
 import com.dminer.repository.PostRepository;
 import com.dminer.services.interfaces.IPostService;
@@ -44,4 +54,35 @@ public class PostService implements IPostService {
 		return postRepository.findAll();
 	}
 	
+	public HttpStatus salvarApiExterna(Post entity) {
+		String url = "https://www.dminer.com.br/blog/wp-json/wp/v2/posts";
+		RestTemplate restTemplate = new RestTemplate();
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.set("Authorization", "Basic aW50cmFuZXQuZG1pbmVyOmpCRzQgS0RKayBGUHpiIHJTbmcgUGgwUiBpTkJQ");
+
+		PostExternalApiDTO postExternal = new PostExternalApiDTO();
+		postExternal.setContent(entity.getContent());
+		postExternal.setTitle(entity.getTitle());
+
+		HttpEntity<String> request = new HttpEntity<String>(postExternal.toJson(), headers);		
+		ResponseEntity<String> out = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+		return out.getStatusCode();
+	}
+
+	// public String getToken() {
+    // 	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
+    // 	RestTemplate restTemplate = new RestTemplate();
+    // 	HttpHeaders headers = new HttpHeaders();    	
+    // 	headers.setContentType(MediaType.APPLICATION_JSON);
+    // 	JSONObject personJsonObject = new JSONObject();
+    //     personJsonObject.put("userName", "matheus.ribeiro1");
+    //     personJsonObject.put("userPassword", "#Matheus97");
+    //     HttpEntity<String> request = new HttpEntity<String>(personJsonObject.toString(), headers);
+        
+    //     String personResultAsJsonStr = restTemplate.postForObject(uri, request, String.class);
+    //     JSONObject retorno = new JSONObject(personResultAsJsonStr);
+    //     return (String) retorno.get("baererAuthentication");
+    // }
 }

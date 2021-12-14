@@ -209,9 +209,6 @@ public class UserController {
             
             String banner = userService.getBannerString(u.getLogin());
             u.setBanner(banner);
-            // if (banner != null) {
-            // 	String encodedString = Base64.getEncoder().encodeToString(banner);
-            // }
         });
         
         response.setData(userList);
