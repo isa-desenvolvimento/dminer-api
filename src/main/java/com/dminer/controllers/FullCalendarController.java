@@ -45,6 +45,9 @@ public class FullCalendarController {
     @Autowired 
     private FullCalendarConverter fullCalendarConverter;
 
+    @Autowired 
+    private ServerSendEvents sendEvents;
+
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
         if (fullCalendarRequestDTO.getTitle() == null) {
@@ -78,8 +81,13 @@ public class FullCalendarController {
         }
         
         FullCalendar events = fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(fullCalendarRequestDTO));
-        response.setData(fullCalendarConverter.entityToDto(events));
+        FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
+        response.setData(dto);
 
+        log.info("Disparando evento de calendário");
+        sendEvents.setEventCalendar(dto);
+        sendEvents.streamSseCalendar();
+        
         return ResponseEntity.ok().body(response);
     }
 

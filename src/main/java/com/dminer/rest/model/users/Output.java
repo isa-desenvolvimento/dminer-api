@@ -16,5 +16,5 @@ import lombok.ToString;
 @ToString
 public class Output {
 	private List<String> messages = new ArrayList<>();;
-	private Result result;    
+	private Result result = new Result();
 }

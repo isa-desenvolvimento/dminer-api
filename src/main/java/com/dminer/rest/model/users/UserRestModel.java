@@ -13,7 +13,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class UserRestModel {
-    private Output output;
+    private Output output = new Output();
     
     public boolean hasError() {
     	if (output == null)

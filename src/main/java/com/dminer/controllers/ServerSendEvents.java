@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import com.dminer.components.LembreteAgendado;
 import com.dminer.dto.EventsDTO;
+import com.dminer.dto.FullCalendarDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Reminder;
@@ -56,6 +57,9 @@ public class ServerSendEvents {
 
     private List<UserDTO> aniversariantes = new ArrayList<>();
 
+    private FullCalendarDTO eventCalendar;
+
+
 
     @GetMapping("/reminder")
     public  SseEmitter streamSseReminder() {
@@ -75,6 +79,23 @@ public class ServerSendEvents {
         return emitter;
     }
 
+    @GetMapping("/calendar")
+    public  SseEmitter streamSseCalendar() {
+        log.info("Disparando o calendar no endpoint");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                emitter = new SseEmitter();
+                emitter.send(eventCalendar.toJson());
+                emitter.complete();
+                Thread.sleep(3000);
+            }catch (Exception ex) {
+                emitter.completeWithError(ex);
+            }
+        });
+        executor.shutdown();
+        return emitter;
+    }
 
     @GetMapping("/notification")
     public  SseEmitter streamSseNotification() {
@@ -132,4 +153,9 @@ public class ServerSendEvents {
     public void addAniversariantes(UserDTO dto) {
         this.aniversariantes.add(dto);
     }
+
+    public void setEventCalendar(FullCalendarDTO notification) {
+        this.eventCalendar = notification;
+    }
+
 }

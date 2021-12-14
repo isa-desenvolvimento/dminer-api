@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
+import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.interfaces.IUserService;
@@ -151,7 +153,12 @@ public class UserService implements IUserService {
 			return findByLogin(login);
 		}
         
-        List<UserReductDTO> users = carregarUsuariosApiReduct(getToken());
+		Response<List<UserReductDTO>> retorno = carregarUsuariosApiReduct(getToken());
+		if (!retorno.getErrors().isEmpty()) {
+			Optional.empty();
+		}
+
+        List<UserReductDTO> users = retorno.getData();
         for (UserReductDTO u : users) {
         	if (u.getLogin().equals(login)) {
         		if (! existsByLogin(u.getLogin())) {
@@ -196,7 +203,9 @@ public class UserService implements IUserService {
 			}
 			scanner.close();
 			if (response.contains("expirou")) {
-				return null;
+				UserRestModel staff = new UserRestModel();
+				staff.getOutput().setMessages(Arrays.asList("Token expirado!"));
+				return staff;
 			}
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -217,14 +226,16 @@ public class UserService implements IUserService {
     
     
     
-    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
+    public Response<List<UserReductDTO>> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
-        List<UserReductDTO> usuarios = new ArrayList<>();        
+		Response<List<UserReductDTO>> response = new Response<>();
+        List<UserReductDTO> usuarios = new ArrayList<>();
         UserRestModel model = carregarUsuariosApi(token);
         System.out.println(model.toString());
         if (model == null || model.hasError()) {
-        	return null;
+			model.getOutput().getMessages().forEach(e -> response.getErrors().add(e));
+        	return response;
         }
         
         model.getOutput().getResult().getUsuarios().forEach(u -> {
@@ -233,7 +244,9 @@ public class UserService implements IUserService {
         	dto.setUsername(u.getUserName());
         	usuarios.add(dto);
         });
-    	return usuarios;
+
+		response.setData(usuarios);
+    	return response;
     }
     
     
