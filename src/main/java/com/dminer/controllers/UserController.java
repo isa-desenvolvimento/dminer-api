@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,7 @@ import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
+import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.Document;
 import com.dminer.entities.User;
 import com.dminer.images.ImageResizer;
@@ -279,6 +281,33 @@ public class UserController {
 
         response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
+    }
+
+    
+    @PutMapping()
+    public ResponseEntity<Response<UserDTO>> put( @RequestBody UserRequestDTO dto,  BindingResult result ) {
+
+        log.info("Alterando um usuário {}", dto);
+
+        Response<UserDTO> response = new Response<>();
+
+        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
+            response.getErrors().add("Login precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<User> optUser = userService.findByLogin(dto.getLogin());
+        if (!optUser.isPresent()) {
+            response.getErrors().add("Nenhum usuário encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        User user = optUser.get();
+        user.setBanner(dto.getBanner());
+
+        user = userService.persist(user);
+        response.setData(userConverter.entityToDto(user));
+        return ResponseEntity.ok().body(response);        
     }
 
     
