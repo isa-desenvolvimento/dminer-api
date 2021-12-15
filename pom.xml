@@ -16,7 +16,7 @@
 	<name>dminer</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>15.2</java.version>
+		<java.version>15.0.2</java.version>
 	</properties>
 
 	<dependencies>
