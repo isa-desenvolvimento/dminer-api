@@ -28,7 +28,7 @@ public class PermissionConverter {
     public Permission requestDtoToEntity(PermissionRequestDTO dto) {
         Permission c = new Permission();
         if (dto == null) return c;
-        c.setPermission(dto.getTitle() != null ? dto.getTitle() : "");
+        c.setPermission(dto.getPermission() != null ? dto.getPermission() : false);
         return c;
     }
 }

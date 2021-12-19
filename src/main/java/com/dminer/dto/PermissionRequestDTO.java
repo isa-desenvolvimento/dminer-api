@@ -13,7 +13,6 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class PermissionRequestDTO { 
-    
-	private String title;
+public class PermissionRequestDTO {     
+	private Boolean permission;
 }
