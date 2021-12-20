@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Integer> {
     
-    List<Document> findAllByOrderByCreateDateAsc();
+    List<Document> findAllByOrderByCreateDateDesc();
 
     //findAllByOrderByIdAsc
 }

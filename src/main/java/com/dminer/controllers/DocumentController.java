@@ -212,7 +212,7 @@ public class DocumentController {
         
         Response<List<DocumentDTO>> response = new Response<>();
 
-        List<Document> doc = documentRepository.findAllByOrderByCreateDateAsc();
+        List<Document> doc = documentRepository.findAllByOrderByCreateDateDesc();
         if (doc.isEmpty()) {
             response.getErrors().add("Documentos não encontrados");
             return ResponseEntity.status(404).body(response);
