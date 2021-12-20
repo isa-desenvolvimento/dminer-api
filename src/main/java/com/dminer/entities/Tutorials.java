@@ -39,9 +39,11 @@ public class Tutorials {
 	@Column()
 	private String content;
 
-    @OneToOne
-    @JoinColumn(name = "permission_id")
-    private Permission permission;
+    // @OneToOne
+    // @JoinColumn(name = "permission_id")
+    // private Permission permission;
+
+    private String permission;
     
     @OneToOne
     @JoinColumn(name = "category_id")

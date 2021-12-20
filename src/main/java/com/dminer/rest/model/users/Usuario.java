@@ -29,6 +29,7 @@ public class Usuario {
 	public UserDTO toUserDTO() {
 		return UserDTO
 				.builder()
+				.userName(userName)
 				.area(area)				
 				.birthDate(birthDate)
 				.email(email)

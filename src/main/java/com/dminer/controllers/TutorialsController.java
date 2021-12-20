@@ -78,12 +78,14 @@ public class TutorialsController {
         }
 
         if (dto.getPermission() == null) {
-            result.addError(new ObjectError("TutorialsRequestDTO", "Permissão precisa estar preenchido."));
-        } else {
-            if(!permissionRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("TutorialsRequestDTO", "Permissão não é válida."));
-            }
-        }
+            dto.setPermission("");
+            // result.addError(new ObjectError("TutorialsRequestDTO", "Permissão precisa estar preenchido."));
+        } 
+        // else {
+        //     if(!permissionRepository.existsById(dto.getPermission())) {
+        //         result.addError(new ObjectError("TutorialsRequestDTO", "Permissão não é válida."));
+        //     }
+        // }
 
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("TutorialsRequestDTO", "Categoria precisa estar preenchido."));
@@ -110,20 +112,22 @@ public class TutorialsController {
         }
 
         if (dto.getId() == null) {
-            result.addError(new ObjectError("dto", "Id da permissão precisa estar preenchido."));
-        } else {
-            if(!permissionRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("dto", "Id da permissão não é válida."));
-            }
-        }
+            dto.setPermission("");
+            // result.addError(new ObjectError("dto", "Id da permissão precisa estar preenchido."));
+        } 
+        // else {
+        //     if(!permissionRepository.existsById(dto.getPermission())) {
+        //         result.addError(new ObjectError("dto", "Id da permissão não é válida."));
+        //     }
+        // }
 
-        if (dto.getPermission() == null) {
-            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
-        } else {
-            if(!permissionRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("dto", "Permissão não é válida."));
-            }
-        }
+        // if (dto.getPermission() == null) {
+        //     result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
+        // } else {
+        //     if(!permissionRepository.existsById(dto.getPermission())) {
+        //         result.addError(new ObjectError("dto", "Permissão não é válida."));
+        //     }
+        // }
 
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
