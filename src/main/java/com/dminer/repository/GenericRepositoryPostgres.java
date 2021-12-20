@@ -442,9 +442,10 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setContentLink(rs.getString("CONTENT_LINK"));
             e.setTitle(rs.getString("TITLE"));
-            Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
-            if (p.isPresent())
-                e.setPermission(p.get());
+            // Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
+            // if (p.isPresent())
+            //     e.setPermission(p.get());
+            e.setPermission(rs.getBoolean("PERMISSION"));
             Optional<Category> c = categoryRepository.findById(rs.getInt("CATEGORY_ID"));
             if (c.isPresent())
                 e.setCategory(c.get());

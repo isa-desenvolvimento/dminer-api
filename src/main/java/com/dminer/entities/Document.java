@@ -40,8 +40,10 @@ public class Document {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToOne
-    @JoinColumn(name = "permission_id")
-    private Permission permission;
+    // @OneToOne
+    // @JoinColumn(name = "permission_id")
+    // private Permission permission;
+
+    private Boolean permission;
     
 }
