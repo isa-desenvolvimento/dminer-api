@@ -1,5 +1,9 @@
 package com.dminer.entities;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -45,5 +49,6 @@ public class Document {
     // private Permission permission;
 
     private Boolean permission;
-    
+
+    private Timestamp createDate = Timestamp.from(Instant.now());    
 }

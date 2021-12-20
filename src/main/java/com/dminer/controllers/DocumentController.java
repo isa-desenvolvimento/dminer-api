@@ -78,7 +78,7 @@ public class DocumentController {
         if (dto.getPermission() == null) {
             dto.setPermission(false);
         }
-        
+
         if (dto.getContentLink() == null) {
             result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
 		}
@@ -212,7 +212,7 @@ public class DocumentController {
         
         Response<List<DocumentDTO>> response = new Response<>();
 
-        List<Document> doc = documentRepository.findAll();
+        List<Document> doc = documentRepository.findAllByOrderByCreateDateAsc();
         if (doc.isEmpty()) {
             response.getErrors().add("Documentos não encontrados");
             return ResponseEntity.status(404).body(response);
