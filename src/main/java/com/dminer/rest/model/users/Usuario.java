@@ -34,7 +34,6 @@ public class Usuario {
 				.email(email)
 				.linkedinUrl(linkedinUrl)
 				.login(login)
-				.login(login)
 				.build();				
 	}
 }
