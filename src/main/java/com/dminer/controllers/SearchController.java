@@ -163,6 +163,8 @@ public class SearchController {
         Response<List<UserDTO>> aniversariantes = aniversariantes();
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
+                String encodedString = userService.getAvatarBase64ByLogin(login);
+        	    ani.setAvatar(encodedString);
         		searchDTO.getBirthdayList().add(ani);
         	});
         }
