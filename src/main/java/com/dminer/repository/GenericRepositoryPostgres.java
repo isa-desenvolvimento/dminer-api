@@ -261,7 +261,7 @@ public class GenericRepositoryPostgres {
         "WHERE lower(CONCAT( " +
            "e.profile, ' ', e.category, ' ', e.title, ' ', e.content, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'))) " +
-           " LIKE LOWER('%" +keyword+ "%');";
+           " LIKE LOWER('%" +keyword+ "%') ORDER BY e.date DESC;";
 
         log.info("search = {}", query);
 

@@ -254,7 +254,7 @@ public class TutorialsController {
         
         Response<List<TutorialsDTO>> response = new Response<>();
 
-        List<Tutorials> doc = tutorialsRepository.findAll();
+        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();   
         if (doc.isEmpty()) {
             response.getErrors().add("Tutorials não encontrados");
             return ResponseEntity.status(404).body(response);
