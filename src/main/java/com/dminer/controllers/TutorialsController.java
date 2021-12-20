@@ -212,7 +212,7 @@ public class TutorialsController {
             search2 = tutorialsRepositorySqlServer.searchTutorials(search);
         }
 
-        if (!search2.isEmpty()) {
+        if (search2.isEmpty()) {
             response.getErrors().add("Nenhum dado encontrado");
             return ResponseEntity.status(404).body(response);
         }
