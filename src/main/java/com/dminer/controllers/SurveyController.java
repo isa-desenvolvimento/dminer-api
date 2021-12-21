@@ -31,6 +31,7 @@ import com.dminer.converters.SurveyConverter;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.SurveyResponseDTO;
+import com.dminer.dto.UserDTO;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
@@ -147,6 +148,22 @@ public class SurveyController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        SurveyResponses surveyResponse = surveyResponseRepository.findByIdSurvey(id);
+        if (surveyResponse == null) {
+            surveyResponse = new SurveyResponses();
+            Optional<Survey> survey = surveyService.findById(id);
+            surveyResponse.setIdSurvey(survey.get().getId());
+            surveyResponse = surveyResponseRepository.save(surveyResponse);
+        } else {
+            for (User u : surveyResponse.getUsers()) {
+                if (u.getLogin().equals(loginUser)) {
+                    log.error("Questionário já foi respondido por este usuário");
+                    response.getErrors().add("Questionário já foi respondido por este usuário");
+                    return ResponseEntity.ok().body(response);
+                }                
+            }
+        }
+
         User newUser;
         if (!userService.existsByLogin(loginUser)) {
         	newUser = userService.persist(new User(loginUser));
@@ -155,32 +172,25 @@ public class SurveyController {
         	newUser = userOpt.get();
         }
         
-        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
-        if (findByIdSurvey == null) {
-            findByIdSurvey = new SurveyResponses();
-            Optional<Survey> survey = surveyService.findById(id);
-            findByIdSurvey.setIdSurvey(survey.get().getId());
-            surveyResponseRepository.save(findByIdSurvey);
-        }
-        
-        findByIdSurvey.getUsers().add(newUser);
+
+        surveyResponse.getUsers().add(newUser);
         
         if (option.equalsIgnoreCase("a")) {
-            findByIdSurvey.setCountA(
-                findByIdSurvey.getCountA() + 1
+            surveyResponse.setCountA(
+                surveyResponse.getCountA() + 1
             );
         } else {
-            findByIdSurvey.setCountB(
-                findByIdSurvey.getCountB() + 1
+            surveyResponse.setCountB(
+                surveyResponse.getCountB() + 1
             );
         }
         
         try {
-            surveyResponseRepository.save(findByIdSurvey);
+            surveyResponseRepository.save(surveyResponse);
         } catch (DataIntegrityViolationException e) {
             log.error("Questionário já foi respondido por este usuário");
             response.getErrors().add("Questionário já foi respondido por este usuário");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData("Questionário respondido com sucesso!");
