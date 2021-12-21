@@ -112,18 +112,13 @@ public class PostController {
             result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
         }
         
-        if (dto.getType() == null || dto.getType().isBlank()) {
-            result.addError(new ObjectError("dto", "Tipo precisa estar preenchido."));
-        } else {
-        	try {
-    			PostType.valueOf(dto.getType());				
-    		} catch (IllegalArgumentException e) {
-    			result.addError(new ObjectError("dto", "Campo tipo é inválido."));
-    		}
+        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
+            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
         }
         
         if (dto.getLikes() == null || !UtilNumbers.isNumeric(dto.getLikes() + "")) {
-        	result.addError(new ObjectError("dto", "Campo likes é inválido."));
+			dto.setLikes(0);
+        	//result.addError(new ObjectError("dto", "Campo likes é inválido."));
         }
     }
 	
@@ -144,22 +139,27 @@ public class PostController {
 		post.setLikes(dto.getLikes());
 		post.setLogin(dto.getLogin());
 		post.setTitle(dto.getTitle());
-		post.setType(PostType.valueOf(dto.getType()));
-		if (PostType.valueOf(dto.getType()) == PostType.EXTERNAL) {
-			// salvar na api externa
-			HttpStatus code = postService.salvarApiExterna(post);
-			if (code.value() == 201) {
-				return ResponseEntity.ok().body(null);
-			}
-			return ResponseEntity.internalServerError().body(null);
+		if (dto.getType() == 1) {
+			post.setType(PostType.INTERNAL);
+		} else {
+			post.setType(PostType.EXTERNAL);
 		}
-		post = postService.persist(post);
-		
+
 		List<String> anexos = new ArrayList<>();
 		if (dto.getAnexo() != null && !dto.getAnexo().isBlank()) {
 			anexos.add(dto.getAnexo());
 		}
 		response.setData(postToDto(post, anexos));
+		
+		post = postService.persist(post);
+
+		if (post.getType().equals(PostType.EXTERNAL)) {
+			// salvar na api externa
+			HttpStatus code = postService.salvarApiExterna(post);
+			if (code.value() != 201) {
+				return ResponseEntity.internalServerError().body(null);
+			}
+		}		
 		return ResponseEntity.ok().body(response);
 	}
 	
