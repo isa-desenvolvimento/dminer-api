@@ -134,7 +134,9 @@ public class PostController {
         }
 		
 		Post post = new Post();
-		post.setAnexo(dto.getAnexo());
+		if (dto.getAnexo() != null) {
+			post.setAnexo(Base64.getEncoder().encodeToString(dto.getAnexo().getBytes()));
+		}
 		post.setContent(dto.getContent());
 		post.setLikes(dto.getLikes());
 		post.setLogin(dto.getLogin());
@@ -145,11 +147,7 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		List<String> anexos = new ArrayList<>();
-		if (dto.getAnexo() != null && !dto.getAnexo().isBlank()) {
-			anexos.add(dto.getAnexo());
-		}
-		response.setData(postToDto(post, anexos));
+		response.setData(postToDto(post));
 		
 		post = postService.persist(post);
 
@@ -251,7 +249,7 @@ public class PostController {
 		Post temp = postService.persist(post);
 		log.info("Adicionando anexos ao post e atualizando. {}", temp);
 		
-		response.setData(postToDto(temp, anexos, null));
+		///response.setData(postToDto(temp, anexos, null));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
     
@@ -314,10 +312,8 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post.get());
-		
-		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		response.setData(postToDto(post.get(), anexos.get(), comment.get()));
+		Optional<List<Comment>> comment = commentService.findByPost(post.get());		
+		response.setData(postToDto(post.get(), comment.get()));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -345,52 +341,44 @@ public class PostController {
 		}
 	}
 
-	private PostDTO postToDto(Post post, List<String> anexos) {
+	private PostDTO postToDto(Post post) {
 		PostDTO dto = new PostDTO();
-		System.out.println(post.toString());
+		//System.out.println(post.toString());
 		
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());		
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
-		dto.setAnexos(anexos);
+		dto.setAnexo(post.getAnexo());
 		if (token == null) {
             token = userService.getToken();
         }
 		
-		String encodedString = userService.getAvatarBase64ByLogin(post.getLogin());        
-        if (encodedString != null) {        	
-        	dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
-        }
+		UserReductDTO u = userService.carregarUsuarioApiReduct(post.getLogin(), token);
+      	dto.setUser(u);
 		return dto;
 	}
 	
 	
 	private String token = null;
-	private PostDTO postToDto(Post post, List<FileInfo> anexos, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		System.out.println(post.toString());
+		// System.out.println(post.toString());
 		
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());		
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
-		if (anexos != null && !anexos.isEmpty()) {
-			anexos.forEach(e -> {
-				dto.getAnexos().add(e.getUrl());
-			});			
-		}
+		dto.setAnexo(post.getAnexo());
 
 		if (token == null) {
             token = userService.getToken();
         }
 		
-		String encodedString = userService.getAvatarBase64ByLogin(post.getLogin());        
-        if (encodedString != null) {        	
-        	dto.setUser(new UserReductDTO(post.getLogin(), null, encodedString));
-        }        
+		UserReductDTO u = userService.carregarUsuarioApiReduct(post.getLogin(), token);
+      	dto.setUser(u);
         
 		if (comments != null && !comments.isEmpty()) {
 			comments.forEach(e -> {
@@ -401,23 +389,22 @@ public class PostController {
 	}
 	
 	
-	@GetMapping
-	public ResponseEntity<Response<List<PostDTO>>> getAll() {
+	@GetMapping("/all/{login}")
+	public ResponseEntity<Response<List<PostDTO>>> getAll(@PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
 		log.info("Recuperando todos os Post");
 
-		List<Post> posts = postService.findAll();
+		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
 			response.getErrors().add("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
 		for (Post post2 : posts) {
-			Optional<List<FileInfo>> anexos = fileDatabaseService.findByPost(post2);
 			Optional<List<Comment>> comment = commentService.findByPost(post2);
-			PostDTO dto = postToDto(post2, anexos.get(), comment.get());
+			PostDTO dto = postToDto(post2, comment.get());
 			response.getData().add(dto);			
 		}		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -451,7 +438,8 @@ public class PostController {
 			}
 			userId = opt.get().getId();
 		}
-       
+        
+		opt.get().setAvatar(userService.getAvatarBase64ByLogin(opt.get().getLogin()));
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(id, date, userId);
         
@@ -466,8 +454,8 @@ public class PostController {
 			return ResponseEntity.notFound().build();
 		}
 
-        PostDTO dto = postToDto(comments.get(0).getPost(), null);
-        dto.setComments(dtos);
+        PostDTO dto = postToDto(optPost.get(), comments);
+        //dto.setComments(dtos);
         
         response.setData(dto);
         return ResponseEntity.ok().body(response);

@@ -42,10 +42,7 @@ public class CommentConverter {
         if (token == null) {
             token = userService.getToken();
         }
-//        byte[] avatar = userService.getAvatar(comment.getUser().getLogin());
-//        String encodedString = Base64.getEncoder().encodeToString(avatar);        
-        String encodedString = userService.getAvatarBase64ByLogin(comment.getUser().getLogin());
-        dto.setUser(new UserReductDTO(comment.getUser().getLogin(), null, encodedString));
+        dto.setUser(userService.carregarUsuarioApiReduct(comment.getUser().getLogin(), token));
         return dto;
     }
 

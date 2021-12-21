@@ -147,12 +147,16 @@ public class UserService implements IUserService {
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
+
     public Optional<User> findByLoginApi(String login) {
         log.info("Recuperando usuário pelo login da api, {}", login);
         if (existsByLogin(login)) {			        			
 			return findByLogin(login);
 		}
-        
+        return findByLoginOnlyApi(login);		
+    }
+    
+    public Optional<User> findByLoginOnlyApi(String login) {
 		Response<List<UserReductDTO>> retorno = carregarUsuariosApiReduct(getToken());
 		if (!retorno.getErrors().isEmpty()) {
 			Optional.empty();
@@ -161,16 +165,17 @@ public class UserService implements IUserService {
         List<UserReductDTO> users = retorno.getData();
         for (UserReductDTO u : users) {
         	if (u.getLogin().equals(login)) {
-        		if (! existsByLogin(u.getLogin())) {
-        			User user = persist(new User(u.getLogin()));        			
+        		//if (! existsByLogin(u.getLogin())) {
+        			User user = persist(new User(u.getLogin(), u.getUserName()));        			
         			return Optional.ofNullable(user);
-        		}
+        		//}
         	}			
 		}
         return Optional.empty();
-    }
-    
-    
+	}
+
+
+
     public String getToken() {
     	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
     	RestTemplate restTemplate = new RestTemplate();
@@ -241,7 +246,8 @@ public class UserService implements IUserService {
         model.getOutput().getResult().getUsuarios().forEach(u -> {
         	UserReductDTO dto = new UserReductDTO();
         	dto.setLogin(u.getLogin());
-        	dto.setUsername(u.getUserName());
+        	dto.setUserName(u.getUserName());
+			dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
         	usuarios.add(dto);
         });
 
@@ -249,7 +255,27 @@ public class UserService implements IUserService {
     	return response;
     }
     
-    
+    public UserReductDTO carregarUsuarioApiReduct(String login, String token) {
+        log.info("Recuperando todos os usuário reduzidos na api externa");
+        
+        UserRestModel model = carregarUsuariosApi(token);
+        System.out.println(model.toString());
+        if (model == null || model.hasError()) {
+			return null;
+        }
+        
+		UserReductDTO dto = new UserReductDTO();
+        model.getOutput().getResult().getUsuarios().forEach(u -> {
+			if (login.equals(u.getLogin())) {
+				dto.setLogin(u.getLogin());
+				dto.setUserName(u.getUserName());
+				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+			}
+        });
+		return dto;
+    }
+
+
     /**
      * Recupera o avatar no diretório "avatares" e transoforma em Base64
      * @param pathFile

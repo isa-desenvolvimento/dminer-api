@@ -33,13 +33,17 @@ public class User {
 	@Column(unique = true)
 	private String login;
     
+	@Column()
+	private String userName;
+
 	@Column(length = 8000)
 	private String banner; 
 
 	@Transient
 	private String avatar;
 	
-	public User (String login) {
+	public User (String login, String userName) {
 		this.login = login;
+		this.userName = userName;
 	}
 }

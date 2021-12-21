@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class UserReductDTO {
 	private String login;
-    private String username;
+    private String userName;
     private String avatar;
     
     public UserReductDTO(String login) {

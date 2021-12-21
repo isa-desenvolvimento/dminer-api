@@ -25,17 +25,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dminer.converters.SurveyConverter;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.SurveyResponseDTO;
-import com.dminer.dto.UserDTO;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
 import com.dminer.repository.SurveyResponseRepository;
+import com.dminer.repository.SurveyResponseUsersRepository;
 import com.dminer.response.Response;
 import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
@@ -61,6 +62,9 @@ public class SurveyController {
 
     @Autowired
     private SurveyService surveyService;
+
+    @Autowired
+    private SurveyResponseUsersRepository surveyResponseUsersRepository;
 
     @Autowired
     private Environment env;
@@ -141,39 +145,32 @@ public class SurveyController {
 
 
     @PostMapping("/answer/{idSurvey}/{login}/{option}")
-    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option) {
+    public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option, @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
         if (! response.getErrors().isEmpty()) {
             return ResponseEntity.badRequest().body(response);
         }
 
-        SurveyResponses surveyResponse = surveyResponseRepository.findByIdSurvey(id);
-        if (surveyResponse == null) {
-            surveyResponse = new SurveyResponses();
-            Optional<Survey> survey = surveyService.findById(id);
-            surveyResponse.setIdSurvey(survey.get().getId());
-            surveyResponse = surveyResponseRepository.save(surveyResponse);
-        } else {
-            for (User u : surveyResponse.getUsers()) {
-                if (u.getLogin().equals(loginUser)) {
-                    log.error("Questionário já foi respondido por este usuário");
-                    response.getErrors().add("Questionário já foi respondido por este usuário");
-                    return ResponseEntity.ok().body(response);
-                }                
-            }
-        }
+        // Optional<Survey> opt = surveyService.findById(id);
+        // Survey survey = opt.get();
 
         User newUser;
         if (!userService.existsByLogin(loginUser)) {
-        	newUser = userService.persist(new User(loginUser));
+        	newUser = userService.persist(new User(loginUser, ""));
         } else {
         	Optional<User> userOpt = userService.findByLogin(loginUser);
         	newUser = userOpt.get();
         }
         
-
-        surveyResponse.getUsers().add(newUser);
+        SurveyResponses surveyResponse = surveyResponseRepository.findByIdSurvey(id);
+        if (surveyResponse == null) {
+            surveyResponse = new SurveyResponses();
+            surveyResponse.setIdSurvey(id);
+            surveyResponse.getUsers().add(newUser);
+        }
+        
+        surveyResponseUsersRepository.persist(surveyResponse.getId(), newUser.getId());
         
         if (option.equalsIgnoreCase("a")) {
             surveyResponse.setCountA(
@@ -190,7 +187,7 @@ public class SurveyController {
         } catch (DataIntegrityViolationException e) {
             log.error("Questionário já foi respondido por este usuário");
             response.getErrors().add("Questionário já foi respondido por este usuário");
-            return ResponseEntity.ok().body(response);
+            return ResponseEntity.badRequest().body(response);
         }
 
         response.setData("Questionário respondido com sucesso!");

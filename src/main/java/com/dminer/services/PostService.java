@@ -54,6 +54,13 @@ public class PostService implements IPostService {
 		return postRepository.findAll();
 	}
 	
+	public List<Post> findAllByLogin(String login) {
+		log.info("Buscando todas as publicações de {}", login);
+		return postRepository.findAllByLogin(login);
+	}
+
+
+
 	public HttpStatus salvarApiExterna(Post entity) {
 		String url = "https://www.dminer.com.br/blog/wp-json/wp/v2/posts";
 		RestTemplate restTemplate = new RestTemplate();

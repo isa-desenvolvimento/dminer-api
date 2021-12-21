@@ -53,7 +53,12 @@ public class GenericRepositoryPostgres {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    private org.bouncycastle.util.Arrays ArraysBouncy;
+
+
+
+
+
+
 
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
 
@@ -543,5 +548,13 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
-       
+    
+    
+    public void votarQuestionario(Integer idQuestionario, String login, String opcao, Boolean unicoVoto) {
+
+
+    }
+
+
+
 }    
