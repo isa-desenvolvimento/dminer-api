@@ -157,9 +157,12 @@ public class SurveyController {
         
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
         if (findByIdSurvey == null) {
-            response.getErrors().add("Nenhum questionário encontrado com id " + id);
-            return ResponseEntity.badRequest().body(response);
+            findByIdSurvey = new SurveyResponses();
+            Optional<Survey> survey = surveyService.findById(id);
+            findByIdSurvey.setIdSurvey(survey.get().getId());
+            surveyResponseRepository.save(findByIdSurvey);
         }
+        
         findByIdSurvey.getUsers().add(newUser);
         
         if (option.equalsIgnoreCase("a")) {
