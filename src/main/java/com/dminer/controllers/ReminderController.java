@@ -202,8 +202,9 @@ public class ReminderController {
     }
 
 
-    @GetMapping("/all")
-    public ResponseEntity<Response<List<ReminderDTO>>> getAll() {
+    
+    @GetMapping("/{login}/all")
+    public ResponseEntity<Response<List<ReminderDTO>>> getAll(@PathVariable("login") String login) {
         
         Response<List<ReminderDTO>> response = new Response<>();
 
@@ -215,7 +216,8 @@ public class ReminderController {
 
         List<ReminderDTO> eventos = new ArrayList<>();
         remi.get().forEach(u -> {
-            eventos.add(reminderConverter.entityToDto(u));
+            if (u.getUser().getLogin().equals(login))
+                eventos.add(reminderConverter.entityToDto(u));
         });
         response.setData(eventos);
         return ResponseEntity.ok().body(response);

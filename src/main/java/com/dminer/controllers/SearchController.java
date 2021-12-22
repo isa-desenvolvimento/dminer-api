@@ -188,7 +188,8 @@ public class SearchController {
                 Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
                 if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
                     searchReminder2.get().forEach(u -> {
-                        searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
+                        if (u.getUser().getLogin().equals(login))
+                            searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
                     });
                 }
             }
@@ -199,6 +200,15 @@ public class SearchController {
                 searchNotification.forEach(u -> {
                     searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
                 });
+            } else {
+                Optional<List<Notification>> all = notificationService.findAll();
+                if (all.isPresent()) {
+                    searchNotification = all.get();
+                    searchNotification.forEach(u -> {
+                        if (u.getUser().getLogin().equals(login))
+                            searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+                    }); 
+                }                
             }
 
             // notice

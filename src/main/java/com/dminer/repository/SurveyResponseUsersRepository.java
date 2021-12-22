@@ -21,6 +21,7 @@ public class SurveyResponseUsersRepository {
         String query = "SELECT COUNT(*) AS QTD " + 
         "FROM survey_responses_users WHERE survey_responses_id=" + idSurveyResponse + " AND users_id=" + idUser;
 
+        System.out.println(query);
         boolean jahExiste = jdbcOperations.query(query, (rs) -> {
             if (rs.next()) {
                 return rs.getInt("QTD") == 0 ? false : true;
@@ -30,12 +31,10 @@ public class SurveyResponseUsersRepository {
 
         if (!jahExiste) {
             query = "INSERT INTO survey_responses_users " + 
-            "(survey_responses_id, users_id) " + 
-            "VALUES(" + idSurveyResponse + ", " + idUser + ")";
+            "(survey_responses_id, users_id) VALUES(?, ?)";
 
-            jdbcOperations.query(query, (rs) -> {
-                return rs.rowInserted();
-            });
+            System.out.println(query);
+            jdbcOperations.update(query, idSurveyResponse, idUser);
         }
     }
 

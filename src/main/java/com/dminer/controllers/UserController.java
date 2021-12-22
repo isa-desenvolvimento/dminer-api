@@ -103,46 +103,24 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        
-        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
-        
-        if (users == null) {
-        	response.getErrors().add("Token inválido ou expirado!");
-        	return ResponseEntity.badRequest().body(response);
+        UserDTO userDto;
+
+        Optional<User> opt = userService.findByLogin(login);
+        if (opt.isPresent()) {
+            String avatar = userService.getAvatarBase64ByLogin(login);
+            userDto = userConverter.entityToDto(opt.get());
+            userDto.setAvatar(avatar);
+            response.setData(userDto);
+            return ResponseEntity.ok().body(response);
         }
+
+        userDto = userService.buscarUsuarioApi(login);
         
-        if (users.hasError()) {
-        	users.getOutput().getMessages().forEach(e -> {
-        		response.getErrors().add(e);
-        	});
-        	return ResponseEntity.badRequest().body(response);
+        if (userDto == null) {
+        	return ResponseEntity.notFound().build();
         }
-        
-        if (users.getOutput().getResult().getUsuarios().isEmpty()) {
-            response.getErrors().add("Usuário não encontrado");
-        }
-        
-        UserDTO dto = null;
-        List<Usuario> users2 = users.getOutput().getResult().getUsuarios();
-        for (Usuario usuario : users2) {
-        	if (usuario.getLogin().equals(login)) {
-        		dto = usuario.toUserDTO();
-        		break;
-        	}
-		}
-        
-        if (dto == null) {
-            response.getErrors().add("Usuário não encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        String banner = getBannerString(login);
-        if (banner != null) {        	
-        	dto.setBanner(banner);
-        }
-          
-        userService.persist(userConverter.dtoToEntity(dto));
-        response.setData(dto);
+                
+        response.setData(userDto);
         return ResponseEntity.ok().body(response);
     }
 

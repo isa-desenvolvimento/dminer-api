@@ -29,6 +29,9 @@ public class UserConverter {
         	user.setId(opt.get().getId());        	
         }
         user.setLogin(dto.getLogin());
+        user.setUserName(dto.getUserName());
+        user.setAvatar(dto.getAvatar());
+        user.setBanner(dto.getBanner());
         return user;
     }
 
@@ -41,12 +44,8 @@ public class UserConverter {
         }
         
         dto.setLogin(user.getLogin());
+        dto.setUserName(user.getUserName());
         dto.setBanner(user.getBanner());
-//        if (token == null) {
-//            token = userService.getToken();
-//        }
-//        String avatar = userService.getAvatar(dto.getLogin(), token);
-//        dto.setAvatar(avatar);
         return dto;
     }
     

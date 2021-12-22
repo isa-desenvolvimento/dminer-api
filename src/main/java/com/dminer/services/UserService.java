@@ -240,25 +240,30 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
-    public UserReductDTO carregarUsuarioApiReduct(String login) {
-        log.info("Recuperando todos os usuário reduzidos na api externa");
+    public UserDTO buscarUsuarioApi(String login) {
+        log.info("Recuperando todos os usuário na api externa");
         
         // UserRestModel model = carregarUsuariosApi(token);
 		if (userRestModel == null) {
 			userRestModel = carregarUsuariosApi(TokenService.getToken());
 		}
 
-        System.out.println(userRestModel.toString());
+        // System.out.println(userRestModel.toString());
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
         }
         
-		UserReductDTO dto = new UserReductDTO();
+		UserDTO dto = new UserDTO();
         userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
 			if (login.equals(u.getLogin())) {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());
 				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+				dto.setArea(u.getArea());
+				dto.setBanner(getBannerString(login));
+				dto.setBirthDate(u.getBirthDate());
+				dto.setEmail(u.getEmail());
+				dto.setLinkedinUrl(u.getLinkedinUrl());				
 			}
         });
 		return dto;

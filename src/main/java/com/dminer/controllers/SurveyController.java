@@ -168,6 +168,7 @@ public class SurveyController {
             surveyResponse = new SurveyResponses();
             surveyResponse.setIdSurvey(id);
             surveyResponse.getUsers().add(newUser);
+            surveyResponse = surveyResponseRepository.save(surveyResponse);
         }
         
         surveyResponseUsersRepository.persist(surveyResponse.getId(), newUser.getId());
@@ -260,8 +261,8 @@ public class SurveyController {
     }
 
 
-    @GetMapping(value = "/all")
-    public ResponseEntity<Response<List<SurveyDTO>>> getAll() {
+    @GetMapping(value = "/all/{login}")
+    public ResponseEntity<Response<List<SurveyDTO>>> getAll(@PathVariable("login") String login) {
         
         Response<List<SurveyDTO>> response = new Response<>();
 
@@ -273,8 +274,20 @@ public class SurveyController {
 
         List<SurveyDTO> surveysDto = new ArrayList<>();
         surveys.get().forEach(u -> {
-            surveysDto.add(surveyConverter.entityToDTO(u));
+            SurveyDTO dto = surveyConverter.entityToDTO(u);
+            SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(dto.getId());
+            
+            User user = responseDto.getUsers().stream().
+            filter(f -> f.getLogin().equalsIgnoreCase(login)).
+            findAny().
+            orElse(null);
+
+            if (user != null) {
+                dto.setVoted(true);
+            }
+            surveysDto.add(dto);
         });
+
         response.setData(surveysDto);
         return ResponseEntity.ok().body(response);
     }
