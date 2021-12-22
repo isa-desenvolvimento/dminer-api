@@ -481,7 +481,7 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
-    
+            
 
     public List<Comment> searchCommentsByPostIdAndDateAndUser(Integer idPost, String date, Integer user) {
         String query = 
