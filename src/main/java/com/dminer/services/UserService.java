@@ -62,6 +62,9 @@ public class UserService implements IUserService {
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 
+
+
+
     @Override
     public User persist(User user) {
         log.info("Persistindo usuário: {}", user);
@@ -141,6 +144,11 @@ public class UserService implements IUserService {
         return userRepository.findByLogin(login) != null;
     }
 
+    public boolean existsByLoginAndUserName(String login, String userName) {
+        log.info("Verificando se usuário existe pelo login, {} e {}", login, userName);
+        return userRepository.findByLoginAndUserName(login, userName) != null;
+    }
+    
     public Optional<User> findByLogin(String login) {
         log.info("Recuperando usuário pelo login, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
@@ -149,9 +157,14 @@ public class UserService implements IUserService {
 	public void atualizarDadosNoBancoComApiExterna(UserRestModel usuarios) {				
 		for (Usuario usuario : usuarios.getOutput().getResult().getUsuarios()) {
 			User u = new User();
-			u.setUserName(usuario.getUserName());
-			u.setLogin(usuario.getLogin());
-			persist(u);
+			if (!existsByLoginAndUserName(usuario.getLogin(), usuario.getUserName())) {
+				if (existsByLogin(usuario.getLogin())) {
+					u = findByLogin(usuario.getLogin()).get();					
+				}
+				u.setUserName(usuario.getUserName());
+				u.setLogin(usuario.getLogin());
+				persist(u);
+			}
 		}
 	}
 
@@ -206,9 +219,9 @@ public class UserService implements IUserService {
 				response += scanner.next();
 			}
 			scanner.close();
-			if (response.contains("expirou")) {
+			if (response.contains("expirou") || response.contains("não fez login")) {
 				UserRestModel staff = new UserRestModel();
-				staff.getOutput().setMessages(Arrays.asList("Token expirado!"));
+				staff.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema"));
 				return staff;
 			}
 			
@@ -229,16 +242,14 @@ public class UserService implements IUserService {
     }
     
 
-    public Response<List<UserReductDTO>> carregarUsuariosApiReduct(String token) {
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
-		Response<List<UserReductDTO>> response = new Response<>();
         List<UserReductDTO> usuarios = new ArrayList<>();
         UserRestModel model = carregarUsuariosApi(token);
-        System.out.println(model.toString());
-        if (model == null || model.hasError()) {
-			model.getOutput().getMessages().forEach(e -> response.getErrors().add(e));
-        	return response;
+
+        if (model == null || model.hasError()) {			
+        	return usuarios;
         }
         
         model.getOutput().getResult().getUsuarios().forEach(u -> {
@@ -249,8 +260,7 @@ public class UserService implements IUserService {
         	usuarios.add(dto);
         });
 
-		response.setData(usuarios);
-    	return response;
+    	return usuarios;
     }
     
     public UserReductDTO carregarUsuarioApiReduct(String login, String token) {

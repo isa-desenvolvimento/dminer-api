@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional; 
+import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
@@ -65,28 +66,26 @@ public class UserController {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    private List<UserReductDTO> usersReduct;
+
+    private UserRestModel users;
+
     @Autowired
     private Environment env;
 
     private String token;
     
 
-    
-    private UserDTO checarBancoLocal(String login) {
-        log.info("checando o login: {} existe no banco de dados", login);
-        if (!userService.existsByLogin(login)) {
-            log.info("checando se o login: NÃO");
-            return null;
-        }
-        Optional<User> findByLogin = userService.findByLogin(login);
-        if (findByLogin.isPresent()) {
-            log.info("checando se o login: SIM");
-            return userConverter.entityToDto(findByLogin.get());
-        }
-        log.info("checando se o login: NÃO");
-        return  null;
-    }
 
+
+    @PostConstruct
+    private void init() {
+        token = userService.getToken();
+        users = userService.carregarUsuariosApi(token);
+        userService.atualizarDadosNoBancoComApiExterna(users);
+        usersReduct = userService.carregarUsuariosApiReduct(token);
+    }
+    
 
     private String getBannerBase64(String login) {
         byte[] banner = userService.getBanner(login);
@@ -110,41 +109,32 @@ public class UserController {
             response.getErrors().add("Informe um login");
             return ResponseEntity.badRequest().body(response);
         }
-
-        UserDTO user = checarBancoLocal(login);
-        if (user != null) {
-            String banner = getBannerString(login);
-            if (banner != null) {        	
-                user.setBanner(banner);
-            }
-            response.setData(user);
-            return ResponseEntity.ok().body(response);
-        }            
         
-        if (token == null) {
-        	token = userService.getToken();
-        }
+        // if (token == null) {
+        // 	token = userService.getToken();
+        // }
         
-        UserRestModel model = userService.carregarUsuariosApi(token);
-        if (model == null) {
+        // UserRestModel model = userService.carregarUsuariosApi(token);
+        
+        if (users == null) {
         	response.getErrors().add("Token inválido ou expirado!");
         	return ResponseEntity.badRequest().body(response);
         }
         
-        if (model.hasError()) {
-        	model.getOutput().getMessages().forEach(e -> {
+        if (users.hasError()) {
+        	users.getOutput().getMessages().forEach(e -> {
         		response.getErrors().add(e);
         	});
         	return ResponseEntity.badRequest().body(response);
         }
         
-        if (model.getOutput().getResult().getUsuarios().isEmpty()) {
+        if (users.getOutput().getResult().getUsuarios().isEmpty()) {
             response.getErrors().add("Usuário não encontrado");
         }
         
         UserDTO dto = null;
-        List<Usuario> users = model.getOutput().getResult().getUsuarios();
-        for (Usuario usuario : users) {
+        List<Usuario> users2 = users.getOutput().getResult().getUsuarios();
+        for (Usuario usuario : users2) {
         	if (usuario.getLogin().equals(login)) {
         		dto = usuario.toUserDTO();
         		break;
@@ -176,20 +166,20 @@ public class UserController {
         	response.getErrors().add("Token precisa ser informado");
         }
                 
-        UserRestModel model = userService.carregarUsuariosApi(token.getToken());
-        if (model == null) {
+        // UserRestModel model = userService.carregarUsuariosApi(token.getToken());
+        if (users == null) {
         	response.getErrors().add("Token inválido ou expirado!");
         	return ResponseEntity.badRequest().body(response);
         }
         
-        if (model.hasError()) {
-        	model.getOutput().getMessages().forEach(e -> {
+        if (users.hasError()) {
+        	users.getOutput().getMessages().forEach(e -> {
         		response.getErrors().add(e);
         	});
         	return ResponseEntity.badRequest().body(response);
         }
         
-        if (model.getOutput().getResult().getUsuarios().isEmpty()) {
+        if (users.getOutput().getResult().getUsuarios().isEmpty()) {
             response.getErrors().add("Usuários não encontrados");
         }
         
@@ -198,7 +188,7 @@ public class UserController {
         }
         
         List<UserDTO> userList = new ArrayList<>();
-        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        users.getOutput().getResult().getUsuarios().forEach(u -> {
         	userList.add(u.toUserDTO());
         });
         
@@ -226,18 +216,13 @@ public class UserController {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
-            Response<List<UserReductDTO>> carregarUsuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
-            if (!carregarUsuariosApiReduct.getErrors().isEmpty()) {
-                carregarUsuariosApiReduct.getErrors().forEach(e -> response.getErrors().add(e));
+            
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
+            if (usuariosApiReduct.isEmpty()) {   
+                response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
-            }
-
-        	List<UserReductDTO> users = carregarUsuariosApiReduct.getData();
-        	if (users == null || users.isEmpty()) {
-        		response.getErrors().add("Nenhum usuario encontrado");
-        		return ResponseEntity.badRequest().body(response);
-        	}
-        	response.setData(users);
+            }        	
+        	response.setData(usuariosApiReduct); 
         }
         return ResponseEntity.ok().body(response);
     }
@@ -254,21 +239,21 @@ public class UserController {
         	token = userService.getToken();
         }
         
-        UserRestModel model = userService.carregarUsuariosApi(token);
-        if (model == null) {
+        //UserRestModel model = userService.carregarUsuariosApi(token);
+        if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
     		return ResponseEntity.badRequest().body(response);
     	}
         
-        if (model.hasError()) {
-        	model.getOutput().getMessages().forEach(u -> {
+        if (users.hasError()) {
+        	users.getOutput().getMessages().forEach(u -> {
     			response.getErrors().add(u);
     		});
     		return ResponseEntity.badRequest().body(response);
         }
         
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        model.getOutput().getResult().getUsuarios().forEach(u -> {        	
+        users.getOutput().getResult().getUsuarios().forEach(u -> {        	
         	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
         		aniversariantes.add(u.toUserDTO());
         	}

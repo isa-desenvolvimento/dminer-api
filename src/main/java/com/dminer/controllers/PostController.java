@@ -418,19 +418,22 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
         
-		Optional<User> opt = null;
+		Optional<User> optUser = null;
 		Integer userId = null;
 
+		String userSearch = optPost.get().getLogin();
 		if (user != null && !user.isBlank()) {
-			opt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
-			if (!opt.isPresent()) {
-				response.getErrors().add("Nenhum usuário encontrado");
-				return ResponseEntity.badRequest().body(response);
-			}
-			userId = opt.get().getId();
+			userSearch = user; 
 		}
+		
+		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
+		if (!optUser.isPresent()) {
+			response.getErrors().add("Nenhum usuário encontrado");
+			return ResponseEntity.badRequest().body(response);
+		}
+		userId = optUser.get().getId();
         
-		opt.get().setAvatar(userService.getAvatarBase64ByLogin(opt.get().getLogin()));
+		optUser.get().setAvatar(userService.getAvatarBase64ByLogin(optUser.get().getLogin()));
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(id, date, userId);
 
