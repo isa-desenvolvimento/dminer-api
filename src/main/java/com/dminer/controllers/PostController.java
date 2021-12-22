@@ -145,7 +145,10 @@ public class PostController {
 		
 		Post post = new Post();
 		if (dto.getAnexo() != null) {
-			post.setAnexo(Base64.getEncoder().encodeToString(dto.getAnexo().getBytes()));
+			if (post.getAnexo() != null) {
+				String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(post.getAnexo().getBytes()));
+				post.setAnexo(base64AsString);
+			}			
 		}
 		post.setContent(dto.getContent());
 		post.setLikes(dto.getLikes());
@@ -353,6 +356,7 @@ public class PostController {
 	}
 
 
+
 	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
 		dto.setLikes(post.getLikes());
@@ -361,6 +365,10 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
+		// if (post.getAnexo() != null) {
+		// 	String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(post.getAnexo().getBytes()));
+		// 	dto.setAnexo(base64AsString);
+		// }
 
 		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());
       	dto.setUser(user);
