@@ -62,8 +62,8 @@ public class UserService implements IUserService, InitializingBean{
 	
 	@Override
     public void afterPropertiesSet() throws Exception {
-		token = getToken();
-		userRestModel = carregarUsuariosApi(token);
+		//token = getToken();
+		//userRestModel = carregarUsuariosApi(token);
     }
 
 	// @PostConstruct
