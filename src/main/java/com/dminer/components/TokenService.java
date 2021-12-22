@@ -36,7 +36,10 @@ public class TokenService {
         token =  (String) retorno.get("baererAuthentication");
     }
 
-    public static String getToken() {   	
+    public static String getToken() {
+        if (token == null) {
+            new TokenService();
+        }
         return token;
     }
     
