@@ -51,7 +51,7 @@ public class Post {
 	
     private String login;
 	
-    @Column
+    @Column(length = 9999999)
     private String anexo;
     
 	public Post(String content) { this.content = content; }
