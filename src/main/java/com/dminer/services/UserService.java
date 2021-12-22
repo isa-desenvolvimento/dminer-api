@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
@@ -46,29 +47,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @Service
-public class UserService implements IUserService, InitializingBean{
+public class UserService implements IUserService {
 
     @Autowired
 	private UserRepository userRepository;
     
+	// @Autowired
+	// private TokenService tokenService;
 
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 
 	private UserRestModel userRestModel;
 	
-	private String token;
-	
-	
-	@Override
-    public void afterPropertiesSet() throws Exception {
-		//token = getToken();
-		//userRestModel = carregarUsuariosApi(token);
-    }
-
-	// @PostConstruct
-    // private void init() {
-    // }
 
 
     @Override
@@ -186,23 +177,6 @@ public class UserService implements IUserService, InitializingBean{
         return Optional.empty();
 	}
 
-
-
-    public String getToken() {
-    	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
-    	RestTemplate restTemplate = new RestTemplate();
-    	HttpHeaders headers = new HttpHeaders();    	
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	JSONObject personJsonObject = new JSONObject();
-        personJsonObject.put("userName", "matheus.ribeiro1");
-        personJsonObject.put("userPassword", "#Matheus97");
-        HttpEntity<String> request = new HttpEntity<String>(personJsonObject.toString(), headers);
-        
-        String personResultAsJsonStr = restTemplate.postForObject(uri, request, String.class);
-        JSONObject retorno = new JSONObject(personResultAsJsonStr);
-        return (String) retorno.get("baererAuthentication");
-    }
-    
     
     public UserRestModel carregarUsuariosApi(String token) {
     	
@@ -245,7 +219,7 @@ public class UserService implements IUserService, InitializingBean{
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(getToken());
+			userRestModel = carregarUsuariosApi(TokenService.getToken());
 		}
 
         List<UserReductDTO> usuarios = new ArrayList<>();
@@ -271,7 +245,7 @@ public class UserService implements IUserService, InitializingBean{
         
         // UserRestModel model = carregarUsuariosApi(token);
 		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(getToken());
+			userRestModel = carregarUsuariosApi(TokenService.getToken());
 		}
 
         System.out.println(userRestModel.toString());
@@ -295,7 +269,7 @@ public class UserService implements IUserService, InitializingBean{
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(getToken());
+			userRestModel = carregarUsuariosApi(TokenService.getToken());
 		}
 
         if (userRestModel == null || userRestModel.hasError()) {

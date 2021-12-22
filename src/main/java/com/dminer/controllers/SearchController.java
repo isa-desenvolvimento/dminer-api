@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
+import com.dminer.components.TokenService;
 import com.dminer.converters.NoticeConverter;
 import com.dminer.converters.NotificationConverter;
 import com.dminer.converters.ReminderConverter;
@@ -103,7 +104,8 @@ public class SearchController {
     
 	// private UserRestModel userRestModel;
     
-    private String token = null;
+    // @Autowired
+	// private TokenService tokenService;
     
     @Autowired
     private Environment env;
@@ -120,16 +122,7 @@ public class SearchController {
     private Response<List<UserDTO>> aniversariantes() {
     	Response<List<UserDTO>> response = new Response<>();
 
-        if (token == null) {
-            token = userService.getToken();
-        }
-
-    	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
-
-        if (userRestModel == null || token == null) {
-            token = userService.getToken();
-            userRestModel = userService.carregarUsuariosApi(token);
-        }
+    	UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
 
         if (userRestModel == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -166,11 +159,6 @@ public class SearchController {
         SearchDTO searchDTO = new SearchDTO();
         
         if (keyword.equalsIgnoreCase("null")) keyword = null;
-
-        // users
-        if (token == null) {
-        	token = userService.getToken();
-        }
 
         List<UserDTO> searchUsers = userService.search(keyword);           
         searchUsers.forEach(u -> {        	

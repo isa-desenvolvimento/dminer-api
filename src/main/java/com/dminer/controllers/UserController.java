@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dminer.components.TokenService;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.Token;
@@ -73,19 +74,11 @@ public class UserController {
     @Autowired
     private Environment env;
 
-    private String token;
+    // @Autowired
+	// private Token tokenService;
     
 
 
-
-    // @PostConstruct
-    // private void init() {
-    //     token = userService.getToken();
-    //     users = userService.carregarUsuariosApi(token);
-    //     userService.atualizarDadosNoBancoComApiExterna(users);
-    //     usersReduct = userService.carregarUsuariosApiReduct(token);
-    // }
-    
 
     private String getBannerBase64(String login) {
         byte[] banner = userService.getBanner(login);
@@ -110,11 +103,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        if (token == null) {
-        	token = userService.getToken();
-        }
         
-        UserRestModel users = userService.carregarUsuariosApi(token);
+        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
         
         if (users == null) {
         	response.getErrors().add("Token inválido ou expirado!");
@@ -236,12 +226,8 @@ public class UserController {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        if (token == null) {
-        	token = userService.getToken();
-        }
-        
-        UserRestModel users = userService.carregarUsuariosApi(token);
-        
+        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
+
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
     		return ResponseEntity.badRequest().body(response);
