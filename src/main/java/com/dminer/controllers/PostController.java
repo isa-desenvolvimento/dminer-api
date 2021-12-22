@@ -375,7 +375,7 @@ public class PostController {
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAll(@PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -395,7 +395,28 @@ public class PostController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
+	
+	@GetMapping()
+	public ResponseEntity<Response<List<PostDTO>>> getAll() {
 		
+		Response<List<PostDTO>> response = new Response<>();
+		response.setData(new ArrayList<PostDTO>());
+		log.info("Recuperando todos os Post");
+
+		List<Post> posts = postService.findAll();
+		if (posts == null || posts.isEmpty()) {
+			response.getErrors().add("Nenhum post encontrado na base de dados");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+
+		for (Post post : posts) {
+			Optional<List<Comment>> comment = commentService.findByPost(post);
+			PostDTO dto = postToDto(post, comment.get());
+			response.getData().add(dto);
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
     public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
