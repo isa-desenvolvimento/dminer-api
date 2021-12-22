@@ -145,10 +145,8 @@ public class PostController {
 		
 		Post post = new Post();
 		if (dto.getAnexo() != null) {
-			if (post.getAnexo() != null) {
-				String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(post.getAnexo().getBytes()));
-				post.setAnexo(base64AsString);
-			}			
+			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(dto.getAnexo().getBytes()));
+			post.setAnexo(base64AsString);
 		}
 		post.setContent(dto.getContent());
 		post.setLikes(dto.getLikes());

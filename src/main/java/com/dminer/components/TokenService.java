@@ -1,6 +1,8 @@
 package com.dminer.components;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
@@ -16,6 +18,8 @@ public class TokenService {
     
 
     private static String token;
+
+    private static final Logger log = LoggerFactory.getLogger(TokenService.class);
 
     TokenService() {
         afterPropertiesSet();
@@ -40,6 +44,8 @@ public class TokenService {
         if (token == null) {
             new TokenService();
         }
+        log.info("Recuperando token do endpoint: https://www.dminerweb.com.br:8553/api/auth/login");
+        log.info(token);
         return token;
     }
     
