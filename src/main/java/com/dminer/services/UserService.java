@@ -89,53 +89,52 @@ public class UserService implements IUserService {
     
     public List<UserDTO> search(String termo) {
     	String token = getToken();
-    	return search(termo, token);
+    	return search(termo, token, carregarUsuariosApi(token));
     }
-    
-    public List<UserDTO> search(String termo, String token) {
 
-		// carrega os usuario da api
-    	UserRestModel model = carregarUsuariosApi(token);    	
-    	List<UserDTO> pesquisa = new ArrayList<UserDTO>();
-    	
+
+	public List<UserDTO> search(String termo, String token, UserRestModel model) {
+
+		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
+
 		// se vier null ou conter erros, retorna lista vazia
-    	if (model == null || model.hasError()) {
-        	return pesquisa;
-        }
-    	
+		if (model == null || model.hasError()) {
+			return pesquisa;
+		}
+
 		// se pesquisa for por null, retorna todos os usuário
-    	if (termo == null) {
-    		model.getOutput().getResult().getUsuarios().forEach(m -> {
-    			pesquisa.add(m.toUserDTO());
-    		});
-    		return pesquisa;
-    	}
-    	
+		if (termo == null) {
+			model.getOutput().getResult().getUsuarios().forEach(m -> {
+				pesquisa.add(m.toUserDTO());
+			});
+			return pesquisa;
+		}
+
 		// passa o termo de busca pra lowercase e sai procurando alguma
 		// ocorrencia em algum dos atributos do objeto
-    	termo = termo.toLowerCase();
-    	for (Usuario u : model.getOutput().getResult().getUsuarios()) {
-    		String concat = (
+		termo = termo.toLowerCase();
+		for (Usuario u : model.getOutput().getResult().getUsuarios()) {
+			String concat = (
 				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
-    			u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
+				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
 			).toLowerCase();
 
-    		if (concat.contains(termo)) {
-    			pesquisa.add(u.toUserDTO());
-    		}
+			if (concat.contains(termo)) {
+				pesquisa.add(u.toUserDTO());
+			}
 		}
 
 		// se não encontrar nada na pesquisa, retorna todos os usuários
 		if (pesquisa.isEmpty()) {
 			model.getOutput().getResult().getUsuarios().forEach(m -> {
 				pesquisa.add(m.toUserDTO());
-    		});
-    		return pesquisa;
+			});
+			return pesquisa;
 		}
 
-    	return pesquisa;
-    }
-    
+		return pesquisa;
+	}
+
     
     public boolean existsByLogin(String login) {
         log.info("Verificando se usuário existe pelo login, {}", login);
@@ -147,28 +146,28 @@ public class UserService implements IUserService {
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
+	public void atualizarDadosNoBancoComApiExterna(UserRestModel usuarios) {				
+		for (Usuario usuario : usuarios.getOutput().getResult().getUsuarios()) {
+			User u = new User();
+			u.setUserName(usuario.getUserName());
+			u.setLogin(usuario.getLogin());
+			persist(u);
+		}
+	}
 
-    public Optional<User> findByLoginApi(String login) {
-        log.info("Recuperando usuário pelo login da api, {}", login);
-        if (existsByLogin(login)) {			        			
+
+	public Optional<User> findByLoginApi(String login, List<Usuario> users) {
+		
+		log.info("Recuperando usuário pelo login da api, {}", login);
+		
+		if (existsByLogin(login)) {
 			return findByLogin(login);
 		}
-        return findByLoginOnlyApi(login);		
-    }
-    
-    public Optional<User> findByLoginOnlyApi(String login) {
-		Response<List<UserReductDTO>> retorno = carregarUsuariosApiReduct(getToken());
-		if (!retorno.getErrors().isEmpty()) {
-			Optional.empty();
-		}
 
-        List<UserReductDTO> users = retorno.getData();
-        for (UserReductDTO u : users) {
+        for (Usuario u : users) {
         	if (u.getLogin().equals(login)) {
-        		//if (! existsByLogin(u.getLogin())) {
-        			User user = persist(new User(u.getLogin(), u.getUserName()));        			
-        			return Optional.ofNullable(user);
-        		//}
+				User user = persist(new User(u.getLogin(), u.getUserName()));
+				return Optional.ofNullable(user);
         	}			
 		}
         return Optional.empty();
@@ -229,8 +228,7 @@ public class UserService implements IUserService {
         return null;
     }
     
-    
-    
+
     public Response<List<UserReductDTO>> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
@@ -266,6 +264,26 @@ public class UserService implements IUserService {
         
 		UserReductDTO dto = new UserReductDTO();
         model.getOutput().getResult().getUsuarios().forEach(u -> {
+			if (login.equals(u.getLogin())) {
+				dto.setLogin(u.getLogin());
+				dto.setUserName(u.getUserName());
+				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+			}
+        });
+		return dto;
+    }
+
+
+	public UserReductDTO buscarUsuarioApiReduct(String login, UserRestModel userRestModel) {
+        log.info("Recuperando todos os usuário reduzidos na api externa");
+        
+        System.out.println(userRestModel.toString());
+        if (userRestModel == null || userRestModel.hasError()) {
+			return null;
+        }
+        
+		UserReductDTO dto = new UserReductDTO();
+        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
 			if (login.equals(u.getLogin())) {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());

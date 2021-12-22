@@ -11,11 +11,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
+import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +53,7 @@ import com.dminer.enums.PostType;
 import com.dminer.repository.CommentRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.response.Response;
+import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.CommentService;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
@@ -94,11 +99,19 @@ public class PostController {
 	@Autowired
 	private GenericRepositoryPostgres genericRepositoryPostgres;
 	
-	
 	private Gson gson = new Gson();
+	
+	private String token;
 
-	
-	
+	private UserRestModel userRestModel;
+
+
+	@PostConstruct
+	private void init() {
+		token = userService.getToken();
+		userRestModel = userService.carregarUsuariosApi(token);
+	}
+
 	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
         if (dto.getLogin() == null || dto.getLogin().isBlank()) {
             result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
@@ -121,7 +134,10 @@ public class PostController {
         	//result.addError(new ObjectError("dto", "Campo likes é inválido."));
         }
     }
+
+
 	
+
 	@PostMapping()
 	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
 	
@@ -147,7 +163,7 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post));
+		response.setData(postToDto(post, null));
 		
 		post = postService.persist(post);
 
@@ -318,6 +334,7 @@ public class PostController {
 	}
 
 
+
 	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
 				
 		if (anexos != null) {
@@ -341,48 +358,22 @@ public class PostController {
 		}
 	}
 
-	private PostDTO postToDto(Post post) {
-		PostDTO dto = new PostDTO();
-		//System.out.println(post.toString());
-		
-		dto.setLikes(post.getLikes());
-		dto.setType(post.getType().toString());
-		dto.setId(post.getId());		
-		dto.setContent(post.getContent());
-		dto.setTitle(post.getTitle());
-		dto.setAnexo(post.getAnexo());
-		if (token == null) {
-            token = userService.getToken();
-        }
-		
-		UserReductDTO u = userService.carregarUsuarioApiReduct(post.getLogin(), token);
-      	dto.setUser(u);
-		return dto;
-	}
-	
-	
-	private String token = null;
+
 	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		// System.out.println(post.toString());
-		
 		dto.setLikes(post.getLikes());
 		dto.setType(post.getType().toString());
-		dto.setId(post.getId());		
+		dto.setId(post.getId());
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
 
-		if (token == null) {
-            token = userService.getToken();
-        }
-		
-		UserReductDTO u = userService.carregarUsuarioApiReduct(post.getLogin(), token);
-      	dto.setUser(u);
+		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), userRestModel);
+      	dto.setUser(user);
         
 		if (comments != null && !comments.isEmpty()) {
-			comments.forEach(e -> {
-				dto.getComments().add(commentConverter.entityToDTO(e));
+			comments.forEach(comment -> {
+				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
 			});			
 		}
 		return dto;
@@ -402,11 +393,11 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		for (Post post2 : posts) {
-			Optional<List<Comment>> comment = commentService.findByPost(post2);
-			PostDTO dto = postToDto(post2, comment.get());
-			response.getData().add(dto);			
-		}		
+		for (Post post : posts) {
+			Optional<List<Comment>> comment = commentService.findByPost(post);
+			PostDTO dto = postToDto(post, comment.get());
+			response.getData().add(dto);
+		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
@@ -431,7 +422,7 @@ public class PostController {
 		Integer userId = null;
 
 		if (user != null && !user.isBlank()) {
-			opt = userService.findByLoginApi(user);
+			opt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!opt.isPresent()) {
 				response.getErrors().add("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
@@ -442,20 +433,8 @@ public class PostController {
 		opt.get().setAvatar(userService.getAvatarBase64ByLogin(opt.get().getLogin()));
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(id, date, userId);
-        
-        List<CommentDTO> dtos = new ArrayList<>();
-        if (comments != null && !comments.isEmpty()) {        	
-        	for (Comment comm : comments) {        		
-      			dtos.add(commentConverter.entityToDTO(comm));
-			}
-        }
-        
-		if (dtos.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
 
         PostDTO dto = postToDto(optPost.get(), comments);
-        //dto.setComments(dtos);
         
         response.setData(dto);
         return ResponseEntity.ok().body(response);
@@ -475,7 +454,7 @@ public class PostController {
 		Integer userId = null;
 
 		if (user != null && !user.isBlank()) {
-			opt = userService.findByLoginApi(user);
+			opt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!opt.isPresent()) {
 				response.getErrors().add("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
@@ -498,13 +477,13 @@ public class PostController {
         // pelos posts vou verificando na coleção de comentários quais pertecem ao post
         idsPosts.forEach(idPost -> {
         	Optional<Post> p = postService.findById(idPost);
-        	PostDTO dto = postToDto(p.get(), null);
-        	comm.forEach(c -> {
-            	if (c.getPost().getId() == idPost) {
-            		dto.getComments().add(commentConverter.entityToDTO(c));
-            		//comm.remove(c);
-            	}
-            });
+        	PostDTO dto = postToDto(p.get(), comm);
+        	// comm.forEach(c -> {
+            // 	if (c.getPost().getId() == idPost) {
+            // 		dto.getComments().add(commentConverter.entityToDTO(c));
+            // 		//comm.remove(c);
+            // 	}
+            // });
         	posts.add(dto);
         });
         

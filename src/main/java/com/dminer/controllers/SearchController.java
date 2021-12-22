@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 
 import com.dminer.converters.NoticeConverter;
@@ -55,7 +56,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/search")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class SearchController {
     
 
@@ -101,7 +101,7 @@ public class SearchController {
     @Autowired
     private FeedService feedService;
     
-    
+	private UserRestModel userRestModel;
     
     private String token = null;
     
@@ -109,23 +109,35 @@ public class SearchController {
     private Environment env;
 
 
+
+    @PostConstruct
+    private void init() {
+        token = userService.getToken();
+		userRestModel = userService.carregarUsuariosApi(token);
+    }
+
     
     private Response<List<UserDTO>> aniversariantes() {
     	Response<List<UserDTO>> response = new Response<>();
-    	UserRestModel model = userService.carregarUsuariosApi(token);
-        if (model == null) {
+    	//UserRestModel model = userService.carregarUsuariosApi(token);
+        if (userRestModel == null || token == null) {
+            token = userService.getToken();
+            userRestModel = userService.carregarUsuariosApi(token);
+        }
+
+        if (userRestModel == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
     		return response;
     	}
         
-        if (model.hasError()) {
-        	model.getOutput().getMessages().forEach(u -> {
+        if (userRestModel.hasError()) {
+        	userRestModel.getOutput().getMessages().forEach(u -> {
     			response.getErrors().add(u);
     		});
         	return response;
         }
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        model.getOutput().getResult().getUsuarios().forEach(u -> {
+        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
         	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
         		aniversariantes.add(u.toUserDTO());
         	}
@@ -153,7 +165,8 @@ public class SearchController {
         if (token == null) {
         	token = userService.getToken();
         }
-        List<UserDTO> searchUsers = userService.search(keyword, token);            
+
+        List<UserDTO> searchUsers = userService.search(keyword, token, userRestModel);            
         searchUsers.forEach(u -> {        	
         	String encodedString = userService.getAvatarBase64ByLogin(login);
         	u.setAvatar(encodedString);

@@ -2,6 +2,7 @@ package com.dminer.converters;
 
 
 import com.dminer.dto.UserDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.UserService;
@@ -50,5 +51,15 @@ public class UserConverter {
     }
     
     
+    public UserReductDTO entityToUserReductDTO(User user) {
+        UserReductDTO dto = new UserReductDTO();
+     
+        dto.setLogin(user.getLogin());
+        dto.setUserName(user.getUserName());
+        String avatar = userService.getAvatarBase64ByLogin(user.getLogin());
+        dto.setAvatar(avatar);
+        return dto;
+    }
+
       
 }
