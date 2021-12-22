@@ -101,7 +101,7 @@ public class SearchController {
     @Autowired
     private FeedService feedService;
     
-	private UserRestModel userRestModel;
+	// private UserRestModel userRestModel;
     
     private String token = null;
     
@@ -110,16 +110,22 @@ public class SearchController {
 
 
 
-    @PostConstruct
-    private void init() {
-        token = userService.getToken();
-		userRestModel = userService.carregarUsuariosApi(token);
-    }
+    // @PostConstruct
+    // private void init() {
+    //     token = userService.getToken();
+	// 	userRestModel = userService.carregarUsuariosApi(token);
+    // }
 
     
     private Response<List<UserDTO>> aniversariantes() {
     	Response<List<UserDTO>> response = new Response<>();
-    	//UserRestModel model = userService.carregarUsuariosApi(token);
+
+        if (token == null) {
+            token = userService.getToken();
+        }
+
+    	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
+
         if (userRestModel == null || token == null) {
             token = userService.getToken();
             userRestModel = userService.carregarUsuariosApi(token);
@@ -166,7 +172,7 @@ public class SearchController {
         	token = userService.getToken();
         }
 
-        List<UserDTO> searchUsers = userService.search(keyword, token, userRestModel);            
+        List<UserDTO> searchUsers = userService.search(keyword);           
         searchUsers.forEach(u -> {        	
         	String encodedString = userService.getAvatarBase64ByLogin(login);
         	u.setAvatar(encodedString);

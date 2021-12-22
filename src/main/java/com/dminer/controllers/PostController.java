@@ -106,12 +106,6 @@ public class PostController {
 	private UserRestModel userRestModel;
 
 
-	@PostConstruct
-	private void init() {
-		token = userService.getToken();
-		userRestModel = userService.carregarUsuariosApi(token);
-	}
-
 	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
         if (dto.getLogin() == null || dto.getLogin().isBlank()) {
             result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
@@ -368,7 +362,7 @@ public class PostController {
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
 
-		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), userRestModel);
+		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());
       	dto.setUser(user);
         
 		if (comments != null && !comments.isEmpty()) {

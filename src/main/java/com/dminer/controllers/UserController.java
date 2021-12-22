@@ -66,9 +66,9 @@ public class UserController {
     @Autowired
     private PermissionRepository permissionRepository;
 
-    private List<UserReductDTO> usersReduct;
+    // private List<UserReductDTO> usersReduct;
 
-    private UserRestModel users;
+    // private UserRestModel users;
 
     @Autowired
     private Environment env;
@@ -78,13 +78,13 @@ public class UserController {
 
 
 
-    @PostConstruct
-    private void init() {
-        token = userService.getToken();
-        users = userService.carregarUsuariosApi(token);
-        userService.atualizarDadosNoBancoComApiExterna(users);
-        usersReduct = userService.carregarUsuariosApiReduct(token);
-    }
+    // @PostConstruct
+    // private void init() {
+    //     token = userService.getToken();
+    //     users = userService.carregarUsuariosApi(token);
+    //     userService.atualizarDadosNoBancoComApiExterna(users);
+    //     usersReduct = userService.carregarUsuariosApiReduct(token);
+    // }
     
 
     private String getBannerBase64(String login) {
@@ -110,11 +110,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        // if (token == null) {
-        // 	token = userService.getToken();
-        // }
+        if (token == null) {
+        	token = userService.getToken();
+        }
         
-        // UserRestModel model = userService.carregarUsuariosApi(token);
+        UserRestModel users = userService.carregarUsuariosApi(token);
         
         if (users == null) {
         	response.getErrors().add("Token inválido ou expirado!");
@@ -166,7 +166,8 @@ public class UserController {
         	response.getErrors().add("Token precisa ser informado");
         }
                 
-        // UserRestModel model = userService.carregarUsuariosApi(token.getToken());
+        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
+
         if (users == null) {
         	response.getErrors().add("Token inválido ou expirado!");
         	return ResponseEntity.badRequest().body(response);
@@ -217,7 +218,7 @@ public class UserController {
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
             
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
@@ -239,7 +240,8 @@ public class UserController {
         	token = userService.getToken();
         }
         
-        //UserRestModel model = userService.carregarUsuariosApi(token);
+        UserRestModel users = userService.carregarUsuariosApi(token);
+        
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
     		return ResponseEntity.badRequest().body(response);
