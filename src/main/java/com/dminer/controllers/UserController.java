@@ -194,14 +194,14 @@ public class UserController {
     
     @PutMapping(value = "/permission")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody PermissionUserDTO permissionUser) {
+    public ResponseEntity<Response<List<UserReductDTO>>> updatePermission(@RequestBody PermissionUserDTO permissionUser) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
 
     	if (permissionUser.getLogin() == null || permissionUser.getLogin().isBlank()) {
             response.getErrors().add("Informe o login");
         } else {
-            if (userService.existsByLogin(permissionUser.getLogin())) {
+            if (!userService.existsByLogin(permissionUser.getLogin())) {
                 response.getErrors().add("Usuário não encontrado");
             }
         }
