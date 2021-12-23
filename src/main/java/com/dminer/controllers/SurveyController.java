@@ -277,15 +277,17 @@ public class SurveyController {
             SurveyDTO dto = surveyConverter.entityToDTO(u);
             SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(dto.getId());
             
-            User user = responseDto.getUsers().stream().
-            filter(f -> f.getLogin().equalsIgnoreCase(login)).
-            findAny().
-            orElse(null);
-
-            if (user != null) {
-                dto.setVoted(true);
+            if (responseDto != null) {
+                User user = responseDto.getUsers().stream().
+                filter(f -> f.getLogin().equalsIgnoreCase(login)).
+                findAny().
+                orElse(null);
+    
+                if (user != null) {
+                    dto.setVoted(true);
+                }
+                surveysDto.add(dto);
             }
-            surveysDto.add(dto);
         });
 
         response.setData(surveysDto);
