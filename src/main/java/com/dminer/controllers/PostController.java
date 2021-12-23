@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dminer.components.TokenService;
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
 import com.dminer.dto.CommentDTO;
@@ -103,7 +106,7 @@ public class PostController {
 	
 	private String token;
 
-	private UserRestModel userRestModel;
+	//private UserRestModel userRestModel;
 
 
 	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
@@ -145,8 +148,6 @@ public class PostController {
 		
 		Post post = new Post();
 		if (dto.getAnexo() != null) {
-			//String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(dto.getAnexo().getBytes()));
-			//String base64AsString = "data:image/png;base64," + dto.getAnexo();
 			post.setAnexo(dto.getAnexo());
 		}
 		post.setContent(dto.getContent());
@@ -364,13 +365,9 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
-		// if (post.getAnexo() != null) {
-		// 	String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(post.getAnexo().getBytes()));
-		// 	dto.setAnexo(base64AsString);
-		// }
 
-		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());
-      	dto.setUser(user);
+		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
+		dto.setUser(user);
         
 		if (comments != null && !comments.isEmpty()) {
 			comments.forEach(comment -> {
@@ -393,6 +390,10 @@ public class PostController {
 			response.getErrors().add("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
+		
+		posts = posts.stream()
+		.sorted(Comparator.comparing(Post::getCreateDate))
+		.collect(Collectors.toList());
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
@@ -415,6 +416,10 @@ public class PostController {
 			response.getErrors().add("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
+
+		posts = posts.stream()
+		.sorted(Comparator.comparing(Post::getCreateDate))
+		.collect(Collectors.toList());
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
@@ -439,15 +444,16 @@ public class PostController {
         	response.getErrors().add("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
-        
-		Optional<User> optUser = null;
-		Integer userId = null;
-
+        		
 		String userSearch = optPost.get().getLogin();
 		if (user != null && !user.isBlank()) {
 			userSearch = user; 
 		}
 		
+		Optional<User> optUser = null;
+		Integer userId = null;
+		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
 			response.getErrors().add("Nenhum usuário encontrado");
@@ -478,6 +484,8 @@ public class PostController {
 		Optional<User> opt = null;
 		Integer userId = null;
 
+		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+
 		if (user != null && !user.isBlank()) {
 			opt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!opt.isPresent()) {
@@ -488,7 +496,8 @@ public class PostController {
 		}
         
         List<Comment> comm = genericRepositoryPostgres.searchCommentsByDateAndUser(date, userId);
-        List<PostDTO> posts = new ArrayList<>();
+        List<PostDTO> postsDto = new ArrayList<>();
+		List<Post> posts = new ArrayList<>();
         List<Integer> idsPosts = new ArrayList<>();
         
         // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
@@ -500,19 +509,29 @@ public class PostController {
         
         
         // pelos posts vou verificando na coleção de comentários quais pertecem ao post
-        idsPosts.forEach(idPost -> {
-        	Optional<Post> p = postService.findById(idPost);
-        	PostDTO dto = postToDto(p.get(), comm);
-        	// comm.forEach(c -> {
-            // 	if (c.getPost().getId() == idPost) {
-            // 		dto.getComments().add(commentConverter.entityToDTO(c));
-            // 		//comm.remove(c);
-            // 	}
-            // });
-        	posts.add(dto);
-        });
+		for (Integer integer : idsPosts) {
+			Optional<Post> p = postService.findById(integer);
+			posts.add(p.get());
+		}
         
-        response.setData(posts);
+		// ordenar do mais novo pro mais antigo
+		posts = posts.stream()
+		.sorted(Comparator.comparing(Post::getCreateDate))
+		.collect(Collectors.toList());
+		
+
+		// "casar" os comentários com seus respectivos posts
+		posts.forEach(p ->  {
+			PostDTO dto = postToDto(p, null);
+			comm.forEach(c -> {
+				if (c.getPost().getId() == p.getId()) {
+					dto.getComments().add(commentConverter.entityToDTO(c));
+				}
+			});
+			postsDto.add(dto);
+		});
+
+        response.setData(postsDto);
         return ResponseEntity.ok().body(response);
 	}
 	

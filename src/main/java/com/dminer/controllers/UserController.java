@@ -65,19 +65,7 @@ public class UserController {
     private UserConverter userConverter;
 
     @Autowired
-    private PermissionRepository permissionRepository;
-
-    // private List<UserReductDTO> usersReduct;
-
-    // private UserRestModel users;
-
-    @Autowired
     private Environment env;
-
-    // @Autowired
-	// private Token tokenService;
-    
-
 
 
     private String getBannerBase64(String login) {

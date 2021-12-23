@@ -1,6 +1,9 @@
 package com.dminer.entities;
 
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -54,6 +57,10 @@ public class Post {
     @Column(length = 9999999)
     private String anexo;
     
+	private Timestamp createDate = Timestamp.from(Instant.now());
+
+	
+
 	public Post(String content) { this.content = content; }
 
 	public String toJson() {
