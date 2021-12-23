@@ -178,7 +178,10 @@ public class UserController {
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
-            }        	
+            }
+            usuariosApiReduct.forEach(u -> {
+                u.setAvatar(null);
+            });
         	response.setData(usuariosApiReduct); 
         }
         return ResponseEntity.ok().body(response);
