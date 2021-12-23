@@ -16,15 +16,6 @@ import lombok.ToString;
 @Builder
 @ToString
 public class PermissionDTO {
-    private String token;
-	private String descrConfig;
-	
-	public PermissionReductDTO toPermissionReductDTO() {
-		return PermissionReductDTO
-				.builder()
-				.name(descrConfig)
-				.id(token)
-				.build();
-	}
-	
+    private Integer id;
+	private String permission;
 }

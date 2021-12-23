@@ -14,5 +14,5 @@ import lombok.ToString;
 @Setter
 @ToString
 public class PermissionRequestDTO {     
-	private Boolean permission;
+	private String permission;
 }

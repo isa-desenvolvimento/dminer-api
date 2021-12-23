@@ -25,15 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dminer.converters.PermissionConverter;
 import com.dminer.dto.PermissionDTO;
-import com.dminer.dto.PermissionReductDTO;
 import com.dminer.dto.PermissionRequestDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Permission;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
-import com.dminer.rest.model.permission.ConfigRestModel;
-import com.dminer.services.PermissionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,54 +49,70 @@ public class PermissionController {
     @Autowired
     private PermissionConverter permissionConverter;
 
-    @Autowired
-    private PermissionService permissionService;
-    
 
-
-    @PostMapping(value = "/all")
-    public ResponseEntity<Response<List<PermissionDTO>>> getAll(@RequestBody Token token) {
+    // @PostMapping(value = "/all")
+    // public ResponseEntity<Response<List<PermissionDTO>>> getAll(@RequestBody Token token) {
         
-        Response<List<PermissionDTO>> response = new Response<>();
+    //     Response<List<PermissionDTO>> response = new Response<>();
 
-        ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
-        if (model == null || model.hasError()) {
-            response.getErrors().add("Permissões não encontradas");
-            model.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
-    		});
+    //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
+    //     if (model == null || model.hasError()) {
+    //         response.getErrors().add("Permissões não encontradas");
+    //         model.getOutput().getMessages().forEach(u -> {
+    // 			response.getErrors().add(u);
+    // 		});
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
+
+    //     List<PermissionDTO> ps = new ArrayList<>();
+    //     model.getOutput().getResult().getConfigs().forEach(p -> {
+    //         ps.add(p.toPermissionDTO());
+    //     });
+    //     response.setData(ps);
+    //     return ResponseEntity.ok().body(response);
+    // }
+
+
+    @PostMapping(value = "/dropdown")
+    public ResponseEntity<Response<List<PermissionDTO>>> getDropDown() {
+    	
+    	Response<List<PermissionDTO>> response = new Response<>();
+
+        List<Permission> permissions = permissionRepository.findAll();
+        if (permissions == null) {
+            response.getErrors().add("Permissões não encontradas");            
             return ResponseEntity.badRequest().body(response);
         }
 
         List<PermissionDTO> ps = new ArrayList<>();
-        model.getOutput().getResult().getConfigs().forEach(p -> {
-            ps.add(p.toPermissionDTO());
+        permissions.forEach(p -> {
+            ps.add(permissionConverter.entityToDTO(p));
         });
+
         response.setData(ps);
         return ResponseEntity.ok().body(response);
     }
-
     
-    @PostMapping(value = "/dropdown")
-    public ResponseEntity<Response<List<PermissionReductDTO>>> getDropDown(@RequestBody Token token) {
+    // @PostMapping(value = "/dropdown")
+    // public ResponseEntity<Response<List<PermissionReductDTO>>> getDropDown(@RequestBody Token token) {
     	
-    	Response<List<PermissionReductDTO>> response = new Response<>();
+    // 	Response<List<PermissionReductDTO>> response = new Response<>();
 
-        ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
-        if (model == null || model.hasError()) {
-            response.getErrors().add("Permissões não encontradas");
-            model.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
-    		});
-            return ResponseEntity.badRequest().body(response);
-        }
+    //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
+    //     if (model == null || model.hasError()) {
+    //         response.getErrors().add("Permissões não encontradas");
+    //         model.getOutput().getMessages().forEach(u -> {
+    // 			response.getErrors().add(u);
+    // 		});
+    //         return ResponseEntity.badRequest().body(response);
+    //     }
 
-        List<PermissionReductDTO> ps = new ArrayList<>();
-        model.getOutput().getResult().getConfigs().forEach(p -> {
-            ps.add(p.toPermissionReductDTO());
-        });
-        response.setData(ps);
-        return ResponseEntity.ok().body(response);
-    }
+    //     List<PermissionReductDTO> ps = new ArrayList<>();
+    //     model.getOutput().getResult().getConfigs().forEach(p -> {
+    //         ps.add(p.toPermissionReductDTO());
+    //     });
+    //     response.setData(ps);
+    //     return ResponseEntity.ok().body(response);
+    // }
 
 }

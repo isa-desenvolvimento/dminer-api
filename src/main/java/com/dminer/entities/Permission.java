@@ -30,6 +30,6 @@ public class Permission {
 	private Integer id;
 
 	@Column
-	private Boolean permission;
+	private String permission;
 
 }

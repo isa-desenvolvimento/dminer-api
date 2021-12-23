@@ -11,24 +11,24 @@ public class PermissionConverter {
 
     public PermissionDTO entityToDTO(Permission entity) {
         PermissionDTO dto = new PermissionDTO();
-//        if (entity == null) return dto;
-//        dto.setId(entity.getId());
-//        dto.setTitle(entity.getPermission() != null ? entity.getPermission() : "");
+        if (entity == null) return dto;
+        dto.setId(entity.getId());
+        dto.setPermission(entity.getPermission() != null ? entity.getPermission() : "");
         return dto;
     }
 
     public Permission dtoToEntity(PermissionDTO dto) {
         Permission c = new Permission();
-//        if (dto == null) return c;
-//        c.setId(dto.getId());
-//        c.setPermission(dto.getTitle() != null ? dto.getTitle() : "");
+        if (dto == null) return c;
+        c.setId(dto.getId());
+        c.setPermission(dto.getPermission() != null ? dto.getPermission() : "");
         return c;
     }
 
     public Permission requestDtoToEntity(PermissionRequestDTO dto) {
         Permission c = new Permission();
         if (dto == null) return c;
-        c.setPermission(dto.getPermission() != null ? dto.getPermission() : false);
+        c.setPermission(dto.getPermission() != null ? dto.getPermission() : "");
         return c;
     }
 }
