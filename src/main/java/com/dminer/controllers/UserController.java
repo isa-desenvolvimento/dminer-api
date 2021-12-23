@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dminer.components.TokenService;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.DocumentDTO;
+import com.dminer.dto.PermissionUserDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
@@ -63,6 +64,9 @@ public class UserController {
 
     @Autowired
     private UserConverter userConverter;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
 
     @Autowired
     private Environment env;
@@ -188,6 +192,36 @@ public class UserController {
     }
     
     
+    @PutMapping(value = "/permission")
+    @Transactional(timeout = 10000)
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody PermissionUserDTO permissionUser) {
+    	
+        Response<List<UserReductDTO>> response = new Response<>();
+
+    	if (permissionUser.getLogin() == null || permissionUser.getLogin().isBlank()) {
+            response.getErrors().add("Informe o login");
+        } else {
+            if (userService.existsByLogin(permissionUser.getLogin())) {
+                response.getErrors().add("Usuário não encontrado");
+            }
+        }
+
+        if (permissionUser.getPermission() == null || permissionUser.getPermission().isBlank()) {
+            response.getErrors().add("Informe a permissão");
+        } else {
+            if (permissionRepository.findByName(permissionUser.getPermission()) == null) {
+                response.getErrors().add("Permissão não encontrada");
+            }
+        }
+    	
+        if (!response.getErrors().isEmpty()) {
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        
+        return ResponseEntity.ok().body(response);
+    }
+
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
