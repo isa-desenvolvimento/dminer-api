@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -28,9 +30,11 @@ import com.dminer.entities.Notification;
 import com.dminer.entities.Post;
 import com.dminer.entities.Reminder;
 import com.dminer.entities.Survey;
+import com.dminer.entities.SurveyResponses;
 import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
+import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.EventsService;
@@ -101,6 +105,9 @@ public class SearchController {
 
     @Autowired
     private FeedService feedService;
+    
+    @Autowired
+    private SurveyResponseRepository surveyResponseRepository;
     
 	// private UserRestModel userRestModel;
     
@@ -236,18 +243,38 @@ public class SearchController {
             
             // surveys
             Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
-            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                searchSurvey.get().forEach(u -> {
-                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                });
-            } else {
+            if (!searchSurvey.isPresent() || searchSurvey.get().isEmpty()) {
                 searchSurvey = surveyService.findAll();
-                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                    searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                    });
-                }
             }
+
+            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
+                List<Survey> surveys = searchSurvey.get();
+                
+                surveys = surveys.stream()
+                .sorted(Comparator.comparing(Survey::getDate))
+                .collect(Collectors.toList());
+                
+                surveys.forEach(u -> {
+                    
+                    SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(u.getId());
+                    SurveyDTO dto = surveyConverter.entityToDTO(u);
+
+                    if (responseDto != null) {
+                        User user = responseDto.getUsers().stream().
+                        filter(f -> f.getLogin().equalsIgnoreCase(login)).
+                        findAny().
+                        orElse(null);
+            
+                        if (user != null) {
+                            dto.setVoted(true);
+                        }
+                    }
+
+                    searchDTO.getQuizList().add(dto);
+                });
+            }
+
+            
 
             // feed (post)
             List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);

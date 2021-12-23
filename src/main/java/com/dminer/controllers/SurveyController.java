@@ -268,14 +268,20 @@ public class SurveyController {
         
         Response<List<SurveyDTO>> response = new Response<>();
 
-        Optional<List<Survey>> surveys = surveyService.findAll();
-        if (surveys.get().isEmpty()) {
+        Optional<List<Survey>> surveysOpt = surveyService.findAll();
+        if (surveysOpt.get().isEmpty()) {
             response.getErrors().add("Questionários não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
+        List<Survey> surveys = surveysOpt.get();
+        surveys = surveys.stream()
+		.sorted(Comparator.comparing(Survey::getDate))
+		.collect(Collectors.toList());
+
+
         List<SurveyDTO> surveysDto = new ArrayList<>();
-        surveys.get().forEach(u -> {
+        surveys.forEach(u -> {
             SurveyDTO dto = surveyConverter.entityToDTO(u);
             SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(dto.getId());
             

@@ -13,7 +13,7 @@ public class PermissionConverter {
         PermissionDTO dto = new PermissionDTO();
         if (entity == null) return dto;
         dto.setId(entity.getId());
-        dto.setPermission(entity.getPermission() != null ? entity.getPermission() : "");
+        dto.setName(entity.getName() != null ? entity.getName() : "");
         return dto;
     }
 
@@ -21,14 +21,14 @@ public class PermissionConverter {
         Permission c = new Permission();
         if (dto == null) return c;
         c.setId(dto.getId());
-        c.setPermission(dto.getPermission() != null ? dto.getPermission() : "");
+        c.setName(dto.getName() != null ? dto.getName() : "");
         return c;
     }
 
     public Permission requestDtoToEntity(PermissionRequestDTO dto) {
         Permission c = new Permission();
         if (dto == null) return c;
-        c.setPermission(dto.getPermission() != null ? dto.getPermission() : "");
+        c.setName(dto.getName() != null ? dto.getName() : "");
         return c;
     }
 }
