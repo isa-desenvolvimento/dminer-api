@@ -3,8 +3,10 @@ package com.dminer.controllers;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -286,13 +288,15 @@ public class SurveyController {
                 if (user != null) {
                     dto.setVoted(true);
                 }
-                surveysDto.add(dto);
             }
+            surveysDto.add(dto);
         });
 
         response.setData(surveysDto);
         return ResponseEntity.ok().body(response);
     }
+
+
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {

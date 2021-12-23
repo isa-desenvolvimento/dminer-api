@@ -203,7 +203,7 @@ public class ReminderController {
 
 
     
-    @GetMapping("/{login}/all")
+    @GetMapping("/all/{login}")
     public ResponseEntity<Response<List<ReminderDTO>>> getAll(@PathVariable("login") String login) {
         
         Response<List<ReminderDTO>> response = new Response<>();
