@@ -2,8 +2,10 @@ package com.dminer.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -281,6 +283,12 @@ public class BenefitsController {
         }
 
         List<BenefitsDTO> eventos = new ArrayList<>();
+        
+        // ordenar do mais novo pro mais antigo
+		doc = doc.stream()
+		.sorted(Comparator.comparing(Benefits::getDate))
+		.collect(Collectors.toList());
+
         doc.forEach(u -> {        	
             eventos.add(benefitsConverter.entityToDTO(u));
         });
