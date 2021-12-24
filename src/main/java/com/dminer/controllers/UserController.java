@@ -179,6 +179,9 @@ public class UserController {
         if (token != null) {
             
             List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
+            usuariosApiReduct.forEach(u -> {
+                System.out.println(u.toString());
+            });
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
