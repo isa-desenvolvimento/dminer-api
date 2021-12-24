@@ -286,7 +286,7 @@ public class BenefitsController {
 
         // ordenar do mais novo pro mais antigo
 		doc = doc.stream()
-		.sorted(Comparator.comparing(Benefits::getDate))
+		.sorted(Comparator.comparing(Benefits::getDate).reversed())
 		.collect(Collectors.toList());
 
         doc.forEach(u -> {        	
@@ -318,9 +318,9 @@ public class BenefitsController {
         }
         
         doc = doc.stream()
-		.sorted(Comparator.comparing(Benefits::getDate))
+		.sorted(Comparator.comparing(Benefits::getDate).reversed())
 		.collect(Collectors.toList());
-        
+
         List<BenefitsDTO> ret = new ArrayList<>();
         for (Benefits document : doc) {        	
         	ret.add(benefitsConverter.entityToDTO(document));

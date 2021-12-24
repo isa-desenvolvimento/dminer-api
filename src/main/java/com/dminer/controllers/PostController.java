@@ -392,7 +392,7 @@ public class PostController {
 		}
 		
 		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate))
+		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
 		.collect(Collectors.toList());
 
 		for (Post post : posts) {
@@ -418,7 +418,7 @@ public class PostController {
 		}
 
 		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate))
+		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
 		.collect(Collectors.toList());
 
 		for (Post post : posts) {
@@ -516,7 +516,7 @@ public class PostController {
         
 		// ordenar do mais novo pro mais antigo
 		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate))
+		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
 		.collect(Collectors.toList());
 		
 
