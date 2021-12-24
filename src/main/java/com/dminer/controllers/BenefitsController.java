@@ -283,7 +283,7 @@ public class BenefitsController {
         }
 
         List<BenefitsDTO> eventos = new ArrayList<>();
-        
+
         // ordenar do mais novo pro mais antigo
 		doc = doc.stream()
 		.sorted(Comparator.comparing(Benefits::getDate))
@@ -316,6 +316,10 @@ public class BenefitsController {
             response.getErrors().add("Nenhum documento encontrado");
             return ResponseEntity.status(404).body(response);
         }
+        
+        doc = doc.stream()
+		.sorted(Comparator.comparing(Benefits::getDate))
+		.collect(Collectors.toList());
         
         List<BenefitsDTO> ret = new ArrayList<>();
         for (Benefits document : doc) {        	
