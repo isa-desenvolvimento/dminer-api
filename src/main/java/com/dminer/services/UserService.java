@@ -180,6 +180,8 @@ public class UserService implements IUserService {
     
     public UserRestModel carregarUsuariosApi(String token) {
     	
+		log.info("Recuperando todos os usuários na api externa");
+
     	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";		
 		try {
 			URL url = new URL(uri);
@@ -274,6 +276,7 @@ public class UserService implements IUserService {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
+			log.info("Carregando usuário diretamente da API");
 			userRestModel = carregarUsuariosApi(TokenService.getToken());
 		}
 
@@ -287,29 +290,12 @@ public class UserService implements IUserService {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());
 				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+				return;
 			}
         });
 		return dto;
     }
 
-
-    /**
-     * Recupera o avatar no diretório "avatares" e transoforma em Base64
-     * @param pathFile
-     * @return String
-     */
-	@Deprecated
-    public String getAvatarBase64_old(String pathFile) {
-    	try {
-    		byte[] image = UtilFilesStorage.loadImage(pathFile);
-    		if (image != null) {
-    			String base = Base64.getEncoder().encodeToString(image);
-    			System.out.println(base);
-    			return base;
-    		}
-    	} catch (IOException e) {}
-    	return null;
-    }
 
 
 	public String getAvatarBase64(String pathFile) {
@@ -317,7 +303,7 @@ public class UserService implements IUserService {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
     		if (image != null) {
     			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(image));
-    			System.out.println(base64AsString);
+    			System.out.println(base64AsString.substring(0, 80) + "...");
     			return base64AsString;
     		}
     	} catch (IOException e) {}
@@ -364,27 +350,7 @@ public class UserService implements IUserService {
     }
     
     
-   
-    /**
-     * Recupera o avatar do usuário pelo endpoint do cliente
-     * https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=?
-     * @param login
-     * @return byte[]
-     */
-	@Deprecated
-    public byte[] getAvatar2(String login) {
-    	try {
-    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
-    		if (image != null) {
-    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    			ImageIO.write(image, "png", baos);
-    			return baos.toByteArray();
-    		}
-    	} catch (IOException e) {}
-    	return null;
-    }
-    
-    
+     
     /**
      * Recupera o banner do usuário no banco de dados
      * @param login
