@@ -1,5 +1,8 @@
 package com.dminer.entities;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -45,6 +48,7 @@ public class Notification {
 	@Column
     private Boolean active = true;
 
+    private Timestamp createDate = Timestamp.from(Instant.now()); 
 
 	public String toJson() {
         ObjectMapper mapper = new ObjectMapper();

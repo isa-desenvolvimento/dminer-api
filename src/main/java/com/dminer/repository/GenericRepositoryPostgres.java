@@ -1,8 +1,10 @@
 package com.dminer.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
 import com.dminer.enums.PostType;
+import com.dminer.utils.UtilDataHora;
 
 @Repository
 public class GenericRepositoryPostgres {
@@ -460,40 +463,40 @@ public class GenericRepositoryPostgres {
     }
     
     
-    public List<Comment> searchCommentsByDate(String date) {
-        String query = 
-        "SELECT * " +
-        "FROM comment e " +
-        "WHERE e.timestamp='" + date + "'";
-        log.info("search = {}", query);
+    // public List<Comment> searchCommentsByDate(String date) {
+    //     String query = 
+    //     "SELECT * " +
+    //     "FROM comment e " +
+    //     "WHERE e.timestamp='" + date + "'";
+    //     log.info("search = {}", query);
 
-        return jdbcOperations.query(query, (rs, rowNum) -> { 
-        	Comment e = new Comment();
-            e.setId(rs.getInt("ID"));
-            e.setContent(rs.getString("CONTENT"));
-            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
-            Post p = new Post();
-            p.setId(rs.getInt("POST_ID"));
-            e.setPost(p);
-            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
-            if (findById.isPresent())
-                e.setUser(findById.get());
-            return e;
-        });
-    }
+    //     return jdbcOperations.query(query, (rs, rowNum) -> { 
+    //     	Comment e = new Comment();
+    //         e.setId(rs.getInt("ID"));
+    //         e.setContent(rs.getString("CONTENT"));
+    //         e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+    //         Post p = new Post();
+    //         p.setId(rs.getInt("POST_ID"));
+    //         e.setPost(p);
+    //         Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+    //         if (findById.isPresent())
+    //             e.setUser(findById.get());
+    //         return e;
+    //     });
+    // }
             
 
-    public List<Comment> searchCommentsByPostIdAndDateAndUser(Integer idPost, String date, Integer user) {
+    public List<Comment> searchCommentsByPostIdAndDateAndUser(Post post, String date, Optional<User> user) {
         String query = 
         "SELECT * " +
         "FROM comment e WHERE ";
         String[] conditions = new String[]{};
 
-        conditions = Arrays.append(conditions, " e.post_id=" + idPost);
+        conditions = Arrays.append(conditions, " e.post_id=" + post.getId());
         if (date != null)
             conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
-        if (user != null)
-            conditions = Arrays.append(conditions, " e.user_id=" + user);
+        if (user.isPresent())
+            conditions = Arrays.append(conditions, " e.user_id=" + user.get().getId());
 
         if (!Arrays.isNullOrEmpty(conditions)) {
             query += String.join(" and ", conditions);
@@ -506,27 +509,30 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
             e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
-            Post p = postRepository.getById(idPost);
-            if (p != null) {
-                e.setPost(p);
+            e.setPost(post);
+            if (user.isPresent()) {
+                e.setUser(user.get());
+            } else {
+                Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+                if (findById.isPresent())
+                    e.setUser(findById.get());
             }
-            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
-            if (findById.isPresent())
-                e.setUser(findById.get());
             return e;
         });
     }
     
-    public List<Comment> searchCommentsByDateAndUser(String date, Integer user) {
+    public List<Post> searchPostsByDateOrUser(String date, Optional<User> user) {
+        
         String query = 
         "SELECT * " +
-        "FROM comment e ";
+        "FROM post p FULL OUTER JOIN comment c on c.post_id = p.id ";
         String[] conditions = new String[]{};
 
         if (date != null)
-            conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
-        if (user != null)
-            conditions = Arrays.append(conditions, " e.user_id=" + user);
+            conditions = Arrays.append(conditions, " c.timestamp='" + date + "' OR p.create_date='" + date + "'");
+        if (user.isPresent()) {            
+            conditions = Arrays.append(conditions, " c.user_id=" + user.get().getId() + " OR p.login='" + user.get().getLogin() + "'");
+        }
 
         if (!Arrays.isNullOrEmpty(conditions)) {
             query += "WHERE " + String.join(" and ", conditions);            
@@ -535,24 +541,16 @@ public class GenericRepositoryPostgres {
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
-        	Comment e = new Comment();
+        	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
-            Post p = new Post();
-            p.setId(rs.getInt("POST_ID"));
-            e.setPost(p);
-            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
-            if (findById.isPresent())
-                e.setUser(findById.get());
+            e.setLikes(rs.getInt("LIKES"));
+            e.setLogin(rs.getString("LOGIN"));
+            e.setTitle(rs.getString("TITLE"));
+            PostType type = PostType.valueOf(rs.getString("TYPE"));
+            e.setType(type);
             return e;
         });
-    }
-    
-    
-    public void votarQuestionario(Integer idQuestionario, String login, String opcao, Boolean unicoVoto) {
-
-
     }
 
 

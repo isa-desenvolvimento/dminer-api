@@ -43,17 +43,23 @@ public class CommentConverter {
         return dto;
     }
 
+    public CommentDTO entityToDTO(Integer idPost, Comment comment) {
+        CommentDTO dto = new CommentDTO();
+        dto.setContent(comment.getContent() != null ? comment.getContent() : "");
+        dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
+        dto.setId(comment.getId());
+        dto.setIdPost(idPost);
+        UserReductDTO user = userConverter.entityToUserReductDTO(comment.getUser());
+        dto.setUser(user);
+        return dto;
+    }
 
     public CommentDTO entityToDTO(Comment comment) {
         CommentDTO dto = new CommentDTO();
         dto.setContent(comment.getContent() != null ? comment.getContent() : "");
         dto.setDate(comment.getTimestamp() != null ? UtilDataHora.dateToStringUTC(comment.getTimestamp()) : null);
         dto.setId(comment.getId());
-
-        if (comment.getPost() != null) {
-        	Optional<Post> opt = postService.findById(comment.getPost().getId()); 
-        	dto.setIdPost(opt.get().getId());
-        }
+      	dto.setIdPost(comment.getPost().getId());
 
         UserReductDTO user = userConverter.entityToUserReductDTO(comment.getUser());
         dto.setUser(user);

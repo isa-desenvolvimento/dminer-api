@@ -276,7 +276,7 @@ public class SurveyController {
 
         List<Survey> surveys = surveysOpt.get();
         surveys = surveys.stream()
-		.sorted(Comparator.comparing(Survey::getDate))
+		.sorted(Comparator.comparing(Survey::getDate).reversed())
 		.collect(Collectors.toList());
 
 

@@ -29,7 +29,7 @@ import lombok.ToString;
 @Table(name = "POST")
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(of = {"id"})
 @Getter
 @Setter
 @ToString
@@ -46,20 +46,23 @@ public class Post {
 	private String content; 
 
 	@Column
-	private Integer likes;
-
-	@Column
-	@Enumerated(EnumType.STRING)
-	private PostType type;	
-	
-    private String login;
+	private Integer likes;	
 	
     @Column(length = 9999999)
     private String anexo;
     
+	@Column
+	private String login;
+    
+	@Column
 	private Timestamp createDate = Timestamp.from(Instant.now());
-
 	
+	
+	@Column
+	@Enumerated(EnumType.STRING)
+	private PostType type;	
+	
+	public Post(Integer id) { this.id = id; }
 
 	public Post(String content) { this.content = content; }
 

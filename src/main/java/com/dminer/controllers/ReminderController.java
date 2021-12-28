@@ -2,8 +2,10 @@ package com.dminer.controllers;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -213,9 +215,14 @@ public class ReminderController {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
-
+        List<Reminder> reminder = remi.get();
+        
+        reminder = reminder.stream()
+		.sorted(Comparator.comparing(Reminder::getDate).reversed())
+		.collect(Collectors.toList());
+        
         List<ReminderDTO> eventos = new ArrayList<>();
-        remi.get().forEach(u -> {
+        reminder.forEach(u -> {
             if (u.getUser().getLogin().equals(login))
                 eventos.add(reminderConverter.entityToDto(u));
         });

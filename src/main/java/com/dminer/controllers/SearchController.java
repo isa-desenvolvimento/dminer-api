@@ -188,13 +188,21 @@ public class SearchController {
             // reminder
             List<Reminder> searchReminder = genericRepositoryPostgres.searchReminder(keyword, login);
             if (searchReminder != null && !searchReminder.isEmpty()) {
+                searchReminder = searchReminder.stream()
+                .sorted(Comparator.comparing(Reminder::getDate).reversed())
+                .collect(Collectors.toList());
+
                 searchReminder.forEach(u -> {
                     searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
                 });
             } else {
                 Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
                 if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
-                    searchReminder2.get().forEach(u -> {
+                    searchReminder = searchReminder2.get().stream()
+                    .sorted(Comparator.comparing(Reminder::getDate).reversed())
+                    .collect(Collectors.toList());
+
+                    searchReminder.forEach(u -> {
                         if (u.getUser().getLogin().equals(login))
                             searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
                     });
@@ -204,13 +212,20 @@ public class SearchController {
             // Notification
             List<Notification> searchNotification = genericRepositoryPostgres.searchNotification(keyword, login);
             if (searchNotification != null &&  !searchNotification.isEmpty()) {
+                searchNotification = searchNotification.stream()
+                .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
+                .collect(Collectors.toList());
+
                 searchNotification.forEach(u -> {
                     searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
                 });
             } else {
                 Optional<List<Notification>> all = notificationService.findAll();
                 if (all.isPresent()) {
-                    searchNotification = all.get();
+                    searchNotification = all.get().stream()
+                    .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
+                    .collect(Collectors.toList());
+
                     searchNotification.forEach(u -> {
                         if (u.getUser().getLogin().equals(login))
                             searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
@@ -221,12 +236,19 @@ public class SearchController {
             // notice
             List<Notice> notices = genericRepositoryPostgres.searchNotice(keyword);
             if (!notices.isEmpty()) {
+                notices = notices.stream()
+                    .sorted(Comparator.comparing(Notice::getDate).reversed())
+                    .collect(Collectors.toList());
                 notices.forEach(u -> {
                 	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
                 });
             } else {
                 Optional<List<Notice>> result = noticeService.findAll();
                 if (result.isPresent() &&  !result.get().isEmpty()) {
+                    notices = result.get().stream()
+                    .sorted(Comparator.comparing(Notice::getDate).reversed())
+                    .collect(Collectors.toList());
+
                     result.get().forEach(u -> {
                     	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
                     });

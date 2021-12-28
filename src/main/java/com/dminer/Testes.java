@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.FileReader;
@@ -24,80 +25,32 @@ import com.google.gson.reflect.TypeToken;
 public class Testes {
 
 	public static void main2(String[] args) {
-		
-//		Gson gson = new Gson();
-//		Container container = createOutputData();
-//		try (FileWriter writer = new FileWriter("C:\\Users\\rhuan\\Desktop\\object-json.json")) {
-//            gson.toJson(container, writer);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-		
-		
-		
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (Reader reader = new FileReader("C:\\Users\\rhuan\\Desktop\\example-data.json")) {		
-        	Container staff = gson.fromJson(reader, Container.class);
-        	System.out.println(staff);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+		List<Pessoa> pessoas = new ArrayList<>();
+		Pessoa p1 = new Pessoa(1, "Rhuan");
+		Pessoa p2 = new Pessoa(2, "Pablo");
+		Pessoa p3 = new Pessoa(3, "Cesario");
+
+		pessoas.add(p1);
+		pessoas.add(p2);
+		pessoas.add(p3);
+
+		pessoas.forEach(p -> {
+			if (pessoas.contains(new Pessoa(4, "Cesario 222"))) {
+				System.out.println("Existe");
+			}
+		});
 	}
-	
-	
-	private static Container createOutputData() {
-		Usuario usuario = new Usuario("rhuan.pablo", "123abc", "11/04/1995", "rhuan@email.com", "linkedin/rhuan", "TI");
-		Result result = new Result();
-		result.usuarios.add(usuario);
-		Output output = new Output();
-		output.result = result;
-		Container container = new Container(output);
-		return container;
-	}
-	
+		
 }
 
-@ToString
-class Container {
-	Output output;
-	public Container(Output output) {
-		this.output = output;
-	}
-}
+@EqualsAndHashCode(of = {"id"})
+class Pessoa {
+	int id;
+	String nome;
 
-@ToString
-class Output {
-	public Output() {
-		messages = new ArrayList<>();
+	public Pessoa(int id, String nome) {
+		this.id = id;
+		this.nome = nome;
 	}
-    List<String> messages;
-    Result result;
-    
-}
-
-@ToString
-class Result {
-	public Result() {
-		usuarios = new ArrayList<>();
-	}
-	List<Usuario> usuarios;
-}
-
-@ToString
-class Usuario {
-	public Usuario(String login, String token, String birthDate, String email, String linkedinUrl, String area) {
-		this.login = login;
-		this.token = token;
-		this.birthDate = birthDate;
-		this.email = email;
-		this.linkedinUrl = linkedinUrl;
-		this.area = area;		
-	}
-	String login;
-	String token;
-    String birthDate;
-    String email;
-    String linkedinUrl;
-    String area;
-    byte[] avatar;
 }

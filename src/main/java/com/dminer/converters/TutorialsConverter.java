@@ -20,10 +20,6 @@ public class TutorialsConverter {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Autowired
-    private PermissionRepository permissionRepository;
-
-    
     public TutorialsDTO entityToDTO(Tutorials entity) {
         TutorialsDTO dto = new TutorialsDTO();
         dto.setId(entity.getId());
@@ -32,10 +28,8 @@ public class TutorialsConverter {
         dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
         dto.setImage(entity.getImage());
         dto.setPermission(entity.getPermission());
-        // if (entity.getPermission() != null)
-        //     dto.setPermission(entity.getPermission().getId());
         if (entity.getCategory() != null)
-            dto.setCategory(entity.getCategory().getId());        
+            dto.setCategory(entity.getCategory().getTitle());        
         return dto;
     }
 
@@ -46,15 +40,10 @@ public class TutorialsConverter {
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
         c.setPermission(dto.getPermission());
-        // if (dto.getPermission() != null) {
-        //     Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
-        //     if (findById.isPresent())
-        //         c.setPermission(findById.get());
-        // }
         if (dto.getCategory() != null) {
-            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
-            if (findById2.isPresent())
-                c.setCategory(findById2.get());
+            Optional<Category> category = categoryRepository.findByTitle(dto.getCategory());
+            if (category.isPresent())
+                c.setCategory(category.get());
         }
         c.setImage(dto.getImage());
         return c;
@@ -66,16 +55,10 @@ public class TutorialsConverter {
         c.setContent(dto.getContent() != null ? dto.getContent() : "");
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
         c.setPermission(dto.getPermission());
-
-        // if (dto.getPermission() != null) {
-        //     Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
-        //     if (findById.isPresent())
-        //         c.setPermission(findById.get());
-        // }
         if (dto.getCategory() != null) {
-            Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
-            if (findById2.isPresent())
-                c.setCategory(findById2.get());
+            Optional<Category> category = categoryRepository.findByTitle(dto.getCategory());
+            if (category.isPresent())
+                c.setCategory(category.get());
         }
         c.setImage(dto.getImage());
         return c;

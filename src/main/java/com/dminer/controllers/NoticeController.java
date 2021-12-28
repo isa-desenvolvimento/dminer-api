@@ -1,8 +1,10 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -201,14 +203,20 @@ public class NoticeController {
         
         Response<List<NoticeDTO>> response = new Response<>();
 
-        Optional<List<Notice>> user = avisosService.findAll();
-        if (user.get().isEmpty()) {
+        Optional<List<Notice>> userOpt = avisosService.findAll();
+        if (userOpt.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
+        List<Notice> user = userOpt.get();
+        
+        user = user.stream()
+		.sorted(Comparator.comparing(Notice::getDate).reversed())
+		.collect(Collectors.toList());
+
         List<NoticeDTO> eventos = new ArrayList<>();
-        user.get().forEach(u -> {
+        user.forEach(u -> {
             eventos.add(avisosConverter.entityToDTO(u));
         });
         response.setData(eventos);

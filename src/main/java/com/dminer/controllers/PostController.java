@@ -306,7 +306,7 @@ public class PostController {
 	}
 
 
-	@PostMapping(value = "/drop-storage")
+	// @PostMapping(value = "/drop-storage")
 	public boolean dropStorage() {
 		fileStorageService.delete(Paths.get(ROOT_UPLOADS));
 		return !fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS));
@@ -365,6 +365,7 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
+
 
 		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
 		dto.setUser(user);
@@ -463,7 +464,7 @@ public class PostController {
         
 		optUser.get().setAvatar(userService.getAvatarBase64ByLogin(optUser.get().getLogin()));
         
-        List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(id, date, userId);
+        List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
         PostDTO dto = postToDto(optPost.get(), comments);
         
@@ -481,55 +482,40 @@ public class PostController {
         
         Response<List<PostDTO>> response = new Response<>();
         
-		Optional<User> opt = null;
-		Integer userId = null;
+		Optional<User> userOpt = Optional.empty();
 
-		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+		UserRestModel userRestModel = null;
 
 		if (user != null && !user.isBlank()) {
-			opt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
-			if (!opt.isPresent()) {
+			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+			userOpt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
+			if (!userOpt.isPresent()) {
 				response.getErrors().add("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
-			}
-			userId = opt.get().getId();
+			}			
 		}
         
-        List<Comment> comm = genericRepositoryPostgres.searchCommentsByDateAndUser(date, userId);
-        List<PostDTO> postsDto = new ArrayList<>();
-		List<Post> posts = new ArrayList<>();
-        List<Integer> idsPosts = new ArrayList<>();
-        
-        // organizando os ids Post para não precisar recuperar do banco o mesmo Post toda vez
-        comm.forEach(c -> {
-        	if (idsPosts.contains(c.getPost().getId()) == false) {
-        		idsPosts.add(c.getPost().getId());
-        	}
-        });
-        
-        
-        // pelos posts vou verificando na coleção de comentários quais pertecem ao post
-		for (Integer integer : idsPosts) {
-			Optional<Post> p = postService.findById(integer);
-			posts.add(p.get());
-		}
-        
+        List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
+
 		// ordenar do mais novo pro mais antigo
 		posts = posts.stream()
 		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
 		.collect(Collectors.toList());
-		
 
+		List<PostDTO> postsDto = new ArrayList<>();
+        
 		// "casar" os comentários com seus respectivos posts
-		posts.forEach(p ->  {
+		for (Post p : posts) {
+			List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
+			
 			PostDTO dto = postToDto(p, null);
-			comm.forEach(c -> {
-				if (c.getPost().getId() == p.getId()) {
-					dto.getComments().add(commentConverter.entityToDTO(c));
-				}
+			comms.forEach(c -> {
+				// CommentDTO commDto = commentConverter.entityToDTO(c);
+				// dto.getComments().add(commDto);
 			});
+			
 			postsDto.add(dto);
-		});
+		}
 
         response.setData(postsDto);
         return ResponseEntity.ok().body(response);
