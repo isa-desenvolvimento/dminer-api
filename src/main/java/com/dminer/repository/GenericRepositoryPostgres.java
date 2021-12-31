@@ -359,6 +359,7 @@ public class GenericRepositoryPostgres {
             e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
+            e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
             PostType type = PostType.valueOf(rs.getString("TYPE"));
             e.setType(type);
             return e;
@@ -372,6 +373,7 @@ public class GenericRepositoryPostgres {
     					"   notificati0_.id as id, " +
     					"   notificati0_.active as active, " +
     					"   notificati0_.notification as notification, " +
+                        "   notificati0_.create_date as create_date, " +
     					"   notificati0_.user_id as user_id " +
     					"from " +
     					"   notification notificati0_ cross  " +
@@ -393,6 +395,7 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setActive(rs.getBoolean("ACTIVE"));
             e.setNotification(rs.getString("NOTIFICATION"));
+            e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
             Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
             if (findById.isPresent())
                 e.setUser(findById.get());
@@ -425,6 +428,7 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setActive(rs.getBoolean("ACTIVE"));
             e.setReminderDescrible(rs.getString("REMINDER_DESCRIBLE"));
+            e.setDate(rs.getTimestamp("DATE"));
             Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
             if (findById.isPresent())
                 e.setUser(findById.get());
@@ -451,6 +455,7 @@ public class GenericRepositoryPostgres {
             e.setId(rs.getInt("ID"));
             e.setContentLink(rs.getString("CONTENT_LINK"));
             e.setTitle(rs.getString("TITLE"));
+            e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
             // Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
             // if (p.isPresent())
             //     e.setPermission(p.get());

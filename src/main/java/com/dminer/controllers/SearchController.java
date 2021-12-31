@@ -187,6 +187,7 @@ public class SearchController {
             
             // reminder
             List<Reminder> searchReminder = genericRepositoryPostgres.searchReminder(keyword, login);
+            
             if (searchReminder != null && !searchReminder.isEmpty()) {
                 searchReminder = searchReminder.stream()
                 .sorted(Comparator.comparing(Reminder::getDate).reversed())

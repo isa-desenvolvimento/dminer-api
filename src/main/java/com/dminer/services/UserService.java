@@ -178,6 +178,12 @@ public class UserService implements IUserService {
 	}
 
     
+	public void atualizarPermissaoApiExterna(User user, Integer permissao) {
+		
+	}
+
+
+
     public UserRestModel carregarUsuariosApi(String token) {
     	
 		log.info("Recuperando todos os usuários na api externa");
