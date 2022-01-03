@@ -43,6 +43,7 @@ import com.dminer.components.TokenService;
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
 import com.dminer.dto.CommentDTO;
+import com.dminer.dto.LikesDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.dto.SurveyRequestDTO;
@@ -50,11 +51,13 @@ import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
+import com.dminer.entities.Like;
 import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.enums.PostType;
 import com.dminer.repository.CommentRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.LikesRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.CommentService;
@@ -95,6 +98,9 @@ public class PostController {
 	
 	@Autowired
 	private CommentRepository commentRepository;
+
+	@Autowired
+	private LikesRepository likesRepository;
 	
 	@Autowired
 	private CommentConverter commentConverter;    
@@ -126,10 +132,6 @@ public class PostController {
             result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
         }
         
-        if (dto.getLikes() == null || !UtilNumbers.isNumeric(dto.getLikes() + "")) {
-			dto.setLikes(0);
-        	//result.addError(new ObjectError("dto", "Campo likes é inválido."));
-        }
     }
 
 
@@ -150,8 +152,7 @@ public class PostController {
 		if (dto.getAnexo() != null) {
 			post.setAnexo(dto.getAnexo());
 		}
-		post.setContent(dto.getContent());
-		post.setLikes(dto.getLikes());
+		post.setContent(dto.getContent());		
 		post.setLogin(dto.getLogin());
 		post.setTitle(dto.getTitle());
 		if (dto.getType() == 1) {
@@ -182,6 +183,7 @@ public class PostController {
 	 * @return
 	 */
 	//@PostMapping(consumes = {"multipart/form-data", "text/plain"})
+	@Deprecated
 	public ResponseEntity<Response<PostDTO>> create_old( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
 		
 		log.info("----------------------------------------");
@@ -210,8 +212,8 @@ public class PostController {
 		if (postRequestDTO.getContent() != null) 
 			post.setContent(postRequestDTO.getContent());
 		
-		if (UtilNumbers.isNumeric(postRequestDTO.getLikes() + ""))
-			post.setLikes(postRequestDTO.getLikes());
+		// if (UtilNumbers.isNumeric(postRequestDTO.getLikes() + ""))
+		// 	post.setLikes(postRequestDTO.getLikes());
 
 		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty()) {
 			post.setType(PostType.valueOf(postRequestDTO.getType()));
@@ -325,8 +327,11 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		Optional<List<Comment>> comment = commentService.findByPost(post.get());		
-		response.setData(postToDto(post.get(), comment.get()));
+		Optional<List<Comment>> comment = commentService.findByPost(post.get());
+		PostDTO dto = postToDto(post.get(), comment.get());
+		dto.setLikes(getLikes(post.get()));
+
+		response.setData(dto);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
@@ -359,7 +364,10 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		dto.setLikes(post.getLikes());
+		// post.getLikes().forEach(like -> {
+		// 	dto.getLikes().add(like.getLogin());
+		// });
+
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());
 		dto.setContent(post.getContent());
@@ -403,6 +411,7 @@ public class PostController {
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
 			PostDTO dto = postToDto(post, comment.get());
+			dto.setLikes(getLikes(post));
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -429,6 +438,7 @@ public class PostController {
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
 			PostDTO dto = postToDto(post, comment.get());
+			dto.setLikes(getLikes(post));
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -472,11 +482,25 @@ public class PostController {
 
         PostDTO dto = postToDto(optPost.get(), comments);
         
+		dto.setLikes(getLikes(optPost.get()));
+
         response.setData(dto);
         return ResponseEntity.ok().body(response);
 	}
 	
 	
+	private LikesDTO getLikes(Post post) {
+		LikesDTO dtos = new LikesDTO();
+		
+		List<Like> likes = likesRepository.findByPost(post);
+		
+		if (likes != null && !likes.isEmpty()) {
+			likes.forEach(like -> {
+				dtos.getLikes().add(like.getLogin());				
+			});
+		}
+		return dtos;
+	} 
 		
 	
 	///api/post/search/all?date=&user=
@@ -508,23 +532,60 @@ public class PostController {
 
 		List<PostDTO> postsDto = new ArrayList<>();
         
-		// "casar" os comentários com seus respectivos posts
 		for (Post p : posts) {
-			List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
+			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
 			
 			PostDTO dto = postToDto(p, null);
-			comms.forEach(c -> {
+			// comms.forEach(c -> {
 				// CommentDTO commDto = commentConverter.entityToDTO(c);
 				// dto.getComments().add(commDto);
-			});
+			// });
 			
+			dto.setLikes(getLikes(p));
 			postsDto.add(dto);
 		}
+
 
         response.setData(postsDto);
         return ResponseEntity.ok().body(response);
 	}
 	
+
+	// /post/like/{id}/{login}
+	@PutMapping("/like/{id}/{login}")
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login) {
+		Response<PostDTO> response = new Response<>();
+		if (idPost == null) {
+            response.getErrors().add("Id precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+		Optional<Post> optPost = postService.findById(idPost);
+        if (!optPost.isPresent()) {
+        	response.getErrors().add("Post não encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+		
+		Post post = optPost.get();
+
+		if (likesRepository.existsByLoginAndPost(login, post)) {
+			response.getErrors().add("Este usuário já está associado a este post");
+            return ResponseEntity.badRequest().body(response);
+		}
+		
+		Like like = new Like();
+		like.setLogin(login);
+		like.setPost(post);
+		like = likesRepository.save(like);
+
+		//post.getLikes().add(like);
+		post = postService.persist(post);
+		
+		response.setData(postToDto(post, null));
+
+		return ResponseEntity.ok().body(response);
+	}
+
 	/**
 	 * Cria diretórios organizados pelo id do Post
 	 */

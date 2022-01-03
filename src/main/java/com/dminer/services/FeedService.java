@@ -89,7 +89,7 @@ public class FeedService {
     private PostDTO postToDto(Post post) {
     	PostDTO dto = new PostDTO();
 		dto.setUser(new UserReductDTO(post.getLogin()));
-		dto.setLikes(post.getLikes());
+		//dto.setLikes(post.getLikes());
 		if (post.getType() != null)
 			dto.setType(post.getType().name());
 		dto.setId(post.getId());		

@@ -21,8 +21,7 @@ public class PostDTO {
     
     private Integer id;
     private UserReductDTO user;
-//    private String login;
-    private Integer likes;
+    private LikesDTO likes;
     private String content;
     private String title;
     private String type;

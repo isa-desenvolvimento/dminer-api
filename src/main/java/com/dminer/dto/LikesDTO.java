@@ -14,13 +14,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class PostRequestDTO { 
+public class LikesDTO {
+
+    //private Integer id;
+    private List<String> likes = new ArrayList<>();
     
-	private String title;
-    private String login;
-    // private List<String> likes;
-    private String content;
-    private Integer type;
-    private String anexo;
-    //private List<CommentRequestDTO> comments = new ArrayList<>();
 }

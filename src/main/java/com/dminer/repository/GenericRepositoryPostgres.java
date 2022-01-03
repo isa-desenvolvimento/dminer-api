@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
+import com.dminer.dto.LikesDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
+import com.dminer.entities.Like;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Permission;
@@ -56,7 +58,8 @@ public class GenericRepositoryPostgres {
     @Autowired
     private CategoryRepository categoryRepository;
 
-
+    @Autowired
+    private LikesRepository likesRepository;
 
 
 
@@ -356,7 +359,7 @@ public class GenericRepositoryPostgres {
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            e.setLikes(rs.getInt("LIKES"));
+            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
@@ -549,7 +552,6 @@ public class GenericRepositoryPostgres {
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             PostType type = PostType.valueOf(rs.getString("TYPE"));
@@ -559,5 +561,5 @@ public class GenericRepositoryPostgres {
     }
 
 
-
+    
 }    

@@ -331,7 +331,7 @@ public class GenericRepositorySqlServer {
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            e.setLikes(rs.getInt("LIKES"));
+            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             PostType type = PostType.valueOf(rs.getString("TYPE"));

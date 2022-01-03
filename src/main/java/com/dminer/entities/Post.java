@@ -3,16 +3,22 @@ package com.dminer.entities;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.dminer.enums.PostType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,7 +32,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "POST")
+@Table(name = "POST"
+	//, uniqueConstraints = @UniqueConstraint(columnNames={"likes"})
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
@@ -45,8 +53,9 @@ public class Post {
 	@Column
 	private String content; 
 
-	@Column
-	private Integer likes;	
+	
+	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+	// private List<Like> likes = new ArrayList<>();
 	
     @Column(length = 9999999)
     private String anexo;
