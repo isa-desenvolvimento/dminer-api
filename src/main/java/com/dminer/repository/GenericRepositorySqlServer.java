@@ -319,8 +319,7 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM POST e " +
         "WHERE LOWER(CONCAT( " +
-           "e.content, ' ', " +
-           "e.likes, ' ', " +
+           "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
            "e.title, ' '))" +
