@@ -371,6 +371,10 @@ public class PostController {
 		dto.setUser(user);
         
 		if (comments != null && !comments.isEmpty()) {
+			comments = comments.stream()
+			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
+			.collect(Collectors.toList());
+
 			comments.forEach(comment -> {
 				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
 			});			
