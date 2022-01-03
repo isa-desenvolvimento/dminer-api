@@ -489,14 +489,14 @@ public class PostController {
 	}
 	
 	
-	private LikesDTO getLikes(Post post) {
-		LikesDTO dtos = new LikesDTO();
+	private List<String> getLikes(Post post) {
+		List<String> dtos = new ArrayList<>();
 		
 		List<Like> likes = likesRepository.findByPost(post);
 		
 		if (likes != null && !likes.isEmpty()) {
 			likes.forEach(like -> {
-				dtos.getLikes().add(like.getLogin());				
+				dtos.add(like.getLogin());
 			});
 		}
 		return dtos;

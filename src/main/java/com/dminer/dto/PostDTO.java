@@ -21,7 +21,7 @@ public class PostDTO {
     
     private Integer id;
     private UserReductDTO user;
-    private LikesDTO likes;
+    private List<String> likes = new ArrayList<>();
     private String content;
     private String title;
     private String type;
