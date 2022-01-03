@@ -24,7 +24,7 @@ public class CommentService implements ICommentService {
 
     @Override
     public Comment persist(Comment comment) {
-        log.info("Persistindo um comentário {}", comment);
+        log.info("Persistindo um comentário {}", comment.getContent());
         return commentRepository.save(comment);
     }
 
@@ -36,7 +36,7 @@ public class CommentService implements ICommentService {
 
     @Override
     public Optional<List<Comment>> findByPost(Post post) {
-        log.info("Buscando um comentário pelo Post {}", post);
+        log.info("Buscando um comentário pelo Post {} - {}", post.getId(), post.getTitle());
         return commentRepository.findByPost(post);
     }
 
