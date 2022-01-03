@@ -1,5 +1,8 @@
 package com.dminer.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -22,6 +25,8 @@ public class FullCalendarDTO {
     private String start;
     private String end;
     private Boolean allDay;
+    private String creator;
+    private List<String> users = new ArrayList<>();
 
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();

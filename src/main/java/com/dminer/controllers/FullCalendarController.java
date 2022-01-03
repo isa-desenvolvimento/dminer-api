@@ -3,6 +3,7 @@ package com.dminer.controllers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -50,15 +51,19 @@ public class FullCalendarController {
 
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
-        if (fullCalendarRequestDTO.getTitle() == null) {
+        if (fullCalendarRequestDTO.getTitle() == null || fullCalendarRequestDTO.getTitle().isBlank()) {
             result.addError(new ObjectError("fullCalendarRequestDTO", "Title precisa estar preenchido."));			
 		}
 
-        if (fullCalendarRequestDTO.getStart() == null) {
+        if (fullCalendarRequestDTO.getStart() == null || fullCalendarRequestDTO.getStart().isBlank()) {
             result.addError(new ObjectError("fullCalendarRequestDTO", "Data de inicio precisa estar preenchido."));
 		}
 
-        if (fullCalendarRequestDTO.getEnd() == null) {
+        if (fullCalendarRequestDTO.getEnd() == null || fullCalendarRequestDTO.getEnd().isBlank()) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Data de fim precisa estar preenchido."));
+		}
+
+        if (fullCalendarRequestDTO.getCreator() == null || fullCalendarRequestDTO.getCreator().isBlank()) {
             result.addError(new ObjectError("fullCalendarRequestDTO", "Data de fim precisa estar preenchido."));
 		}
 
@@ -156,4 +161,32 @@ public class FullCalendarController {
         response.setData(calendarios);
         return ResponseEntity.ok().body(response);
     }
+
+
+    @GetMapping("/all/{login}")
+    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll(@PathVariable("login") String login) {
+        
+        Response<List<FullCalendarDTO>> response = new Response<>();
+
+        Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
+        if (calendar.get().isEmpty()) {
+            response.getErrors().add("Calendários não encontrados");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        List<FullCalendar> calendarios = calendar.get();
+        calendarios = calendarios.stream()
+        .filter(cal -> cal.getCreator().equals(login))
+        .collect(Collectors.toList());
+
+        List<FullCalendarDTO> calendariosDto = new ArrayList<>();
+        
+        calendarios.forEach(u -> {
+            calendariosDto.add(fullCalendarConverter.entityToDto(u));
+        });
+        
+        response.setData(calendariosDto);
+        return ResponseEntity.ok().body(response);
+    }
+
 }
