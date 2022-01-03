@@ -222,4 +222,38 @@ public class NoticeController {
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
+
+
+    //@PathVariable("login") String login
+    @GetMapping("/all/{login}")
+    public ResponseEntity<Response<List<NoticeDTO>>> getAll(@PathVariable("login") String login) {
+        
+        Response<List<NoticeDTO>> response = new Response<>();
+
+        Optional<List<Notice>> userOpt = avisosService.findAll();
+        if (userOpt.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.status(404).body(response);
+        }
+
+        List<Notice> user = userOpt.get();
+        
+        user = user.stream()
+        .filter(u -> u.getCreator().equals(login))
+        .collect(Collectors.toList());
+
+        user = user.stream()
+		.sorted(Comparator.comparing(Notice::getDate).reversed())
+		.collect(Collectors.toList());
+
+        List<NoticeDTO> eventos = new ArrayList<>();
+        user.forEach(u -> {
+            eventos.add(avisosConverter.entityToDTO(u));
+        });
+        
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
 }
