@@ -311,7 +311,7 @@ public class UserService implements IUserService {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
     		if (image != null) {
     			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(image));
-    			System.out.println(base64AsString.substring(0, 80) + "...");
+    			log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
     			return base64AsString;
     		}
     	} catch (IOException e) {}
@@ -319,6 +319,13 @@ public class UserService implements IUserService {
     }
     
     
+	private String montarCaminhoAvatarDiretorio(String login) {
+		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
+		String name = login.replace('.', '-') + "-resized.png";
+		return root + UtilFilesStorage.separator + name;
+	}
+
+
     /**
      * Verifica se o avatar existe no diretório "avatares", caso não existe, recupera na api
      * https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=?
@@ -327,27 +334,32 @@ public class UserService implements IUserService {
      * @return String
      */
     public String getAvatarDir(String login) {
-    	try {
-    		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
-    		String name = login.replace('.', '-') + "-resized.png";
-    		String imagemRedimensionadaPath = root + UtilFilesStorage.separator + name;
+		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login);
+		
+		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
+			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
+			return imagemRedimensionadaPath;
+		}		
+		return gravarAvatarDiretorio(login);
+    }
+    
 
-    		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-    			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
-    			return imagemRedimensionadaPath;
-    		}
-    		
+	public String gravarAvatarDiretorio(String login) {
+		try {
+    		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
+			String caminho = montarCaminhoAvatarDiretorio(login);
+
     		UtilFilesStorage.createDirectory(root);
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
     		if (image != null) {
-    			UtilFilesStorage.saveImage(imagemRedimensionadaPath, image);
-    			ImageResizer.resize(imagemRedimensionadaPath, imagemRedimensionadaPath, 0.5);
-    			return imagemRedimensionadaPath;
+    			UtilFilesStorage.saveImage(caminho, image);
+    			ImageResizer.resize(caminho, caminho, 0.5);
+				return caminho;
     		}
     	} catch (IOException e) {}
-    	return null;
-    }
-    
+		return null;
+	}
+
     
     public String getAvatarBase64ByLogin(String login) {
 		String dir = this.getAvatarDir(login);

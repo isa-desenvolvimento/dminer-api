@@ -179,9 +179,7 @@ public class UserController {
         if (token != null) {
             
             List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
-            usuariosApiReduct.forEach(u -> {
-                System.out.println(u.toString());
-            });
+
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
@@ -294,7 +292,31 @@ public class UserController {
         return ResponseEntity.ok().body(response);        
     }
 
+
+    @PutMapping("/atualizar-avatar/{login}")
+    public ResponseEntity<Response<String>> atulizarAvatar( @PathVariable String login ) {
+
+        log.info("Alterando avatar do usuário {}", login);
+
+        Response<String> response = new Response<>();
+
+        if (login == null || login.isBlank()) {
+            response.getErrors().add("Login precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<User> optUser = userService.findByLogin(login);
+        if (!optUser.isPresent()) {
+            response.getErrors().add("Nenhum usuário encontrado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        String caminhoArquivo = userService.gravarAvatarDiretorio(login);
+        response.setData(caminhoArquivo);
+        return ResponseEntity.ok().body(response);        
+    }
     
+
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserDTO>>> search(@PathVariable String keyword) {
