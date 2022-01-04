@@ -183,10 +183,11 @@ public class UserService implements IUserService {
 	}
 
 
-
     public UserRestModel carregarUsuariosApi(String token) {
     	
 		log.info("Recuperando todos os usuários na api externa");
+		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
+
 
     	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";		
 		try {

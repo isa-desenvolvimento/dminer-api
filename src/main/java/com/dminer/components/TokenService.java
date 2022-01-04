@@ -25,7 +25,7 @@ public class TokenService {
         afterPropertiesSet();
     }
 
-    public void afterPropertiesSet() {
+    private void afterPropertiesSet() {
 		String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
     	RestTemplate restTemplate = new RestTemplate();
     	HttpHeaders headers = new HttpHeaders();    	
@@ -42,9 +42,10 @@ public class TokenService {
 
     public static String getToken() {
         if (token == null) {
+            log.info("Requisitando novo token do endpoint: https://www.dminerweb.com.br:8553/api/auth/login");
             new TokenService();
         }
-        log.info("Recuperando token do endpoint: https://www.dminerweb.com.br:8553/api/auth/login");
+        log.info("Token do endpoint: https://www.dminerweb.com.br:8553/api/auth/login");
         log.info(token);
         return token;
     }
