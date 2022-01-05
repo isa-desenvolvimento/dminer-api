@@ -26,7 +26,8 @@ public class FullCalendarDTO {
     private String end;
     private Boolean allDay;
     private String creator;
-    private String color;
+    private String backgroundColor;
+    private String borderColor;
     private List<String> users = new ArrayList<>();
 
     public String toJson() {

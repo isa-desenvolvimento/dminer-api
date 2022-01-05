@@ -58,7 +58,10 @@ public class FullCalendar {
     private String creator;
 
     @Column
-    private String color;
+    private String backgroundColor;
+
+    @Column
+    private String borderColor;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private List<User> users = new ArrayList<>();
