@@ -37,6 +37,7 @@ public class TokenService {
         
         String personResultAsJsonStr = restTemplate.postForObject(uri, request, String.class);
         JSONObject retorno = new JSONObject(personResultAsJsonStr);
+        System.out.println(retorno.toString());
         token =  (String) retorno.get("baererAuthentication");
     }
 

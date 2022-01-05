@@ -173,6 +173,8 @@ public class UserController {
     @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
     	
+        log.info("Dropdown: ");
+        log.info(token.getToken());
     	System.out.println(token.getToken());
     	
         Response<List<UserReductDTO>> response = new Response<>();
