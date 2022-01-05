@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -223,11 +226,12 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@RequestBody Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@RequestHeader Map<String, String> token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
+        System.out.println("\n\n" + token.get("token") + "\n\n");
+        UserRestModel users = userService.carregarUsuariosApi(token.get("token"));
 
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
