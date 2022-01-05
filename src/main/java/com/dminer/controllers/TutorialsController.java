@@ -81,7 +81,10 @@ public class TutorialsController {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("TutorialsRequestDTO", "Categoria precisa estar preenchido."));
 		} else {
-            if(!categoryRepository.existsByTitle(dto.getCategory())) {
+            // if(!categoryRepository.existsByTitle(dto.getCategory())) {
+            //     result.addError(new ObjectError("dto", "Categoria não é válida."));
+            // }
+            if(!categoryRepository.existsById(dto.getCategory())) {
                 result.addError(new ObjectError("dto", "Categoria não é válida."));
             }
         }
