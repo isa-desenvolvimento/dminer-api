@@ -23,6 +23,9 @@ public class FullCalendarConverter {
         FullCalendar e = new FullCalendar();
         e.setId(dto.getId());
         e.setAllDay(dto.getAllDay());
+        if (dto.getColor() != null && !dto.getColor().isBlank()) {
+            e.setColor(dto.getColor());
+        }
         if (!dto.getEnd().contains("1970") || !dto.getEnd().contains("1969"))
             e.setEnd(UtilDataHora.toTimestamp(dto.getEnd()));
         
@@ -43,6 +46,9 @@ public class FullCalendarConverter {
     public FullCalendar requestDtoToEntity(FullCalendarRequestDTO dto) {
         FullCalendar e = new FullCalendar();        
         e.setAllDay(dto.getAllDay());
+        if (dto.getColor() != null && !dto.getColor().isBlank()) {
+            e.setColor(dto.getColor());
+        }
         if (!dto.getEnd().contains("1970") || !dto.getEnd().contains("1969"))
             e.setEnd(UtilDataHora.toTimestamp(dto.getEnd()));
 
@@ -64,6 +70,9 @@ public class FullCalendarConverter {
         FullCalendarDTO dto = new FullCalendarDTO();
         dto.setId(e.getId());
         dto.setAllDay(e.getAllDay());
+        if (e.getColor() != null && !e.getColor().isBlank()) {
+            dto.setColor(e.getColor());
+        }
         if (e.getEnd() != null) {
             dto.setEnd(UtilDataHora.timestampToString(e.getEnd()));
             if (dto.getEnd().contains("1970") || dto.getEnd().contains("1969")) dto.setEnd(null);

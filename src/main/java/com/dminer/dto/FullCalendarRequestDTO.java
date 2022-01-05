@@ -22,5 +22,6 @@ public class FullCalendarRequestDTO {
     private String end;
     private Boolean allDay;
     private String creator;
+    private String color;
     private List<String> users = new ArrayList<>();
 }
