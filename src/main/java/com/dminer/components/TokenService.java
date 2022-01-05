@@ -41,7 +41,7 @@ public class TokenService {
         token =  (String) retorno.get("baererAuthentication");
     }
 
-    public static String getToken() {
+    public static String getToken2() {
         if (token == null) {
             log.info("Requisitando novo token do endpoint: https://www.dminerweb.com.br:8553/api/auth/login");
             new TokenService();

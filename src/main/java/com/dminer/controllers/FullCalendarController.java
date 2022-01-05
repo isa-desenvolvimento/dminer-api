@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,9 +71,41 @@ public class FullCalendarController {
         if (fullCalendarRequestDTO.getAllDay() == null) {
 			fullCalendarRequestDTO.setAllDay(false);
 		}
-
     }
     
+
+    private void validateDto(FullCalendarDTO fullCalendarRequestDTO, BindingResult result) {
+        
+        if (fullCalendarRequestDTO.getId() == null) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Id precisa estar preenchido."));			
+		} else {
+            Optional<FullCalendar> opt = fullCalendarService.findById(fullCalendarRequestDTO.getId());
+            if (!opt.isPresent()) {
+                result.addError(new ObjectError("fullCalendarRequestDTO", "Calendário não encontrado"));
+            }
+        }
+
+        if (fullCalendarRequestDTO.getTitle() == null || fullCalendarRequestDTO.getTitle().isBlank()) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Title precisa estar preenchido."));			
+		}
+
+        if (fullCalendarRequestDTO.getStart() == null || fullCalendarRequestDTO.getStart().isBlank()) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Data de inicio precisa estar preenchido."));
+		}
+
+        if (fullCalendarRequestDTO.getEnd() == null || fullCalendarRequestDTO.getEnd().isBlank()) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Data de fim precisa estar preenchido."));
+		}
+
+        if (fullCalendarRequestDTO.getCreator() == null || fullCalendarRequestDTO.getCreator().isBlank()) {
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Data de fim precisa estar preenchido."));
+		}
+
+        if (fullCalendarRequestDTO.getAllDay() == null) {
+			fullCalendarRequestDTO.setAllDay(false);
+		}
+    }
+
 
     @PostMapping
     public ResponseEntity<Response<FullCalendarDTO>> create(@Valid @RequestBody FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
@@ -86,6 +119,29 @@ public class FullCalendarController {
         }
         
         FullCalendar events = fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(fullCalendarRequestDTO));
+        FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
+        response.setData(dto);
+
+        log.info("Disparando evento de calendário");
+        sendEvents.setEventCalendar(dto);
+        sendEvents.streamSseCalendar();
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping
+    public ResponseEntity<Response<FullCalendarDTO>> put(@Valid @RequestBody FullCalendarDTO fullCalendarDTO, BindingResult result) {
+    
+		Response<FullCalendarDTO> response = new Response<>();
+        validateDto(fullCalendarDTO, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando fullCalendarRequestDTO: {}", fullCalendarDTO);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        FullCalendar events = fullCalendarService.persist(fullCalendarConverter.dtoToEntity(fullCalendarDTO));
         FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
         response.setData(dto);
 

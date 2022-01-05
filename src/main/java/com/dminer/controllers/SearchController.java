@@ -23,6 +23,7 @@ import com.dminer.converters.UserConverter;
 import com.dminer.dto.PostReductDTO;
 import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -53,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -126,10 +128,10 @@ public class SearchController {
     // }
 
     
-    private Response<List<UserDTO>> aniversariantes() {
+    private Response<List<UserDTO>> aniversariantes(String token) {
     	Response<List<UserDTO>> response = new Response<>();
 
-    	UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+    	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
 
         if (userRestModel == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -160,7 +162,7 @@ public class SearchController {
     
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword, @RequestBody Token token) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
@@ -174,7 +176,7 @@ public class SearchController {
             searchDTO.getUsersList().add(u);
         });
                 
-        Response<List<UserDTO>> aniversariantes = aniversariantes();
+        Response<List<UserDTO>> aniversariantes = aniversariantes(token.getToken());
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
                 String encodedString = userService.getAvatarBase64ByLogin(login);

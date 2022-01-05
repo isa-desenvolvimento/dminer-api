@@ -50,29 +50,6 @@ public class PermissionController {
     private PermissionConverter permissionConverter;
 
 
-    // @PostMapping(value = "/all")
-    // public ResponseEntity<Response<List<PermissionDTO>>> getAll(@RequestBody Token token) {
-        
-    //     Response<List<PermissionDTO>> response = new Response<>();
-
-    //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
-    //     if (model == null || model.hasError()) {
-    //         response.getErrors().add("Permissões não encontradas");
-    //         model.getOutput().getMessages().forEach(u -> {
-    // 			response.getErrors().add(u);
-    // 		});
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-
-    //     List<PermissionDTO> ps = new ArrayList<>();
-    //     model.getOutput().getResult().getConfigs().forEach(p -> {
-    //         ps.add(p.toPermissionDTO());
-    //     });
-    //     response.setData(ps);
-    //     return ResponseEntity.ok().body(response);
-    // }
-
-
     @PostMapping(value = "/dropdown")
     public ResponseEntity<Response<List<PermissionDTO>>> getDropDown() {
     	
@@ -93,26 +70,4 @@ public class PermissionController {
         return ResponseEntity.ok().body(response);
     }
     
-    // @PostMapping(value = "/dropdown")
-    // public ResponseEntity<Response<List<PermissionReductDTO>>> getDropDown(@RequestBody Token token) {
-    	
-    // 	Response<List<PermissionReductDTO>> response = new Response<>();
-
-    //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
-    //     if (model == null || model.hasError()) {
-    //         response.getErrors().add("Permissões não encontradas");
-    //         model.getOutput().getMessages().forEach(u -> {
-    // 			response.getErrors().add(u);
-    // 		});
-    //         return ResponseEntity.badRequest().body(response);
-    //     }
-
-    //     List<PermissionReductDTO> ps = new ArrayList<>();
-    //     model.getOutput().getResult().getConfigs().forEach(p -> {
-    //         ps.add(p.toPermissionReductDTO());
-    //     });
-    //     response.setData(ps);
-    //     return ResponseEntity.ok().body(response);
-    // }
-
 }

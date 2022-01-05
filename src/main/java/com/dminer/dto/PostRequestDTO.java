@@ -22,5 +22,6 @@ public class PostRequestDTO {
     private String content;
     private Integer type;
     private String anexo;
+    // private String token;
     //private List<CommentRequestDTO> comments = new ArrayList<>();
 }

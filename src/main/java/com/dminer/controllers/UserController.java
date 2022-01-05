@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dminer.components.TokenService;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.PermissionUserDTO;
@@ -86,7 +85,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}")
-    public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
+    public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login, @RequestBody Token token) {
         log.info("Buscando usuário {}", login);
         
         Response<UserDTO> response = new Response<>();
@@ -106,7 +105,7 @@ public class UserController {
             return ResponseEntity.ok().body(response);
         }
 
-        userDto = userService.buscarUsuarioApi(login);
+        userDto = userService.buscarUsuarioApi(login, token.getToken());
         
         if (userDto == null) {
         	return ResponseEntity.notFound().build();
@@ -173,14 +172,10 @@ public class UserController {
     @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
     	
-        log.info("Dropdown: ");
-        log.info(token.getToken());
-    	System.out.println(token.getToken());
-    	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
             
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
 
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
@@ -228,11 +223,11 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
+        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		

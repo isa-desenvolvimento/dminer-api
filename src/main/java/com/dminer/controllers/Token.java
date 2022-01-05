@@ -22,17 +22,17 @@ import lombok.RequiredArgsConstructor;
 public class Token {
 
    
-	@PostMapping()
-    public ResponseEntity<Response<String>> create(@Valid @RequestParam String senha) {
+	// @PostMapping()
+    // public ResponseEntity<Response<String>> create(@Valid @RequestParam String senha) {
 
-        Response<String> response = new Response<>();
+    //     Response<String> response = new Response<>();
 
-        if (senha == null || senha.isEmpty() || !senha.equals("Pa$$")) {
-        	response.getErrors().add("Senha inválida");
-        	return ResponseEntity.badRequest().body(response);            
-        }
-        response.setData(TokenService.getToken());
-        return ResponseEntity.ok().body(response);
-    }
+    //     if (senha == null || senha.isEmpty() || !senha.equals("Pa$$")) {
+    //     	response.getErrors().add("Senha inválida");
+    //     	return ResponseEntity.badRequest().body(response);            
+    //     }
+    //     response.setData(TokenService.getToken());
+    //     return ResponseEntity.ok().body(response);
+    // }
 	
 }

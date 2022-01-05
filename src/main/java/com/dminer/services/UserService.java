@@ -224,12 +224,12 @@ public class UserService implements IUserService {
     }
     
 
-    public List<UserReductDTO> carregarUsuariosApiReduct() {
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
 			log.info("Usuário não carregados... Tentando recuperar da api externa");
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         List<UserReductDTO> usuarios = new ArrayList<>();
@@ -251,12 +251,12 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
-    public UserDTO buscarUsuarioApi(String login) {
+    public UserDTO buscarUsuarioApi(String login, String token) {
         log.info("Recuperando todos os usuário na api externa");
         
         // UserRestModel model = carregarUsuariosApi(token);
 		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         // System.out.println(userRestModel.toString());
@@ -281,12 +281,12 @@ public class UserService implements IUserService {
     }
 
 
-	public UserReductDTO buscarUsuarioApiReduct(String login) {
+	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
 			log.info("Carregando usuário diretamente da API");
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         if (userRestModel == null || userRestModel.hasError()) {

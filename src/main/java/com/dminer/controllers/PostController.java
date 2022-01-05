@@ -47,6 +47,7 @@ import com.dminer.dto.LikesDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
@@ -138,7 +139,7 @@ public class PostController {
 	
 
 	@PostMapping()
-	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
+	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, @RequestBody Token token, BindingResult result) {
 	
 		Response<PostDTO> response = new Response<>();
 		validateRequestDto(dto, result);
@@ -161,7 +162,7 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post, null));
+		response.setData(postToDto(post, null, token.getToken()));
 		
 		post = postService.persist(post);
 
@@ -175,98 +176,7 @@ public class PostController {
 		return ResponseEntity.ok().body(response);
 	}
 	
-	
-	/**
-	 * Método para futura melhorias
-	 * @param files
-	 * @param data
-	 * @return
-	 */
-	//@PostMapping(consumes = {"multipart/form-data", "text/plain"})
-	@Deprecated
-	public ResponseEntity<Response<PostDTO>> create_old( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
-		
-		log.info("----------------------------------------");
-		log.info("Salvando um novo post {}", data);
 
-		Response<PostDTO> response = new Response<>();
-		
-		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
-		
-		// log.info("Verificando se o usuário informado existe");
-		// if (postRequestDTO.getUser().getLogin() == null ) {
-		// 	response.getErrors().add("Usuário não encontrado.");			
-		// }
-		
-		try {
-			PostType.valueOf(postRequestDTO.getType());				
-		} catch (IllegalArgumentException e) {
-			response.getErrors().add("Campo tipo é inválido.");
-		}
-		
-		if (!response.getErrors().isEmpty()) {
-			return ResponseEntity.badRequest().body(response);
-		}
-		
-		Post post = new Post();
-		if (postRequestDTO.getContent() != null) 
-			post.setContent(postRequestDTO.getContent());
-		
-		// if (UtilNumbers.isNumeric(postRequestDTO.getLikes() + ""))
-		// 	post.setLikes(postRequestDTO.getLikes());
-
-		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty()) {
-			post.setType(PostType.valueOf(postRequestDTO.getType()));
-		}
-
-		post.setLogin(postRequestDTO.getUser().getLogin());
-		post = postService.persist(post);
-
-
-		
-		String caminhoAbsoluto;
-		try {
-			caminhoAbsoluto = criarDiretorio(post.getId());
-		} catch(IOException e) {
-			rollback(post, null, null);
-			response.getErrors().add(e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		List<FileInfo> anexos = new ArrayList<>();
-
-		Path path = Paths.get(caminhoAbsoluto);
-		if (files != null && files.length > 0) {
-			List<MultipartFile> array = Arrays.asList(files);			
-			
-			Optional<FileInfo> info = Optional.empty();
-			
-			for (MultipartFile multipartFile : array) {
-				String arquivoUrl = caminhoAbsoluto + "\\" + multipartFile.getOriginalFilename();
-				
-				if (fileStorageService.existsDirectory(Paths.get(arquivoUrl))) {
-					log.info("Diretório já existe no storage = {}", arquivoUrl);
-					info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
-					
-				} else {
-					if(fileStorageService.save(multipartFile, path)) {
-						log.info("Salvando novo arquivo no storage {}", arquivoUrl);
-						info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
-					}
-				}
-				
-				if (info.isPresent()) {
-					anexos.add(info.get());
-				}
-			}
-		}
-		
-		Post temp = postService.persist(post);
-		log.info("Adicionando anexos ao post e atualizando. {}", temp);
-		
-		///response.setData(postToDto(temp, anexos, null));
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
     
 	
 	@DeleteMapping(value = "/{id}")
@@ -316,7 +226,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get(@PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@PathVariable("id") int id, @RequestBody Token token) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
@@ -328,7 +238,7 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get());
+		PostDTO dto = postToDto(post.get(), comment.get(), token.getToken());
 		dto.setLikes(getLikes(post.get()));
 
 		response.setData(dto);
@@ -362,11 +272,8 @@ public class PostController {
 
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<Comment> comments, String token) {
 		PostDTO dto = new PostDTO();
-		// post.getLikes().forEach(like -> {
-		// 	dto.getLikes().add(like.getLogin());
-		// });
 
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());
@@ -375,7 +282,7 @@ public class PostController {
 		dto.setAnexo(post.getAnexo());
 
 
-		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
+		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), token);      	
 		dto.setUser(user);
         
 		if (comments != null && !comments.isEmpty()) {
@@ -392,7 +299,7 @@ public class PostController {
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@PathVariable("login") String login, @RequestBody Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -410,7 +317,7 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setLikes(getLikes(post));
 			response.getData().add(dto);
 		}
@@ -419,7 +326,7 @@ public class PostController {
 	
 	
 	@GetMapping()
-	public ResponseEntity<Response<List<PostDTO>>> getAll() {
+	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestBody Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -437,7 +344,7 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setLikes(getLikes(post));
 			response.getData().add(dto);
 		}
@@ -446,7 +353,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user, @RequestBody Token token) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -467,7 +374,7 @@ public class PostController {
 		
 		Optional<User> optUser = null;
 		Integer userId = null;
-		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+		UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
@@ -480,7 +387,7 @@ public class PostController {
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto(optPost.get(), comments);
+        PostDTO dto = postToDto(optPost.get(), comments, token.getToken());
         
 		dto.setLikes(getLikes(optPost.get()));
 
@@ -506,7 +413,7 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user, @RequestBody Token token) {
         
         Response<List<PostDTO>> response = new Response<>();
         
@@ -515,7 +422,7 @@ public class PostController {
 		UserRestModel userRestModel = null;
 
 		if (user != null && !user.isBlank()) {
-			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+			userRestModel = userService.carregarUsuariosApi(token.getToken());
 			userOpt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!userOpt.isPresent()) {
 				response.getErrors().add("Nenhum usuário encontrado");
@@ -535,7 +442,7 @@ public class PostController {
 		for (Post p : posts) {
 			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
 			
-			PostDTO dto = postToDto(p, null);
+			PostDTO dto = postToDto(p, null, token.getToken());
 			// comms.forEach(c -> {
 				// CommentDTO commDto = commentConverter.entityToDTO(c);
 				// dto.getComments().add(commDto);
@@ -553,7 +460,7 @@ public class PostController {
 
 	// /post/like/{id}/{login}
 	@PutMapping("/like/{id}/{login}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login) {
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @RequestBody Token token) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
@@ -581,7 +488,7 @@ public class PostController {
 		//post.getLikes().add(like);
 		post = postService.persist(post);
 		
-		response.setData(postToDto(post, null));
+		response.setData(postToDto(post, null, token.getToken()));
 
 		return ResponseEntity.ok().body(response);
 	}
