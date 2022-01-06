@@ -16,5 +16,7 @@ public interface ReactUserRepository extends JpaRepository<ReactUser, Integer> {
     
     Boolean existsByLoginAndPost(String login, Post post);
 
+    ReactUser findByLoginAndPost(String login, Post post);
+
     List<ReactUser> findByPost(Post post);
 }

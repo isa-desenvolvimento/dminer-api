@@ -592,8 +592,12 @@ public class PostController {
 		Post post = optPost.get();
 
 		if (reactUserRepository.existsByLoginAndPost(login, post)) {
-			response.getErrors().add("Este usuário já está associado a este post");
-            return ResponseEntity.badRequest().body(response);
+			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
+			reactUserRepository.deleteById(reactUser.getId());
+			return ResponseEntity.ok().build();
+			
+			// response.getErrors().add("Este usuário já está associado a este post");
+            // return ResponseEntity.badRequest().body(response);
 		}
 		
 		React reactObj = reactRepository.findByReact(react);
