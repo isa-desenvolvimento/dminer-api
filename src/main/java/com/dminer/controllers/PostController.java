@@ -504,13 +504,17 @@ public class PostController {
 	private Map<String, List<String>> getReacts(Post post) {
 		Map<String, List<String>> dto = new HashMap<>();
 		
-		List<ReactUser> likes = reactUserRepository.findByPost(post);
+		List<React> reacts = reactRepository.findAll();
+		reacts.forEach(react -> {
+			dto.put(react.getReact(), new ArrayList<String>());
+		});
+
+		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
 		
-		if (likes != null && !likes.isEmpty()) {
-			likes.forEach(like -> {
+		if (reactsUsers != null && !reactsUsers.isEmpty()) {
+			reactsUsers.forEach(like -> {
 				String login = like.getLogin();
 				String react = like.getReact().getReact();
-
 				if (dto.containsKey(react)) {
 					dto.get(react).add(login);
 				} else {
