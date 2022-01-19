@@ -1,0 +1,25 @@
+#Windows
+
+#Passo 1 - Baixar a imagem docker do mssql 2019
+docker pull mcr.microsoft.com/mssql/server:2019-latest
+
+#Passo 2 - Configurar user/password do banco de dados
+docker run -d --name dminer-db -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Dm!ner@2022" -p 1433:1433 mcr.microsoft.com/mssql/server:2019-latest
+
+#Passo 3 - Subir o container
+docker exec -it dminer-db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Dm!ner@2022
+
+
+
+#Linux
+#Passo 1 - Baixar a imagem docker do mssql 2019
+sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
+
+#Passo 2 - Configurar user/password do banco de dados e subir o container
+sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Dm!ner@2022" \
+   -p 1433:1433 --name dminer-db -h dminer-db \
+   -d mcr.microsoft.com/mssql/server:2019-latest
+
+# referencias:
+https://hub.docker.com/_/microsoft-mssql-server
+https://docs.microsoft.com/pt-pt/sql/linux/quickstart-install-connect-docker?view=sql-server-ver15&pivots=cs1-bash

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -119,7 +120,7 @@ public class UserController {
 
     @PostMapping(value = "/all")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (token == null) { 
