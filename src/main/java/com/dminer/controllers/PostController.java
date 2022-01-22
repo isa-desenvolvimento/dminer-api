@@ -326,7 +326,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get( @PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
@@ -435,7 +435,7 @@ public class PostController {
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser( @PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -493,7 +493,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById( @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -514,7 +514,7 @@ public class PostController {
 		
 		Optional<User> optUser = null;
 		Integer userId = null;
-		UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
+		UserRestModel userRestModel = userService.carregarUsuariosApi();
 
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
@@ -564,7 +564,7 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll( @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         

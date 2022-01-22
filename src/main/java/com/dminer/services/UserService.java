@@ -169,6 +169,11 @@ public class UserService implements IUserService {
         return Optional.empty();
 	}
 
+
+	public UserRestModel carregarUsuariosApi() {
+		return carregarUsuariosApi(TokenService.getToken());
+	}
+
 	/**
 	 * Consulta a api externa da dminer para recuperar todos os usuários
 	 * @param token
