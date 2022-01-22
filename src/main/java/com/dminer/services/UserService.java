@@ -336,12 +336,12 @@ public class UserService implements IUserService {
      * @return String
      */
     public String getAvatarDir(String login) {
-		// String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login); 
+		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login); 
 		
-		// if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-		// 	System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath); 
-		// 	return imagemRedimensionadaPath;
-		// }
+		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
+			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath); 
+			return imagemRedimensionadaPath;
+		}
 		return gravarAvatarDiretorio(login);
     }
     
