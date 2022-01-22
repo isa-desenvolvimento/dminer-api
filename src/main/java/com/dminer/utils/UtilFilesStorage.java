@@ -61,9 +61,9 @@ public class UtilFilesStorage {
     		
     		Path path = Paths.get(pathAbsolute);
     		Path path2 = path.resolve(pathAbsolute);
-    		if (! Files.exists(path2)) {    			
+    		//if (! Files.exists(path2)) {    			
     			Files.copy(is, path2);
-    		}
+    		//}
     	} catch (Exception e) {}
     }
     

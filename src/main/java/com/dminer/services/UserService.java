@@ -58,7 +58,7 @@ public class UserService implements IUserService {
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 
-	private UserRestModel userRestModel;
+	private UserRestModel userRestModel = new UserRestModel();
 	
 
 
@@ -358,7 +358,7 @@ public class UserService implements IUserService {
     		BufferedImage image = ImageIO.read(new URL(url));
     		if (image != null) {
     			UtilFilesStorage.saveImage(caminho, image);
-    			// ImageResizer.resize(caminho, caminho, 0.5); 
+    			// ImageResizer.resize(caminho, caminho, 0.5);  
 				return caminho;
     		}
     	} catch (IOException e) {}
