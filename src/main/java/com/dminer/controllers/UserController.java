@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+import javax.ws.rs.HeaderParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,7 @@ public class UserController {
     
     @PostMapping(value = "/dropdown")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
     	
         log.info("Dropdown: ");
         log.info(token.getToken());
@@ -181,7 +182,7 @@ public class UserController {
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
             
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
 
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             

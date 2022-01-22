@@ -224,12 +224,12 @@ public class UserService implements IUserService {
     }
     
 
-    public List<UserReductDTO> carregarUsuariosApiReduct() {
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
 			log.info("Usuário não carregados... Tentando recuperar da api externa");
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         List<UserReductDTO> usuarios = new ArrayList<>();
