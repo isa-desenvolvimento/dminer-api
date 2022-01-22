@@ -169,7 +169,7 @@ public class SearchController {
 
         List<UserDTO> searchUsers = userService.search(keyword);           
         searchUsers.forEach(u -> {        	
-        	String encodedString = userService.getAvatarBase64ByLogin(login);
+        	String encodedString = userService.getAvatarBase64ByLogin(u.getLogin());
         	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
@@ -177,8 +177,8 @@ public class SearchController {
         Response<List<UserDTO>> aniversariantes = aniversariantes();
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
-                // String encodedString = userService.getAvatarBase64ByLogin(login);
-        	    // ani.setAvatar(encodedString);
+                String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
+        	    ani.setAvatar(encodedString);
         		searchDTO.getBirthdayList().add(ani);
         	});
         }

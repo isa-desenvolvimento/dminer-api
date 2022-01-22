@@ -260,10 +260,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        // aniversariantes.forEach(a -> {
-        //     String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
-        //     a.setAvatar(avatar);
-        // });
+        aniversariantes.forEach(a -> {
+            String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
+            a.setAvatar(avatar);
+        });
+        
 
         response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
