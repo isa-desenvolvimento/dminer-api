@@ -333,11 +333,10 @@ public class UserController {
         
         List<UserDTO> userList = userService.search(keyword);
         userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());            
-            if (avatarPath != null) {
-            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
-            	u.setAvatar(avatarBase64);
-            }            
+            String avatar = userService.getAvatarBase64ByLogin(u.getLogin());
+            if (avatar != null) {            	
+            	u.setAvatar(avatar);
+            }        	         
         });       
         
         response.setData(userList);
