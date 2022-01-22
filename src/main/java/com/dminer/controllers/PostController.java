@@ -10,7 +10,9 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,19 +48,22 @@ import com.dminer.dto.CommentDTO;
 import com.dminer.dto.LikesDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
+import com.dminer.dto.ReactDTO;
 import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.FileInfo;
-import com.dminer.entities.Like;
+import com.dminer.entities.ReactUser;
 import com.dminer.entities.Post;
+import com.dminer.entities.React;
 import com.dminer.entities.User;
 import com.dminer.enums.PostType;
 import com.dminer.repository.CommentRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
-import com.dminer.repository.LikesRepository;
+import com.dminer.repository.ReactRepository;
+import com.dminer.repository.ReactUserRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.CommentService;
@@ -101,7 +106,10 @@ public class PostController {
 	private CommentRepository commentRepository;
 
 	@Autowired
-	private LikesRepository likesRepository;
+	private ReactRepository reactRepository;
+
+	@Autowired
+	private ReactUserRepository reactUserRepository;
 	
 	@Autowired
 	private CommentConverter commentConverter;    
@@ -176,6 +184,52 @@ public class PostController {
 		return ResponseEntity.ok().body(response);
 	}
 	
+<<<<<<< HEAD
+=======
+	
+	/**
+	 * Método para futura melhorias
+	 * @param files
+	 * @param data
+	 * @return
+	 */
+	//@PostMapping(consumes = {"multipart/form-data", "text/plain"})
+	@Deprecated
+	public ResponseEntity<Response<PostDTO>> create_old( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
+		
+		log.info("----------------------------------------");
+		log.info("Salvando um novo post {}", data);
+
+		Response<PostDTO> response = new Response<>();
+		
+		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
+		
+		// log.info("Verificando se o usuário informado existe");
+		// if (postRequestDTO.getUser().getLogin() == null ) {
+		// 	response.getErrors().add("Usuário não encontrado.");			
+		// }
+		
+		try {
+			PostType.valueOf(postRequestDTO.getType());				
+		} catch (IllegalArgumentException e) {
+			response.getErrors().add("Campo tipo é inválido.");
+		}
+		
+		if (!response.getErrors().isEmpty()) {
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		Post post = new Post();
+		if (postRequestDTO.getContent() != null) 
+			post.setContent(postRequestDTO.getContent());
+		
+		// if (UtilNumbers.isNumeric(postRequestDTO.getReacts() + ""))
+		// 	post.setReacts(postRequestDTO.getReacts());
+
+		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty()) {
+			post.setType(PostType.valueOf(postRequestDTO.getType()));
+		}
+>>>>>>> develop
 
     
 	
@@ -238,8 +292,13 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
+<<<<<<< HEAD
 		PostDTO dto = postToDto(post.get(), comment.get(), token.getToken());
 		dto.setLikes(getLikes(post.get()));
+=======
+		PostDTO dto = postToDto(post.get(), comment.get());
+		dto.setReacts(getReacts(post.get()));
+>>>>>>> develop
 
 		response.setData(dto);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -274,6 +333,12 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<Comment> comments, String token) {
 		PostDTO dto = new PostDTO();
+<<<<<<< HEAD
+=======
+		// post.getReacts().forEach(like -> {
+		// 	dto.getReacts().add(like.getLogin());
+		// });
+>>>>>>> develop
 
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());
@@ -317,8 +382,13 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
+<<<<<<< HEAD
 			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setLikes(getLikes(post));
+=======
+			PostDTO dto = postToDto(post, comment.get());
+			dto.setReacts(getReacts(post));
+>>>>>>> develop
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -344,12 +414,21 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
+<<<<<<< HEAD
 			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setLikes(getLikes(post));
+=======
+			PostDTO dto = postToDto(post, comment.get());
+			dto.setReacts(getReacts(post));
+>>>>>>> develop
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+
+
+	
+
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
@@ -389,24 +468,35 @@ public class PostController {
 
         PostDTO dto = postToDto(optPost.get(), comments, token.getToken());
         
-		dto.setLikes(getLikes(optPost.get()));
+		dto.setReacts(getReacts(optPost.get()));
 
         response.setData(dto);
         return ResponseEntity.ok().body(response);
 	}
 	
 	
-	private List<String> getLikes(Post post) {
-		List<String> dtos = new ArrayList<>();
+	private Map<String, List<String>> getReacts(Post post) {
+		Map<String, List<String>> dto = new HashMap<>();
 		
-		List<Like> likes = likesRepository.findByPost(post);
+		List<React> reacts = reactRepository.findAll();
+		reacts.forEach(react -> {
+			dto.put(react.getReact(), new ArrayList<String>());
+		});
+
+		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
 		
-		if (likes != null && !likes.isEmpty()) {
-			likes.forEach(like -> {
-				dtos.add(like.getLogin());
+		if (reactsUsers != null && !reactsUsers.isEmpty()) {
+			reactsUsers.forEach(like -> {
+				String login = like.getLogin();
+				String react = like.getReact().getReact();
+				if (dto.containsKey(react)) {
+					dto.get(react).add(login);
+				} else {
+					dto.put(react, Arrays.asList(login));
+				}
 			});
 		}
-		return dtos;
+		return dto;
 	} 
 		
 	
@@ -448,7 +538,7 @@ public class PostController {
 				// dto.getComments().add(commDto);
 			// });
 			
-			dto.setLikes(getLikes(p));
+			dto.setReacts(getReacts(p));
 			postsDto.add(dto);
 		}
 
@@ -459,8 +549,13 @@ public class PostController {
 	
 
 	// /post/like/{id}/{login}
+<<<<<<< HEAD
 	@PutMapping("/like/{id}/{login}")
 	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @RequestBody Token token) {
+=======
+	@PutMapping("/like/{id}/{login}/{react}")
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react) {
+>>>>>>> develop
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
@@ -475,20 +570,32 @@ public class PostController {
 		
 		Post post = optPost.get();
 
-		if (likesRepository.existsByLoginAndPost(login, post)) {
-			response.getErrors().add("Este usuário já está associado a este post");
-            return ResponseEntity.badRequest().body(response);
+		if (reactUserRepository.existsByLoginAndPost(login, post)) {
+			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
+			reactUserRepository.deleteById(reactUser.getId());
+			return ResponseEntity.ok().build();
+			
+			// response.getErrors().add("Este usuário já está associado a este post");
+            // return ResponseEntity.badRequest().body(response);
 		}
 		
-		Like like = new Like();
-		like.setLogin(login);
-		like.setPost(post);
-		like = likesRepository.save(like);
+		React reactObj = reactRepository.findByReact(react);
+		ReactUser reactUser = new ReactUser();
+		reactUser.setLogin(login);
+		reactUser.setPost(post);
+		reactUser.setReact(reactObj);
+		reactUser = reactUserRepository.save(reactUser);
 
-		//post.getLikes().add(like);
+		//post.getReacts().add(like);
 		post = postService.persist(post);
+<<<<<<< HEAD
 		
 		response.setData(postToDto(post, null, token.getToken()));
+=======
+		PostDTO dto = postToDto(post, null);
+		dto.setReacts(getReacts(post));
+		response.setData(dto);
+>>>>>>> develop
 
 		return ResponseEntity.ok().body(response);
 	}

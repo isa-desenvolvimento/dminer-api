@@ -1,7 +1,9 @@
 package com.dminer.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +23,7 @@ public class PostDTO {
     
     private Integer id;
     private UserReductDTO user;
-    private List<String> likes = new ArrayList<>();
+    private Map<String, List<String>> reacts = new HashMap<>();
     private String content;
     private String title;
     private String type;

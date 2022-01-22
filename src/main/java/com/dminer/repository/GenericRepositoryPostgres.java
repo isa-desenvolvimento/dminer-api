@@ -18,7 +18,7 @@ import com.dminer.entities.Category;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
-import com.dminer.entities.Like;
+import com.dminer.entities.ReactUser;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Permission;
@@ -59,7 +59,7 @@ public class GenericRepositoryPostgres {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private LikesRepository likesRepository;
+    private ReactUserRepository likesRepository;
 
 
 
