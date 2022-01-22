@@ -260,10 +260,10 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        aniversariantes.forEach(a -> {
-            String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
-            a.setAvatar(avatar);
-        });
+        // aniversariantes.forEach(a -> {
+        //     String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
+        //     a.setAvatar(avatar);
+        // });
 
         response.setData(aniversariantes);
         return ResponseEntity.ok().body(response);
@@ -333,10 +333,10 @@ public class UserController {
         
         List<UserDTO> userList = userService.search(keyword);
         userList.forEach(u -> {
-            String avatar = userService.getAvatarBase64ByLogin(u.getLogin());
-            if (avatar != null) {            	
-            	u.setAvatar(avatar);
-            }        	         
+            // String avatar = userService.getAvatarBase64ByLogin(u.getLogin());
+            // if (avatar != null) {            	
+            // 	u.setAvatar(avatar);
+            // }        	         
         });       
         
         response.setData(userList);
