@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.6.0-SNAPSHOT</version>
-		<relativePath />
+		<!-- <relativePath /> -->
 	</parent>
 	
 	<groupId>com.dminer</groupId>
@@ -16,7 +16,7 @@
 	<name>dminer</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>15</java.version>
 	</properties>
 
 	<dependencies>
