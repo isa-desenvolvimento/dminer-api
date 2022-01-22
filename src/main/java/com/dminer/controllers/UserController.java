@@ -120,7 +120,7 @@ public class UserController {
 
     @PostMapping(value = "/all")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (token == null) { 
