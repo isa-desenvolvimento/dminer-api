@@ -362,6 +362,7 @@ public class UserService implements IUserService {
 				return caminho;
     		}
     	} catch (IOException e) {}
+		log.error("Nenhum avatar recuperado para o login: {}", login);
 		return null;
 	}
 
