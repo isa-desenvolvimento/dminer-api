@@ -189,7 +189,7 @@ public class UserService implements IUserService {
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
 
 
-    	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";		
+    	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
 		try {
 			URL url = new URL(uri);
 			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
@@ -337,10 +337,10 @@ public class UserService implements IUserService {
     public String getAvatarDir(String login) {
 		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login);
 		
-		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
-			return imagemRedimensionadaPath;
-		}		
+		// if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
+		// 	System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
+		// 	return imagemRedimensionadaPath;
+		// }
 		return gravarAvatarDiretorio(login);
     }
     

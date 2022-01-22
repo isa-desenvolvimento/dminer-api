@@ -230,11 +230,11 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
+        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -249,7 +249,7 @@ public class UserController {
         }
         
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        users.getOutput().getResult().getUsuarios().forEach(u -> {        	
+        users.getOutput().getResult().getUsuarios().forEach(u -> {
         	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
         		aniversariantes.add(u.toUserDTO());
         	}
