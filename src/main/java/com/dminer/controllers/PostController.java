@@ -610,8 +610,8 @@ public class PostController {
 	
 
 	// /post/like/{id}/{login}
-	@PutMapping("/like/{id}/{login}/{react}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable Boolean like) {
+	@PutMapping("/like/{id}/{login}/{react}/{like}")
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("like") Boolean like) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
