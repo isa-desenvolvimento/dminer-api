@@ -224,7 +224,7 @@ public class UserService implements IUserService {
     }
     
 
-    public List<UserReductDTO> carregarUsuariosApiReduct(String token) {
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
@@ -244,7 +244,8 @@ public class UserService implements IUserService {
         	UserReductDTO dto = new UserReductDTO();
         	dto.setLogin(u.getLogin());
         	dto.setUserName(u.getUserName());
-			dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+			if (carregarAvatar)
+				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
         	usuarios.add(dto);
         });
 
@@ -335,10 +336,10 @@ public class UserService implements IUserService {
      * @return String
      */
     public String getAvatarDir(String login) {
-		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login);
+		// String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login); 
 		
 		// if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-		// 	System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
+		// 	System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath); 
 		// 	return imagemRedimensionadaPath;
 		// }
 		return gravarAvatarDiretorio(login);
@@ -351,10 +352,13 @@ public class UserService implements IUserService {
 			String caminho = montarCaminhoAvatarDiretorio(login);
 
     		UtilFilesStorage.createDirectory(root);
-    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+			String url = "https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login;
+			log.info("url avatar: {}", url);
+
+    		BufferedImage image = ImageIO.read(new URL(url));
     		if (image != null) {
     			UtilFilesStorage.saveImage(caminho, image);
-    			ImageResizer.resize(caminho, caminho, 0.5);
+    			// ImageResizer.resize(caminho, caminho, 0.5); 
 				return caminho;
     		}
     	} catch (IOException e) {}

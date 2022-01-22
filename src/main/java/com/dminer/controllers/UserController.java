@@ -172,7 +172,7 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 20000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
     	
         log.info("Dropdown: ");
@@ -182,15 +182,15 @@ public class UserController {
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
             
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken());
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false); 
 
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
             }
-            usuariosApiReduct.forEach(u -> {
-                u.setAvatar(null);
-            });
+            // usuariosApiReduct.forEach(u -> {
+            //     u.setAvatar(null);
+            // });
         	response.setData(usuariosApiReduct); 
         }
         return ResponseEntity.ok().body(response);
@@ -229,7 +229,7 @@ public class UserController {
 
 
     @GetMapping("/birthdays")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 20000)
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
@@ -322,7 +322,7 @@ public class UserController {
     
 
     @GetMapping(value = "/search/{keyword}")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 20000)
     public ResponseEntity<Response<List<UserDTO>>> search(@PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
