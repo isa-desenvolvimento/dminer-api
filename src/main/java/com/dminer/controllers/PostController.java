@@ -544,16 +544,20 @@ public class PostController {
 			dto.put(react.getReact(), new ArrayList<String>());
 		});
 
+	
 		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
 		
 		if (reactsUsers != null && !reactsUsers.isEmpty()) {
 			reactsUsers.forEach(like -> {
+				System.out.println(reactsUsers.toString());
 				String login = like.getLogin();
-				String react = like.getReact().getReact();
-				if (dto.containsKey(react)) {
-					dto.get(react).add(login);
-				} else {
-					dto.put(react, Arrays.asList(login));
+				if (like.getReact() != null) {
+					String react = like.getReact().getReact();
+					if (dto.containsKey(react)) {
+						dto.get(react).add(login);
+					} else {
+						dto.put(react, Arrays.asList(login));
+					}
 				}
 			});
 		}
@@ -610,8 +614,8 @@ public class PostController {
 	
 
 	// /post/like/{id}/{login}
-	@PutMapping("/like/{id}/{login}/{react}/{like}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("like") Boolean like) {
+	@PutMapping("/like/{id}/{login}/{react}/{likeBo}")
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("likeBo") Boolean like) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
