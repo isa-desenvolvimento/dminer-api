@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
+import javax.ws.rs.HeaderParam;
 
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.dto.ReactDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
@@ -169,7 +171,7 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post, null));
+		response.setData(postToDto2(post, null));
 		
 		post = postService.persist(post);
 
@@ -272,7 +274,7 @@ public class PostController {
 		Post temp = postService.persist(post);
 		log.info("Adicionando anexos ao post e atualizando. {}", temp);
 		
-		///response.setData(postToDto(temp, anexos, null));
+		///response.setData(postToDto2(temp);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
     
@@ -324,7 +326,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get(@PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
@@ -336,7 +338,7 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get());
+		PostDTO dto = postToDto2(post.get(), comment.get());
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
@@ -370,7 +372,7 @@ public class PostController {
 
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<Comment> comments, Token token) {
 		PostDTO dto = new PostDTO();
 		// post.getReacts().forEach(like -> {
 		// 	dto.getReacts().add(like.getLogin());
@@ -382,25 +384,58 @@ public class PostController {
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
 
-
-		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
-		dto.setUser(user);
+		UserReductDTO user = new UserReductDTO();
+		if (token != null) {
+			user = userService.buscarUsuarioApiReduct(post.getLogin(), token.getToken());
+			dto.setUser(user);
+		}
         
 		if (comments != null && !comments.isEmpty()) {
 			comments = comments.stream()
 			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
 			.collect(Collectors.toList());
 
-			comments.forEach(comment -> {
+			for (Comment comment : comments) {
 				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
-			});			
+			}
+		}
+		return dto;
+	}
+
+
+	private PostDTO postToDto2(Post post, List<Comment> comments) {
+		PostDTO dto = new PostDTO();
+		// post.getReacts().forEach(like -> {
+		// 	dto.getReacts().add(like.getLogin());
+		// });
+
+		dto.setType(post.getType().toString());
+		dto.setId(post.getId());
+		dto.setContent(post.getContent());
+		dto.setTitle(post.getTitle());
+		dto.setAnexo(post.getAnexo());
+
+		UserReductDTO user = new UserReductDTO();
+		if (token != null) {
+			user = userService.buscarUsuarioApiReductTemp(post.getLogin());
+			dto.setUser(user);
+		}
+        
+		if (comments != null && !comments.isEmpty()) {
+			comments = comments.stream()
+			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
+			.collect(Collectors.toList());
+
+			for (Comment comment : comments) {
+				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
+			}
 		}
 		return dto;
 	}
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -418,7 +453,7 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto2(post, comment.get());
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -427,7 +462,7 @@ public class PostController {
 	
 	
 	@GetMapping()
-	public ResponseEntity<Response<List<PostDTO>>> getAll() {
+	public ResponseEntity<Response<List<PostDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -445,7 +480,7 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto2(post, comment.get());
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -458,7 +493,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -479,7 +514,7 @@ public class PostController {
 		
 		Optional<User> optUser = null;
 		Integer userId = null;
-		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+		UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
@@ -488,11 +523,11 @@ public class PostController {
 		}
 		userId = optUser.get().getId();
         
-		optUser.get().setAvatar(userService.getAvatarBase64ByLogin(optUser.get().getLogin()));
+		optUser.get().setAvatar(userService.recuperarAvatarNaApiPeloLogin(optUser.get().getLogin()));
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto(optPost.get(), comments);
+        PostDTO dto = postToDto2(optPost.get(), comments);
         
 		dto.setReacts(getReacts(optPost.get()));
 
@@ -529,7 +564,7 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         
@@ -558,7 +593,7 @@ public class PostController {
 		for (Post p : posts) {
 			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
 			
-			PostDTO dto = postToDto(p, null);
+			PostDTO dto = postToDto2(p, null);
 			// comms.forEach(c -> {
 				// CommentDTO commDto = commentConverter.entityToDTO(c);
 				// dto.getComments().add(commDto);
@@ -576,7 +611,7 @@ public class PostController {
 
 	// /post/like/{id}/{login}
 	@PutMapping("/like/{id}/{login}/{react}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react) {
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable Boolean like) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
@@ -591,25 +626,27 @@ public class PostController {
 		
 		Post post = optPost.get();
 
-		if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		// if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		// 	ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
+		// 	reactUserRepository.deleteById(reactUser.getId());
+		// 	return ResponseEntity.ok().build();
+		// }
+
+		if (like) {
+			React reactObj = reactRepository.findByReact(react);
+			ReactUser reactUser = new ReactUser();
+			reactUser.setLogin(login);
+			reactUser.setPost(post);
+			reactUser.setReact(reactObj);
+			reactUser = reactUserRepository.save(reactUser);
+		} else {
 			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
 			reactUserRepository.deleteById(reactUser.getId());
 			return ResponseEntity.ok().build();
-			
-			// response.getErrors().add("Este usuário já está associado a este post");
-            // return ResponseEntity.badRequest().body(response);
 		}
-		
-		React reactObj = reactRepository.findByReact(react);
-		ReactUser reactUser = new ReactUser();
-		reactUser.setLogin(login);
-		reactUser.setPost(post);
-		reactUser.setReact(reactObj);
-		reactUser = reactUserRepository.save(reactUser);
 
-		//post.getReacts().add(like);
 		post = postService.persist(post);
-		PostDTO dto = postToDto(post, null);
+		PostDTO dto = postToDto2(post, null);
 		dto.setReacts(getReacts(post));
 		response.setData(dto);
 

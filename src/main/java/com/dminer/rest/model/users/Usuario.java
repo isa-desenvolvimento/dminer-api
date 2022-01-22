@@ -1,6 +1,7 @@
 package com.dminer.rest.model.users;
 
 import com.dminer.dto.UserDTO;
+import com.dminer.entities.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,5 +37,13 @@ public class Usuario {
 				.linkedinUrl(linkedinUrl)
 				.login(login)
 				.build();				
+	}
+
+	public User toUser() {
+		return User
+		.builder()
+		.userName(userName)
+		.login(login)
+		.build();
 	}
 }

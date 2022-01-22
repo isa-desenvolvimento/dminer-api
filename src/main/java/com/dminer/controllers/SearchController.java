@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+import javax.ws.rs.HeaderParam;
 
 import com.dminer.components.TokenService;
 import com.dminer.converters.NoticeConverter;
@@ -23,6 +24,7 @@ import com.dminer.converters.UserConverter;
 import com.dminer.dto.PostReductDTO;
 import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -117,68 +119,25 @@ public class SearchController {
     @Autowired
     private Environment env;
 
-
-
-    // @PostConstruct
-    // private void init() {
-    //     token = userService.getToken();
-	// 	userRestModel = userService.carregarUsuariosApi(token);
-    // }
-
     
-    private Response<List<UserDTO>> aniversariantes() {
-    	Response<List<UserDTO>> response = new Response<>();
 
-    	UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
-
-        if (userRestModel == null) {
-    		response.getErrors().add("Nenhum usuario encontrado");    		
-    		return response;
-    	}
-        
-        if (userRestModel.hasError()) {
-        	userRestModel.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
-    		});
-        	return response;
-        }
-        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
-        	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
-        		aniversariantes.add(u.toUserDTO());
-        	}
-        });
-        
-        if (aniversariantes.isEmpty()) {
-            response.getErrors().add("Nenhum aniversariante encontrado");
-            return response;
-        }
-
-        response.setData(aniversariantes);
-        return response;
-    }
-    
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@HeaderParam("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
         
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
-        List<UserDTO> searchUsers = userService.search(keyword);           
+        List<UserDTO> searchUsers = userService.search(keyword, token.getToken());           
         searchUsers.forEach(u -> {        	
-        	String encodedString = userService.getAvatarBase64ByLogin(u.getLogin());
-        	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
-                
-        Response<List<UserDTO>> aniversariantes = aniversariantes();
-        if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
-        	aniversariantes.getData().forEach(ani -> {
-                String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
-        	    ani.setAvatar(encodedString);
+        
+        List<UserDTO> aniversariantes = userService.getAniversariantes(token.getToken());
+        if (!aniversariantes.isEmpty()) {
+        	aniversariantes.forEach(ani -> {
         		searchDTO.getBirthdayList().add(ani);
         	});
         }
