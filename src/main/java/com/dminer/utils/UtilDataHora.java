@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,6 +153,25 @@ public class UtilDataHora {
         return Timestamp.from(Instant.now());
     }
 
+    /**
+     * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna um objeto Timestamp
+     * @param date
+     * @return Timestamp
+     */
+    public static Timestamp toTimestampOrNull(String date) {
+        if (date != null)
+            return Timestamp.valueOf(date);
+        return null;
+    }
+
+    // public static Timestamp getTimeWithoutZoneFromResultSet(String date) throws SQLException {
+    //     java.util.Calendar cal = java.util.Calendar.getInstance();
+    //     cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+    //     Timestamp time = new Timestamp();
+    //     java.sql.Timestamp ts = rs.getTimestamp(param, cal);
+    //     return ts;
+    // }
+
     public static boolean isTimestampValid(String date) {
         try {
             if (date == null || date.isEmpty())
@@ -174,6 +194,17 @@ public class UtilDataHora {
 
         Timestamp timestamp = Timestamp.from(Instant.now());
         return timestamp.toString().substring(0, timestamp.toString().length() -2);
+    }
+
+    /**
+     * Recebe uma data Timestamp e retorna uma string yyyy-MM-dd HH:mm:ss
+     * @param Timestamp date
+     * @return String
+     */
+    public static String timestampToStringOrNull(Timestamp date) {        
+        if (date != null)
+            return date.toString().substring(0, date.toString().length() -2);
+        return null;
     }
 
 

@@ -55,7 +55,7 @@ public class User {
 		return UserReductDTO
 		.builder()
 		.login(login)
-		.avatar(avatar)
+		// .avatar(avatar)
 		.userName(userName)
 		.build();
 	}

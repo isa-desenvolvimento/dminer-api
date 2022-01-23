@@ -107,7 +107,7 @@ public class UserController {
 
 
     @PostMapping(value = "/all")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
@@ -155,7 +155,7 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
-    @Transactional(timeout = 20000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
     	
         log.info("Dropdown: ");
@@ -178,7 +178,7 @@ public class UserController {
     
     
     @PutMapping(value = "/permission")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<UserReductDTO>>> updatePermission(@RequestBody PermissionUserDTO permissionUser) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
@@ -207,7 +207,7 @@ public class UserController {
 
 
     @GetMapping("/birthdays")
-    @Transactional(timeout = 20000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();

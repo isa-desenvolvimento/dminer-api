@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 @Getter
 @Setter
 @ToString
@@ -31,6 +33,7 @@ public class PostDTO {
     private String type;
     private List<CommentDTO> comments = new ArrayList<>();
     private String anexo;
+    private String dateCreated;
 
     public PostDTO(Integer id) {
         this.id = id;

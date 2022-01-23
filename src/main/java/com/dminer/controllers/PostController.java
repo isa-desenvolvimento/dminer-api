@@ -183,28 +183,7 @@ public class PostController {
 	}
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments, Token token) {
-		PostDTO dto = new PostDTO();
 
-		UserReductDTO user = new UserReductDTO();
-		if (token != null)
-			user = userService.buscarUsuarioApiReduct(post.getLogin(), token.getToken());
-        
-		dto = post.convertDto(user, comments);
-		dto.setReacts(getReacts(post));
-
-		return dto;
-	}
-
-
-	private PostDTO postToDto(Post post, List<Comment> comments) {
-		PostDTO dto = new PostDTO();
-        dto.setId(post.getId());
-		comments.forEach(comm -> {
-			dto.getComments().add(new CommentDTO(comm.getId(), null, UtilDataHora.timestampToString(comm.getTimestamp()), null, null));
-		});
-		return dto;
-	}
 	
 	
 	@GetMapping("/all/{login}")
@@ -252,7 +231,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/search/{id}")
-    @Transactional(timeout = 50000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
@@ -291,47 +270,23 @@ public class PostController {
         return ResponseEntity.ok().body(response);
 	}
 	
-	
-	private Map<String, List<String>> getReacts(Post post) {
-		Map<String, List<String>> dto = new HashMap<>();
-		
-		List<React> reacts = reactRepository.findAll();
-		reacts.forEach(react -> {
-			dto.put(react.getReact(), new ArrayList<String>());
-		});
-
-		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
-		
-		if (reactsUsers != null && !reactsUsers.isEmpty()) {
-			reactsUsers.forEach(like -> {
-				String login = like.getLogin();
-				String react = like.getReact().getReact();
-				if (dto.containsKey(react)) {
-					dto.get(react).add(login);
-				} else {
-					dto.put(react, Arrays.asList(login));
-				}
-			});
-		}
-		return dto;
-	} 
-		
-	
-	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
-    @Transactional(timeout = 50000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         
 		Optional<User> userOpt = Optional.empty();
 
+		UserRestModel userRestModel = null;
+
 		if (user != null && !user.isBlank()) {
+			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
 			userOpt = userService.findByLoginApi(user, token.getToken());
 			if (!userOpt.isPresent()) {
-				response.addError("Nenhum usuário encontrado");
+				response.getErrors().add("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
-			}
+			}			
 		}
         
         List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
@@ -346,7 +301,7 @@ public class PostController {
 		for (Post p : posts) {
 			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
 			
-			PostDTO dto = postToDto(p, null, null);
+			PostDTO dto = postToDto(p, null);
 			// comms.forEach(c -> {
 				// CommentDTO commDto = commentConverter.entityToDTO(c);
 				// dto.getComments().add(commDto);
@@ -360,6 +315,32 @@ public class PostController {
         response.setData(postsDto);
         return ResponseEntity.ok().body(response);
 	}
+
+	
+	///api/post/search/all?date=&user=
+	// @GetMapping(value = "/search/all")
+    // @Transactional(timeout = 50000)
+    // public ResponseEntity<Response<List<PostDTO>>> searchAll2(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+        
+    //     Response<List<PostDTO>> response = new Response<>();
+        
+	// 	User userTemp = null;
+
+	// 	if (user != null && !user.isBlank()) {
+	// 		Optional<User> userOpt = userService.findByLoginApi(user, token.getToken());
+	// 		if (!userOpt.isPresent()) {
+	// 			response.addError("Nenhum usuário encontrado");
+	// 			return ResponseEntity.badRequest().body(response);
+	// 		}
+	// 		userTemp = userOpt.get();
+	// 	}
+        
+    //     //  List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
+	// 	// List<PostDTO> posts = postService.searchPostsAndCommentsByDateOrUser(UtilDataHora.toTimestampOrNull(date), userTemp);
+    //     response.setData(posts);
+		
+    //     return ResponseEntity.ok().body(response);
+	// }
 	
 
 	// /post/like/{id}/{login}
@@ -401,5 +382,54 @@ public class PostController {
 	}
 
 	
+	private PostDTO postToDto(Post post, List<Comment> comments, Token token) {
+		PostDTO dto = new PostDTO();
+
+		UserReductDTO user = new UserReductDTO();
+		if (token != null)
+			user = userService.buscarUsuarioApiReduct(post.getLogin(), token.getToken());
+        
+		dto = post.convertDto(user, comments);
+		dto.setReacts(getReacts(post));
+
+		return dto;
+	}
+
+
+	private PostDTO postToDto(Post post, List<Comment> comments) {
+		PostDTO dto = new PostDTO();
+        dto.setId(post.getId());
+		comments.forEach(comm -> {
+			dto.getComments().add(new CommentDTO(comm.getId(), null, UtilDataHora.timestampToString(comm.getTimestamp()), null, null));
+		});
+		return dto;
+	}
+
+		
+	private Map<String, List<String>> getReacts(Post post) {
+		Map<String, List<String>> dto = new HashMap<>();
+		
+		List<React> reacts = reactRepository.findAll();
+		reacts.forEach(react -> {
+			dto.put(react.getReact(), new ArrayList<String>());
+		});
+
+		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
+		
+		if (reactsUsers != null && !reactsUsers.isEmpty()) {
+			reactsUsers.forEach(like -> {
+				String login = like.getLogin();
+				String react = like.getReact().getReact();
+				if (dto.containsKey(react)) {
+					dto.get(react).add(login);
+				} else {
+					dto.put(react, Arrays.asList(login));
+				}
+			});
+		}
+		return dto;
+	}
+		
+
 
 }

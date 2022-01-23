@@ -29,6 +29,7 @@ import com.dminer.dto.CommentDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.enums.PostType;
+import com.dminer.utils.UtilDataHora;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -88,12 +89,13 @@ public class Post {
 		return PostDTO
 		.builder()
 		.id(id)
-		.content(content)
-		.anexo(anexo)
+		// .content(content)
+		// .anexo(anexo)
 		.title(title)
 		.comments(new ArrayList<CommentDTO>())
 		.user(new UserReductDTO(login))
 		.type(type.name())
+		.dateCreated(UtilDataHora.dateToFullStringUTC(createDate))
 		.build();
 	}
 
@@ -107,6 +109,7 @@ public class Post {
 		.comments(new ArrayList<CommentDTO>())
 		.user(user.convertReductDto())
 		.type(type.name())
+		.dateCreated(UtilDataHora.dateToFullStringUTC(createDate))
 		.build();
 	}
 
@@ -125,6 +128,7 @@ public class Post {
 		)
 		.user(user)
 		.type(type.name())
+		.dateCreated(UtilDataHora.dateToFullStringUTC(createDate))
 		.build();
 	}
 
@@ -144,6 +148,7 @@ public class Post {
 		.user(user.convertReductDto())
 		.type(type.name())
 		.reacts(reacts)
+		.dateCreated(UtilDataHora.dateToFullStringUTC(createDate))
 		.build();
 	}
 	
