@@ -56,7 +56,7 @@ public class UserService implements IUserService {
     
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
-	private UserRestModel userRestModel = new UserRestModel();
+	private UserRestModel userRestModel;
 
 
     @Override
@@ -181,8 +181,12 @@ public class UserService implements IUserService {
 	 */
     public UserRestModel carregarUsuariosApi(String token) {
 		// if (token == null)
-    		token = TokenService.getToken();
+    		// token = TokenService.getToken();
 
+		if (userRestModel != null) {
+			return userRestModel;
+		}
+		
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
 
