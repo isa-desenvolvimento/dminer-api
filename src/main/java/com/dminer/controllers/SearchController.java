@@ -48,6 +48,8 @@ import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +67,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class SearchController {
     
+    private static final Logger log = LoggerFactory.getLogger(SearchController.class);
 
     @Autowired
     private NotificationService notificationService;
@@ -125,6 +128,8 @@ public class SearchController {
     @Transactional(timeout = 90000)
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@HeaderParam("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
+        log.info("token do getAllEvents: {}", token);
+
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
         
