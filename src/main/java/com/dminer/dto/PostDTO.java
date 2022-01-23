@@ -28,8 +28,6 @@ public class PostDTO {
     private String title;
     private String type;
     private List<CommentDTO> comments = new ArrayList<>();
+    private List<String> favorites = new ArrayList<>();
     private String anexo;
-
-
-    
 }
