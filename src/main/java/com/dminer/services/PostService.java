@@ -1,7 +1,10 @@
 package com.dminer.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -51,14 +54,13 @@ public class PostService implements IPostService {
 
 	public List<Post> findAll() {
 		log.info("Buscando todas as publicações ");
-		return postRepository.findAll();
+		return sort(postRepository.findAll());
 	}
 	
 	public List<Post> findAllByLogin(String login) {
 		log.info("Buscando todas as publicações de {}", login);
-		return postRepository.findAllByLogin(login);
+		return sort(postRepository.findAllByLogin(login));
 	}
-
 
 
 	public HttpStatus salvarApiExterna(Post entity) {
@@ -78,18 +80,16 @@ public class PostService implements IPostService {
 		return out.getStatusCode();
 	}
 
-	// public String getToken() {
-    // 	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
-    // 	RestTemplate restTemplate = new RestTemplate();
-    // 	HttpHeaders headers = new HttpHeaders();    	
-    // 	headers.setContentType(MediaType.APPLICATION_JSON);
-    // 	JSONObject personJsonObject = new JSONObject();
-    //     personJsonObject.put("userName", "matheus.ribeiro1");
-    //     personJsonObject.put("userPassword", "#Matheus97");
-    //     HttpEntity<String> request = new HttpEntity<String>(personJsonObject.toString(), headers);
-        
-    //     String personResultAsJsonStr = restTemplate.postForObject(uri, request, String.class);
-    //     JSONObject retorno = new JSONObject(personResultAsJsonStr);
-    //     return (String) retorno.get("baererAuthentication");
-    // }
+
+	public List<Post> sort(List<Post> posts) {
+		if (posts == null) {
+			return new ArrayList<Post>();
+		}
+
+		posts = posts.stream()
+			.sorted(Comparator.comparing(Post::getCreateDate).reversed())
+			.collect(Collectors.toList());
+		return posts;
+	}
+
 }

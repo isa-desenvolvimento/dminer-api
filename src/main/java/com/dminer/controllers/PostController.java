@@ -86,13 +86,6 @@ import lombok.RequiredArgsConstructor;
 public class PostController {
 
 	private static final Logger log = LoggerFactory.getLogger(PostController.class);
-	private final String ROOT_UPLOADS = Constantes.ROOT_UPLOADS;
-	
-	@Autowired
-	private FileStorageService fileStorageService;
-	
-	@Autowired
-	private FileDatabaseService fileDatabaseService;
 	
 	@Autowired
 	private PostService postService;
@@ -104,64 +97,22 @@ public class PostController {
 	private CommentService commentService;
 	
 	@Autowired
-	private CommentRepository commentRepository;
-
-	@Autowired
 	private ReactRepository reactRepository;
 
 	@Autowired
 	private ReactUserRepository reactUserRepository;
 	
 	@Autowired
-	private CommentConverter commentConverter;    
-	
-	@Autowired
 	private GenericRepositoryPostgres genericRepositoryPostgres;
-	
-	private Gson gson = new Gson();
-	
-	private String token;
 
-	//private UserRestModel userRestModel;
-
-
-	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
-        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
-            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
-        } 
-        
-        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
-            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
-        } 
-
-        if (dto.getContent() == null || dto.getContent().isBlank()) {
-            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
-        }
-        
-        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
-            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
-        }
-        
-    }
-
-
-	
 
 	@PostMapping()
 	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
 	
 		Response<PostDTO> response = new Response<>();
-		validateRequestDto(dto, result);
-		if (result.hasErrors()) {
-            log.info("Erro validando PostRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
 		
 		Post post = new Post();
-		if (dto.getAnexo() != null) {
-			post.setAnexo(dto.getAnexo());
-		}
+		post.setAnexo(dto.getAnexo());
 		post.setContent(dto.getContent());		
 		post.setLogin(dto.getLogin());
 		post.setTitle(dto.getTitle());
@@ -171,114 +122,20 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto2(post, null));
-		
 		post = postService.persist(post);
-
 		if (post.getType().equals(PostType.EXTERNAL)) {
 			// salvar na api externa
 			HttpStatus code = postService.salvarApiExterna(post);
 			if (code.value() != 201) {
 				return ResponseEntity.internalServerError().body(null);
 			}
-		}		
-		return ResponseEntity.ok().body(response);
+		}
+
+		response.setData(postToDto(post, null, null));
+		return ResponseEntity.status(201).body(response);
 	}
 	
-	
-	/**
-	 * Método para futura melhorias
-	 * @param files
-	 * @param data
-	 * @return
-	 */
-	//@PostMapping(consumes = {"multipart/form-data", "text/plain"})
-	@Deprecated
-	public ResponseEntity<Response<PostDTO>> create_old( @RequestParam(value = "files", required = false) MultipartFile[] files,  @RequestParam("postRequestDTO") String data ) {
-		
-		log.info("----------------------------------------");
-		log.info("Salvando um novo post {}", data);
 
-		Response<PostDTO> response = new Response<>();
-		
-		PostDTO postRequestDTO = gson.fromJson(data, PostDTO.class);
-		
-		// log.info("Verificando se o usuário informado existe");
-		// if (postRequestDTO.getUser().getLogin() == null ) {
-		// 	response.getErrors().add("Usuário não encontrado.");			
-		// }
-		
-		try {
-			PostType.valueOf(postRequestDTO.getType());				
-		} catch (IllegalArgumentException e) {
-			response.getErrors().add("Campo tipo é inválido.");
-		}
-		
-		if (!response.getErrors().isEmpty()) {
-			return ResponseEntity.badRequest().body(response);
-		}
-		
-		Post post = new Post();
-		if (postRequestDTO.getContent() != null) 
-			post.setContent(postRequestDTO.getContent());
-		
-		// if (UtilNumbers.isNumeric(postRequestDTO.getReacts() + ""))
-		// 	post.setReacts(postRequestDTO.getReacts());
-
-		if (postRequestDTO.getType() != null && !postRequestDTO.getType().isEmpty()) {
-			post.setType(PostType.valueOf(postRequestDTO.getType()));
-		}
-
-		post.setLogin(postRequestDTO.getUser().getLogin());
-		post = postService.persist(post);
-
-
-		
-		String caminhoAbsoluto;
-		try {
-			caminhoAbsoluto = criarDiretorio(post.getId());
-		} catch(IOException e) {
-			rollback(post, null, null);
-			response.getErrors().add(e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-
-		List<FileInfo> anexos = new ArrayList<>();
-
-		Path path = Paths.get(caminhoAbsoluto);
-		if (files != null && files.length > 0) {
-			List<MultipartFile> array = Arrays.asList(files);			
-			
-			Optional<FileInfo> info = Optional.empty();
-			
-			for (MultipartFile multipartFile : array) {
-				String arquivoUrl = caminhoAbsoluto + "\\" + multipartFile.getOriginalFilename();
-				
-				if (fileStorageService.existsDirectory(Paths.get(arquivoUrl))) {
-					log.info("Diretório já existe no storage = {}", arquivoUrl);
-					info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
-					
-				} else {
-					if(fileStorageService.save(multipartFile, path)) {
-						log.info("Salvando novo arquivo no storage {}", arquivoUrl);
-						info = fileDatabaseService.persist(new FileInfo(arquivoUrl, post));
-					}
-				}
-				
-				if (info.isPresent()) {
-					anexos.add(info.get());
-				}
-			}
-		}
-		
-		Post temp = postService.persist(post);
-		log.info("Adicionando anexos ao post e atualizando. {}", temp);
-		
-		///response.setData(postToDto2(temp);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
-    
-	
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<Response<String>> delete(@PathVariable("id") int id) {
 		
@@ -288,154 +145,70 @@ public class PostController {
 		if (post.isPresent()) {
 			log.info("Deletando Post {}", post.get());
 
-			Optional<List<Comment>> comments = commentService.findByPost(post.get());
-			if (comments.isPresent() && !comments.get().isEmpty()) {
-				comments.get().forEach(comment -> {
+			List<Comment> comments = commentService.findByPost(post.get());
+			if (!comments.isEmpty()) {
+				comments.forEach(comment -> {
 			 		commentService.delete(comment.getId());
 			 	});
 			}
 			
-			Optional<List<FileInfo>> findByPost = fileDatabaseService.findByPost(post.get());
-			if (findByPost.isPresent()) {
-				findByPost.get().forEach(anexo -> {
-					fileDatabaseService.delete(anexo.getId());
-					log.info("Deletando anexo {}", anexo.getUrl());
-				});
-			}
 			postService.delete(post.get().getId());
 			response.setData("Post deletado!");
 
-			fileStorageService.delete(Paths.get(Constantes.appendInRoot(post.get().getId() + "")));
-			if (fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS))) {		
-				response.getErrors().add("Diretório do Post não foi deletado corretamente");
-				return ResponseEntity.internalServerError().body(response);
-			}			
 		} else {
-			response.getErrors().add("Post não encontrado");
+			response.addError("Post não encontrado");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		return ResponseEntity.ok().body(response);
 	}
 
 
-	// @PostMapping(value = "/drop-storage")
-	public boolean dropStorage() {
-		fileStorageService.delete(Paths.get(ROOT_UPLOADS));
-		return !fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS));
-	}
-
-
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get( @PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
 
 		Optional<Post> post = postService.findById(id);
 		if (!post.isPresent()) {
-			response.getErrors().add("Post não encontrado na base de dados");
+			response.addError("Post não encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto2(post.get(), comment.get());
-		dto.setReacts(getReacts(post.get()));
-
+		List<Comment> comment = commentService.findByPost(post.get());
+		PostDTO dto = postToDto(post.get(), comment, token);
 		response.setData(dto);
+
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 
-
-	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
-				
-		if (anexos != null) {
-			log.info("Apagando os anexos do banco");		
-			anexos.forEach(anexo -> {
-				fileDatabaseService.delete(anexo.getId());				
-			});
-		}
-
-		if (comments != null) {
-			log.info("Apagando os comentários do banco");
-			comments.forEach(comment -> {
-				commentService.delete(comment.getId());
-			});
-		}
-
-		if (post != null) {
-			log.info("Apagando o post do banco");
-			postService.delete(post.getId());
-			fileStorageService.delete(Paths.get(Constantes.appendInRoot(post.getId() + "")));
-		}
-	}
-
-
-
 	private PostDTO postToDto(Post post, List<Comment> comments, Token token) {
 		PostDTO dto = new PostDTO();
-		// post.getReacts().forEach(like -> {
-		// 	dto.getReacts().add(like.getLogin());
-		// });
-
-		dto.setType(post.getType().toString());
-		dto.setId(post.getId());
-		dto.setContent(post.getContent());
-		dto.setTitle(post.getTitle());
-		dto.setAnexo(post.getAnexo());
 
 		UserReductDTO user = new UserReductDTO();
-		if (token != null) {
+		if (token != null)
 			user = userService.buscarUsuarioApiReduct(post.getLogin(), token.getToken());
-			dto.setUser(user);
-		}
         
-		if (comments != null && !comments.isEmpty()) {
-			comments = comments.stream()
-			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
-			.collect(Collectors.toList());
+		dto = post.convertDto(user, comments);
+		dto.setReacts(getReacts(post));
 
-			for (Comment comment : comments) {
-				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
-			}
-		}
 		return dto;
 	}
 
 
-	private PostDTO postToDto2(Post post, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		// post.getReacts().forEach(like -> {
-		// 	dto.getReacts().add(like.getLogin());
-		// });
-
-		dto.setType(post.getType().toString());
-		dto.setId(post.getId());
-		dto.setContent(post.getContent());
-		dto.setTitle(post.getTitle());
-		dto.setAnexo(post.getAnexo());
-
-		UserReductDTO user = new UserReductDTO();
-		if (token != null) {
-			user = userService.buscarUsuarioApiReductTemp(post.getLogin());
-			dto.setUser(user);
-		}
-        
-		if (comments != null && !comments.isEmpty()) {
-			comments = comments.stream()
-			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
-			.collect(Collectors.toList());
-
-			for (Comment comment : comments) {
-				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
-			}
-		}
+        dto.setId(post.getId());
+		comments.forEach(comm -> {
+			dto.getComments().add(new CommentDTO(comm.getId(), null, null, null, null));
+		});
 		return dto;
 	}
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser( @PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -443,21 +216,16 @@ public class PostController {
 
 		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
-			response.getErrors().add("Nenhum post encontrado na base de dados");
+			response.addError("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
 		for (Post post : posts) {
-			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto2(post, comment.get());
-			dto.setReacts(getReacts(post));
+			List<Comment> comment = commentService.findByPost(post);
+			PostDTO dto = postToDto(post, comment, token);		
 			response.getData().add(dto);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.ok().body(response);
 	}
 	
 	
@@ -470,67 +238,57 @@ public class PostController {
 
 		List<Post> posts = postService.findAll();
 		if (posts == null || posts.isEmpty()) {
-			response.getErrors().add("Nenhum post encontrado na base de dados");
+			response.addError("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
 		for (Post post : posts) {
-			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto2(post, comment.get());
-			dto.setReacts(getReacts(post));
+			List<Comment> comments = commentService.findByPost(post);
+			PostDTO dto = postToDto(post, comments, token);
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 
-	
-
-
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById( @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Id precisa ser informado");
+            response.addError("Id precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
-		Optional<Post> optPost = postService.findById(id);
-        if (!optPost.isPresent()) {
-        	response.getErrors().add("Post não encontrado");
+		Optional<Post> post = postService.findById(id);
+        if (!post.isPresent()) {
+        	response.addError("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
-        		
-		String userSearch = optPost.get().getLogin();
+        
+		String userSearch = post.get().getLogin();
 		if (user != null && !user.isBlank()) {
-			userSearch = user; 
+			userSearch = user;
 		}
 		
 		Optional<User> optUser = null;
-		Integer userId = null;
-		UserRestModel userRestModel = userService.carregarUsuariosApi();
 
-		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
+		optUser = userService.findByLogin(userSearch);
 		if (!optUser.isPresent()) {
-			response.getErrors().add("Nenhum usuário encontrado");
+			response.addError("Nenhum usuário encontrado");
 			return ResponseEntity.badRequest().body(response);
 		}
-		userId = optUser.get().getId();
-        
-		optUser.get().setAvatar(userService.recuperarAvatarNaApiPeloLogin(optUser.get().getLogin()));
-        
-        List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto2(optPost.get(), comments);
-        
-		dto.setReacts(getReacts(optPost.get()));
+		List<Comment> comments = new ArrayList<>();
+		Timestamp time = date != null ? UtilDataHora.toTimestamp(date) : null;
 
+        comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
+		// comments = commentService.searchCommentsByPostIdAndDateAndUser(new Post(id), time, optUser.get());
+		
+        // PostDTO dto = postToDto(post.get(), comments, token);
+		PostDTO dto = postToDto(post.get(), comments);
+        
         response.setData(dto);
         return ResponseEntity.ok().body(response);
 	}
@@ -564,21 +322,18 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll( @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         
 		Optional<User> userOpt = Optional.empty();
 
-		UserRestModel userRestModel = null;
-
 		if (user != null && !user.isBlank()) {
-			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
-			userOpt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
+			userOpt = userService.findByLoginApi(user, token.getToken());
 			if (!userOpt.isPresent()) {
-				response.getErrors().add("Nenhum usuário encontrado");
+				response.addError("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
-			}			
+			}
 		}
         
         List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
@@ -593,7 +348,7 @@ public class PostController {
 		for (Post p : posts) {
 			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
 			
-			PostDTO dto = postToDto2(p, null);
+			PostDTO dto = postToDto(p, null, null);
 			// comms.forEach(c -> {
 				// CommentDTO commDto = commentConverter.entityToDTO(c);
 				// dto.getComments().add(commDto);
@@ -614,13 +369,13 @@ public class PostController {
 	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("likeBo") Boolean like) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
-            response.getErrors().add("Id precisa ser informado");
+            response.addError("Id precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
 		Optional<Post> optPost = postService.findById(idPost);
         if (!optPost.isPresent()) {
-        	response.getErrors().add("Post não encontrado");
+        	response.addError("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 		
@@ -641,21 +396,10 @@ public class PostController {
 		reactUser = reactUserRepository.save(reactUser);
 
 		post = postService.persist(post);
-		PostDTO dto = postToDto2(post, null);
-		dto.setReacts(getReacts(post));		
+		PostDTO dto = postToDto(post, null, null);
 		response.setData(dto);
 
 		return ResponseEntity.ok().body(response);
-	}
-
-	/**
-	 * Cria diretórios organizados pelo id do Post
-	 */
-	private String criarDiretorio(int idPost) throws IOException {
-		String diretorio = Constantes.appendInRoot(idPost + "");
-		log.info("Criando diretório {}", diretorio);
-		fileStorageService.createDirectory(Paths.get(diretorio));
-		return diretorio;
 	}
 
 	

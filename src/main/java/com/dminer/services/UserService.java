@@ -149,24 +149,23 @@ public class UserService implements IUserService {
     }
 
 	/**
-	 * Busca um usuário (consultando a api de avatar) dado uma lista de usuários
+	 * Busca um usuário (retornando o avatar)
 	 * @param login
 	 * @param users
 	 * @return Optional<User>
 	 */
-	public Optional<User> findByLoginApi(String login, List<Usuario> users) {
+	public Optional<User> findByLoginApi(String login, String token) {
 		
 		log.info("Recuperando usuário pelo login da api, {}", login);
 		
-        for (Usuario u : users) {
-        	if (u.getLogin().equals(login)) {
-				String avatar = recuperarAvatarNaApiPeloLogin(login);
-				User user = u.toUser();
-				user.setAvatar(avatar);
-				return Optional.of(user);
-        	}
+		UserRestModel userModel = carregarUsuariosApi(token);
+		if (userModel == null) {
+			return Optional.empty();
 		}
-        return Optional.empty();
+		User user = findUser(login);
+		log.info("findByLoginApi > {}", user);
+
+        return Optional.ofNullable(user);
 	}
 
 
@@ -181,11 +180,11 @@ public class UserService implements IUserService {
 	 * @return UserRestModel
 	 */
     public UserRestModel carregarUsuariosApi(String token) {
-		if (token == null)
+		// if (token == null)
     		token = TokenService.getToken();
 
 		log.info("Recuperando todos os usuários na api externa");
-		// log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
+		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
 
 
     	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";
@@ -208,8 +207,9 @@ public class UserService implements IUserService {
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			try {
+				log.info("Convertendo usuários da api em UserRestModel");
 				userRestModel = gson.fromJson(response, UserRestModel.class);
-				return userRestModel;				
+				return userRestModel;
 			} catch (IllegalStateException e) {
 				return null;
 			}
@@ -293,18 +293,43 @@ public class UserService implements IUserService {
 			return null;
         }
         
-		UserReductDTO dto = new UserReductDTO();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
-			if (login.equals(u.getLogin())) {
-				dto.setLogin(u.getLogin());
-				dto.setUserName(u.getUserName());
-				dto.setAvatar(recuperarAvatarNaApiPeloLogin(u.getLogin()));
-				return;
-			}
-        });
+		UserReductDTO dto = findUserReductDto(login);
 		return dto;
     }
+	
+	private UserReductDTO findUserReductDto(String login) {
+		
+		if (userRestModel == null) return null;
 
+		List<Usuario> usuarios = userRestModel.getOutput().getResult().getUsuarios();
+		UserReductDTO dto = usuarios.stream()
+		.filter(usuario -> usuario.getLogin().equals(login))
+		.findAny()
+		.map(usuario -> {
+			UserReductDTO temp = usuario.toUserReductDTO();
+			temp.setAvatar(recuperarAvatarNaApiPeloLogin(login));
+			return temp;
+		})
+		.orElse(null);
+		return dto;
+	}
+
+	private User findUser(String login) {
+		
+		if (userRestModel == null) return null;
+
+		List<Usuario> usuarios = userRestModel.getOutput().getResult().getUsuarios();
+		User user = usuarios.stream()
+		.filter(usuario -> usuario.getLogin().equals(login))
+		.findAny()
+		.map(usuario -> {
+			User temp = usuario.toUser();
+			temp.setAvatar(recuperarAvatarNaApiPeloLogin(login));
+			return temp;
+		})
+		.orElse(null);
+		return user;
+	}
 	
 	public String getAvatarBase64ByLogin(String login) {
 		try {
@@ -334,15 +359,7 @@ public class UserService implements IUserService {
 			return null;
         }
         
-		UserReductDTO dto = new UserReductDTO();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
-			if (login.equals(u.getLogin())) {
-				dto.setLogin(u.getLogin());
-				dto.setUserName(u.getUserName());
-				dto.setAvatar(recuperarAvatarNaApiPeloLogin(u.getLogin()));
-				return;
-			}
-        });
+		UserReductDTO dto = findUserReductDto(login);
 		return dto;
     }
 

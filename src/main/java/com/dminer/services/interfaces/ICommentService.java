@@ -27,7 +27,7 @@ public interface ICommentService {
 	 * @param Post post
 	 * @return Optional<Comment>
 	 */
-	Optional<List<Comment>> findByPost(Post post);
+	List<Comment> findByPost(Post post);
 	
 	/**
 	 * Deleta um comentário

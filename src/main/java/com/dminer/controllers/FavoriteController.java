@@ -145,9 +145,9 @@ public class FavoriteController {
             String avatar = userService.getAvatarBase64ByLogin(postDto.getUser().getLogin());
             postDto.getUser().setAvatar(avatar);
 
-            Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
-			if (comments.isPresent() && !comments.get().isEmpty()) {
-				comments.get().forEach(comment -> {
+            List<Comment> comments = commentService.findByPost(f.getPost());
+			if (!comments.isEmpty()) {
+				comments.forEach(comment -> {
                     CommentDTO commDto = comment.convertDto();
                     String avatarComm = userService.getAvatarBase64ByLogin(commDto.getUser().getLogin());
                     commDto.getUser().setAvatar(avatarComm);
@@ -194,12 +194,16 @@ public class FavoriteController {
             dto.setId(f.getId());
             PostDTO postDto = f.getPost().convertDto();
             
-            Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
-			if (comments.isPresent() && !comments.get().isEmpty()) {
-				comments.get().forEach(comment -> {
-                    postDto.getComments().add(comment.convertDto());
+            List<Comment> comments = commentService.findByPost(f.getPost());
+			if (!comments.isEmpty()) {
+				comments.forEach(comment -> {
+                    CommentDTO commDto = comment.convertDto();
+                    String avatarComm = userService.getAvatarBase64ByLogin(commDto.getUser().getLogin());
+                    commDto.getUser().setAvatar(avatarComm);
+                    postDto.getComments().add(commDto);
 			 	});
 			}
+            
             dto.setPostDto(postDto);
             dto.setLogin(f.getUser().getLogin());
             favosDto.add(dto);

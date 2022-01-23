@@ -1,6 +1,7 @@
 package com.dminer.rest.model.users;
 
 import com.dminer.dto.UserDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 
 import lombok.AllArgsConstructor;
@@ -27,6 +28,15 @@ public class Usuario {
 	private byte[] avatar;
 	
 	
+	
+	public UserReductDTO toUserReductDTO() {
+		return UserReductDTO
+		.builder()		
+		.userName(userName)
+		.login(login)
+		.build();
+	}
+
 	public UserDTO toUserDTO() {
 		return UserDTO
 				.builder()

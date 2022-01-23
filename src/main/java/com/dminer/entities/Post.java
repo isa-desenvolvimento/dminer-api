@@ -4,7 +4,12 @@ package com.dminer.entities;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -88,10 +93,61 @@ public class Post {
 		.title(title)
 		.comments(new ArrayList<CommentDTO>())
 		.user(new UserReductDTO(login))
+		.type(type.name())
 		.build();
 	}
 
+	public PostDTO convertDto(User user) {
+		return PostDTO
+		.builder()
+		.id(id)
+		.content(content)
+		.anexo(anexo)
+		.title(title)
+		.comments(new ArrayList<CommentDTO>())
+		.user(user.convertReductDto())
+		.type(type.name())
+		.build();
+	}
 
+	public PostDTO convertDto(UserReductDTO user, List<Comment> comments) {
+		return PostDTO
+		.builder()
+		.id(id)
+		.content(content)
+		.anexo(anexo)
+		.title(title)
+		.comments(
+			comments
+			.stream()
+			.map(Comment::convertDto)
+			.collect(Collectors.toList())
+		)
+		.user(user)
+		.type(type.name())
+		.build();
+	}
+
+	public PostDTO convertDto(User user, List<Comment> comments, Map<String, List<String>> reacts) {
+		return PostDTO
+		.builder()
+		.id(id)
+		.content(content)
+		.anexo(anexo)
+		.title(title)
+		.comments(
+			comments
+			.stream()
+			.map(Comment::convertDto)
+			.collect(Collectors.toList())
+		)
+		.user(user.convertReductDto())
+		.type(type.name())
+		.reacts(reacts)
+		.build();
+	}
+	
+	
 	public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {
