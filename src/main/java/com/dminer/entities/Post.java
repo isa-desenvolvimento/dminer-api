@@ -53,7 +53,7 @@ public class Post {
 	@Column
 	private String content; 
 
-	@OneToMany
+	@OneToMany(fetch = FetchType.EAGER)
 	private List<Favorites> favorites;
 	
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
