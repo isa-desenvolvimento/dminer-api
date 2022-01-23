@@ -1,5 +1,8 @@
 package com.dminer.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,4 +20,5 @@ public class FavoriteDTO {
     private Integer id;
     private String login;
     private Integer idPost;
+    private List<String> favorites = new ArrayList<>();
 }

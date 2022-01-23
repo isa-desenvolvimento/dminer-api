@@ -83,23 +83,29 @@ public class FavoriteController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<User> user = userService.findByLogin(dtoReq.getLogin());        
+        Optional<User> user = userService.findByLogin(dtoReq.getLogin());
         Optional<Favorites> favos = favoritesRepository.findByUserAndPost(user.get(), new Post(dtoReq.getIdPost()));
         if (favos.isPresent()) {
             favoritesRepository.deleteById(favos.get().getId());
             return ResponseEntity.ok().build();
         }
 
+        Optional<Post> opt = postService.findById(dtoReq.getIdPost()); 
+        Post post = opt.get();        
         Favorites favorite = new Favorites();
         favorite.setPost(new Post(dtoReq.getIdPost()));
         favorite.setUser(user.get());
+        if (post.getFavorites() == null) post.setFavorites(new ArrayList<>());
+        post.getFavorites().add(favorite);
         favorite = favoritesRepository.save(favorite);
 
         FavoriteDTO dto = new FavoriteDTO();
         dto.setId(favorite.getId());
         dto.setIdPost(dtoReq.getIdPost());
         dto.setLogin(dtoReq.getLogin());
-
+        post.getFavorites().forEach(fav -> {
+            dto.getFavorites().add(fav.getUser().getLogin());
+        });
         response.setData(dto);
         return ResponseEntity.ok(response);
     }
