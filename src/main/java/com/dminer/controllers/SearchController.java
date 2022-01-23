@@ -122,7 +122,7 @@ public class SearchController {
     
 
     @GetMapping(value = "/{login}/{keyword}")
-    @Transactional(timeout = 50000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@HeaderParam("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
