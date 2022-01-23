@@ -180,8 +180,8 @@ public class UserService implements IUserService {
 	 * @return UserRestModel
 	 */
     public UserRestModel carregarUsuariosApi(String token) {
-		// if (token == null)
-    		// token = TokenService.getToken();
+		if (token == null)
+    		token = TokenService.getToken();
 
 		if (userRestModel != null) {
 			return userRestModel;
