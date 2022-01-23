@@ -91,7 +91,7 @@ public class FavoriteController {
         }
 
         Favorites favorite = new Favorites();
-        favorite.setPost(new Post(dtoReq.getIdPost()));        
+        favorite.setPost(new Post(dtoReq.getIdPost()));
         favorite.setUser(user.get());
         favorite = favoritesRepository.save(favorite);
 

@@ -54,7 +54,7 @@ public class Post {
 	private String content; 
 
 	@OneToMany
-	private List<String> favorites;
+	private List<Favorites> favorites;
 	
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	// private List<Like> likes = new ArrayList<>();
