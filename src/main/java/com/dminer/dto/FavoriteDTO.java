@@ -16,5 +16,5 @@ import lombok.ToString;
 public class FavoriteDTO {    
     private Integer id;
     private String login;
-    private Integer idPost;
+    private PostDTO postDto;
 }

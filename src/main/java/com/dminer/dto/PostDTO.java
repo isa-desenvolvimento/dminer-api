@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class PostDTO { 
     
     private Integer id;
@@ -30,6 +32,8 @@ public class PostDTO {
     private List<CommentDTO> comments = new ArrayList<>();
     private String anexo;
 
-
+    public PostDTO(Integer id) {
+        this.id = id;
+    }
     
 }

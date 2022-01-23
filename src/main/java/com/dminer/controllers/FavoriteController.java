@@ -9,11 +9,14 @@ import javax.validation.Valid;
 
 import com.dminer.dto.FavoriteDTO;
 import com.dminer.dto.FavoriteRequestDTO;
+import com.dminer.dto.PostDTO;
+import com.dminer.entities.Comment;
 import com.dminer.entities.Favorites;
 import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.repository.FavoritesRepository;
 import com.dminer.response.Response;
+import com.dminer.services.CommentService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 
@@ -43,6 +46,9 @@ public class FavoriteController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     private FavoritesRepository favoritesRepository;
@@ -97,7 +103,7 @@ public class FavoriteController {
 
         FavoriteDTO dto = new FavoriteDTO();
         dto.setId(favorite.getId());
-        dto.setIdPost(dtoReq.getIdPost());
+        dto.setPostDto(new PostDTO(dtoReq.getIdPost()));
         dto.setLogin(dtoReq.getLogin());
 
         response.setData(dto);
@@ -133,7 +139,15 @@ public class FavoriteController {
         favos.forEach(f -> {
             FavoriteDTO dto = new FavoriteDTO();
             dto.setId(f.getId());
-            dto.setIdPost(f.getPost().getId());
+            PostDTO postDto = f.getPost().convertDto();
+            
+            Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
+			if (comments.isPresent() && !comments.get().isEmpty()) {
+				comments.get().forEach(comment -> {
+                    postDto.getComments().add(comment.convertDto());
+			 	});
+			}
+            dto.setPostDto(postDto);
             dto.setLogin(f.getUser().getLogin());
             favosDto.add(dto);
         });
@@ -171,7 +185,15 @@ public class FavoriteController {
         favos.forEach(f -> {
             FavoriteDTO dto = new FavoriteDTO();
             dto.setId(f.getId());
-            dto.setIdPost(f.getPost().getId());
+            PostDTO postDto = f.getPost().convertDto();
+            
+            Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
+			if (comments.isPresent() && !comments.get().isEmpty()) {
+				comments.get().forEach(comment -> {
+                    postDto.getComments().add(comment.convertDto());
+			 	});
+			}
+            dto.setPostDto(postDto);
             dto.setLogin(f.getUser().getLogin());
             favosDto.add(dto);
         });

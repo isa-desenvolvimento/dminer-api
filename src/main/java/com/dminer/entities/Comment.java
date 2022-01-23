@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.dminer.dto.CommentDTO;
+import com.dminer.utils.UtilDataHora;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -45,5 +47,14 @@ public class Comment {
     @Column
     private Timestamp timestamp;
     
-
+    public CommentDTO convertDto() {
+        return CommentDTO
+        .builder()
+        .id(id)
+        .content(content)
+        .date(UtilDataHora.timestampToString(timestamp))
+        .idPost(post.getId())
+        .user(user.convertReductDto())        
+        .build();
+    }
 }

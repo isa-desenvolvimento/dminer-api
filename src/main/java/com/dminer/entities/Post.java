@@ -20,11 +20,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.dminer.dto.PostDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.enums.PostType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,15 +35,14 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "POST"
-	//, uniqueConstraints = @UniqueConstraint(columnNames={"likes"})
-)
+@Table(name = "POST")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"id"})
 @Getter
 @Setter
 @ToString
+@Builder
 public class Post {
 
 	@Id
@@ -52,10 +54,6 @@ public class Post {
 	
 	@Column
 	private String content; 
-
-	
-	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-	// private List<Like> likes = new ArrayList<>();
 	
     @Column(length = 9999999)
     private String anexo;
@@ -66,14 +64,31 @@ public class Post {
 	@Column
 	private Timestamp createDate = Timestamp.from(Instant.now());
 	
-	
 	@Column
 	@Enumerated(EnumType.STRING)
 	private PostType type;	
 	
-	public Post(Integer id) { this.id = id; }
+	
+	public Post(Integer id) { 
+		this.id = id; 
+	}
 
-	public Post(String content) { this.content = content; }
+	public Post(String content) { 
+		this.content = content; 
+	}
+
+
+	public PostDTO convertDto() {
+		return PostDTO
+		.builder()
+		.id(id)
+		.content(content)
+		.anexo(anexo)
+		.title(title)
+		.user(new UserReductDTO(login))
+		.build();
+	}
+
 
 	public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
