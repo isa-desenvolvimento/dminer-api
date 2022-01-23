@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import com.dminer.dto.CommentDTO;
 import com.dminer.dto.FavoriteDTO;
 import com.dminer.dto.FavoriteRequestDTO;
 import com.dminer.dto.PostDTO;
@@ -141,10 +142,16 @@ public class FavoriteController {
             dto.setId(f.getId());
             PostDTO postDto = f.getPost().convertDto();
             
+            String avatar = userService.getAvatarBase64ByLogin(postDto.getUser().getLogin());
+            postDto.getUser().setAvatar(avatar);
+
             Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
 			if (comments.isPresent() && !comments.get().isEmpty()) {
 				comments.get().forEach(comment -> {
-                    postDto.getComments().add(comment.convertDto());
+                    CommentDTO commDto = comment.convertDto();
+                    String avatarComm = userService.getAvatarBase64ByLogin(commDto.getUser().getLogin());
+                    commDto.getUser().setAvatar(avatarComm);
+                    postDto.getComments().add(commDto);
 			 	});
 			}
             dto.setPostDto(postDto);

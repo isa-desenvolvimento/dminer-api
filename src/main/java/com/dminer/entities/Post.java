@@ -20,6 +20,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.dminer.dto.CommentDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.enums.PostType;
@@ -85,6 +86,7 @@ public class Post {
 		.content(content)
 		.anexo(anexo)
 		.title(title)
+		.comments(new ArrayList<CommentDTO>())
 		.user(new UserReductDTO(login))
 		.build();
 	}
