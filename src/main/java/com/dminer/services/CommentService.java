@@ -14,6 +14,7 @@ import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.repository.CommentRepository;
 import com.dminer.services.interfaces.ICommentService;
+import com.dminer.utils.UtilDataHora;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,16 +65,11 @@ public class CommentService implements ICommentService {
             return new ArrayList<Comment>();
         }
 
-        comments.forEach(c -> {
-            System.out.println(c.getUser().getId());
-        });
-
         comments = comments.stream()
-        .filter(comment -> date != null && comment.getTimestamp().equals(date))
-        .filter(comment -> comment.getUser().getId().equals(user.getId()))
+        .filter(comment -> date != null && UtilDataHora.equals(comment.getTimestamp(), date))
+        .filter(comment -> comment.getUser().getId() == user.getId())
         .collect(Collectors.toList());
-        return sort(comments);
-        // return comments;
+        return comments;
     }
 
 

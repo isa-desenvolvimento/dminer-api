@@ -20,26 +20,28 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
 import com.google.gson.reflect.TypeToken;
 
-public class Testes {
+import ch.qos.logback.classic.pattern.Util;
 
+public class Testes {
+	
 	public static void main2(String[] args) {
 
-		List<Pessoa> pessoas = new ArrayList<>();
-		Pessoa p1 = new Pessoa(1, "Rhuan");
-		Pessoa p2 = new Pessoa(2, "Pablo");
-		Pessoa p3 = new Pessoa(3, "Cesario");
+		System.out.println(UtilDataHora.toTimestamp("2021-12-04 03:00:00"));
+		String s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(UtilDataHora.toTimestamp("2021-12-04 03:00:00"));
+		System.out.println(s.substring(0, s.length() ));
 
-		pessoas.add(p1);
-		pessoas.add(p2);
-		pessoas.add(p3);
+		System.out.println("2021-12-04 03:00:00".equals("2021-12-04 03:00:01"));
 
-		pessoas.forEach(p -> {
-			if (pessoas.contains(new Pessoa(4, "Cesario 222"))) {
-				System.out.println("Existe");
-			}
-		});
+		Timestamp t1 = UtilDataHora.toTimestamp("2021-12-04 03:00:00");
+		Timestamp t2 = UtilDataHora.toTimestamp("2021-12-04 03:00:00");
+
+		System.out.println(UtilDataHora.equals(t1, "2021-12-04 03:00:00"));
+
 	}
 		
 }

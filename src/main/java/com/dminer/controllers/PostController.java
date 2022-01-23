@@ -201,7 +201,7 @@ public class PostController {
 		PostDTO dto = new PostDTO();
         dto.setId(post.getId());
 		comments.forEach(comm -> {
-			dto.getComments().add(new CommentDTO(comm.getId(), null, null, null, null));
+			dto.getComments().add(new CommentDTO(comm.getId(), null, UtilDataHora.timestampToString(comm.getTimestamp()), null, null));
 		});
 		return dto;
 	}
@@ -283,12 +283,10 @@ public class PostController {
 		List<Comment> comments = new ArrayList<>();
 		Timestamp time = date != null ? UtilDataHora.toTimestamp(date) : null;
 
-        comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
-		// comments = commentService.searchCommentsByPostIdAndDateAndUser(new Post(id), time, optUser.get());
+        // comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
+		comments = commentService.searchCommentsByPostIdAndDateAndUser(new Post(id), time, optUser.get());
 		
-        // PostDTO dto = postToDto(post.get(), comments, token);
-		PostDTO dto = postToDto(post.get(), comments);
-        
+        PostDTO dto = postToDto(post.get(), comments, token);
         response.setData(dto);
         return ResponseEntity.ok().body(response);
 	}

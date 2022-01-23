@@ -18,6 +18,18 @@ public class UtilDataHora {
     private static final Logger log = LoggerFactory.getLogger(UtilDataHora.class);
 
 
+    public static boolean equals(Timestamp t1, Timestamp t2) {
+        return timestampToString(t1).equals(timestampToString(t2));
+    }
+
+    public static boolean equals(String t1, String t2) {
+        return t1.equals(t2);
+    }
+
+    public static boolean equals(Timestamp t1, String t2) {
+        return timestampToString(t1).equals(t2);
+    }
+
     /**
      * Recebe uma data no formato dd/mm/yyyy e verifica se faz ou fez aniversário no mês atual
      * @param String
