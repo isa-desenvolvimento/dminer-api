@@ -544,20 +544,16 @@ public class PostController {
 			dto.put(react.getReact(), new ArrayList<String>());
 		});
 
-	
 		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
 		
 		if (reactsUsers != null && !reactsUsers.isEmpty()) {
 			reactsUsers.forEach(like -> {
-				System.out.println(reactsUsers.toString());
 				String login = like.getLogin();
-				if (like.getReact() != null) {
-					String react = like.getReact().getReact();
-					if (dto.containsKey(react)) {
-						dto.get(react).add(login);
-					} else {
-						dto.put(react, Arrays.asList(login));
-					}
+				String react = like.getReact().getReact();
+				if (dto.containsKey(react)) {
+					dto.get(react).add(login);
+				} else {
+					dto.put(react, Arrays.asList(login));
 				}
 			});
 		}
@@ -630,28 +626,23 @@ public class PostController {
 		
 		Post post = optPost.get();
 
-		// if (reactUserRepository.existsByLoginAndPost(login, post)) {
-		// 	ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
-		// 	reactUserRepository.deleteById(reactUser.getId());
-		// 	return ResponseEntity.ok().build();
-		// }
-
-		if (like) {
-			React reactObj = reactRepository.findByReact(react);
-			ReactUser reactUser = new ReactUser();
-			reactUser.setLogin(login);
-			reactUser.setPost(post);
-			reactUser.setReact(reactObj);
-			reactUser = reactUserRepository.save(reactUser);
-		} else {
+		//if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		if (!like) {
 			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
 			reactUserRepository.deleteById(reactUser.getId());
 			return ResponseEntity.ok().build();
 		}
+		
+		React reactObj = reactRepository.findByReact(react);
+		ReactUser reactUser = new ReactUser();
+		reactUser.setLogin(login);
+		reactUser.setPost(post);
+		reactUser.setReact(reactObj);
+		reactUser = reactUserRepository.save(reactUser);
 
 		post = postService.persist(post);
 		PostDTO dto = postToDto2(post, null);
-		dto.setReacts(getReacts(post));
+		dto.setReacts(getReacts(post));		
 		response.setData(dto);
 
 		return ResponseEntity.ok().body(response);
