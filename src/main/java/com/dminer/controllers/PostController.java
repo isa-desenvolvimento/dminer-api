@@ -338,10 +338,10 @@ public class PostController {
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
 
-		if (token == null || token.getToken().isBlank()) {
-			response.getErrors().add("Token precisa ser informado");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
 
 		Optional<Post> post = postService.findById(id);
 		if (!post.isPresent()) {
@@ -423,10 +423,10 @@ public class PostController {
 		response.setData(new ArrayList<PostDTO>());
 		log.info("Recuperando todos os Post");
 
-		if (token == null || token.getToken().isBlank()) {
-			response.getErrors().add("Token precisa ser informado");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
 
 		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
@@ -461,10 +461,10 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (token == null || token.getToken().isBlank()) {
-			response.getErrors().add("Token precisa ser informado");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-		}
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
 
 		posts = posts.stream()
 		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
@@ -493,9 +493,9 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 
-		if (token == null || token.getToken().isBlank()) {
-            response.getErrors().add("Token precisa ser informado");
-            return ResponseEntity.badRequest().body(response);
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
         }
 
 		Optional<Post> optPost = postService.findById(id);
@@ -576,9 +576,9 @@ public class PostController {
 
 		UserRestModel userRestModel = null;
 
-		if (token == null || token.getToken().isBlank()) {
-            response.getErrors().add("Token precisa ser informado");
-            return ResponseEntity.badRequest().body(response);
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
         }
 
 		if (user != null && !user.isBlank()) {
@@ -632,9 +632,9 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 		
-		if (token == null || token.getToken().isBlank()) {
-            response.getErrors().add("Token precisa ser informado");
-            return ResponseEntity.badRequest().body(response);
+		if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
         }
 
 		Post post = optPost.get();

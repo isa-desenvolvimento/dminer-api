@@ -16,4 +16,8 @@ import lombok.ToString;
 public class Token {
 
 	private String token = "";
+
+	public boolean naoPreenchido() {
+		return this == null || token == null || token.isBlank();
+	}
 }

@@ -88,7 +88,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}")
-    public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
+    public ResponseEntity<Response<UserDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
         
         Response<UserDTO> response = new Response<>();
@@ -97,6 +97,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
         UserDTO userDto;
 
         Optional<User> opt = userService.findByLogin(login);
@@ -108,7 +113,7 @@ public class UserController {
             return ResponseEntity.ok().body(response);
         }
 
-        userDto = userService.buscarUsuarioApi(login);
+        userDto = userService.buscarUsuarioApi(login, token.getToken());
         
         if (userDto == null) {
         	return ResponseEntity.notFound().build();
@@ -124,8 +129,9 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
-        if (token == null) { 
+        if (token.naoPreenchido()) { 
         	response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
         }
                 
         UserRestModel users = userService.carregarUsuariosApi(token.getToken());
@@ -175,17 +181,19 @@ public class UserController {
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
-        if (token != null) {
-            
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
-
-            if (usuariosApiReduct.isEmpty()) {   
-                response.getErrors().add("Nenhum usuario encontrado");             
-                return ResponseEntity.badRequest().body(response);
-            }
-            
-        	response.setData(usuariosApiReduct); 
+        if (token.naoPreenchido()) { 
+        	response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
         }
+    
+        List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
+        if (usuariosApiReduct.isEmpty()) {   
+            response.getErrors().add("Nenhum usuario encontrado");             
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        response.setData(usuariosApiReduct); 
+    
         return ResponseEntity.ok().body(response);
     }
     
@@ -226,6 +234,11 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
+
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
 
         UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
@@ -316,7 +329,7 @@ public class UserController {
 
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> search(@PathVariable String keyword) {
+    public ResponseEntity<Response<List<UserDTO>>> search(@HeaderParam("x-access-token") Token token, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
@@ -324,7 +337,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        List<UserDTO> userList = userService.search(keyword);
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+        List<UserDTO> userList = userService.search(keyword, token.getToken());
         userList.forEach(u -> {
         	String avatarPath = userService.getAvatarDir(u.getLogin());            
             if (avatarPath != null) {

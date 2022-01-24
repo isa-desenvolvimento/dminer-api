@@ -170,10 +170,15 @@ public class SearchController {
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
         
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         // usuarios
-        List<UserDTO> searchUsers = userService.search(keyword);
+        List<UserDTO> searchUsers = userService.search(keyword, token.getToken());
         searchUsers.forEach(u -> {        	
         	String encodedString = userService.getAvatarBase64ByLogin(login);
         	u.setAvatar(encodedString);

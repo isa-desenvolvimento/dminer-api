@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
@@ -87,9 +86,11 @@ public class UserService implements IUserService {
     }
     
 
-	public List<UserDTO> search(String termo) {
+	public List<UserDTO> search(String termo, String token) {
 
 		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
+
+		userRestModel = carregarUsuariosApi(token);
 
 		// se vier null ou conter erros, retorna lista vazia
 		if (userRestModel == null || userRestModel.hasError()) {
@@ -287,12 +288,12 @@ public class UserService implements IUserService {
     	return usuarios;
     }
     
-    public UserDTO buscarUsuarioApi(String login) {
+    public UserDTO buscarUsuarioApi(String login, String token) {
         log.info("Recuperando todos os usuário na api externa");
         
         // UserRestModel model = carregarUsuariosApi(token);
 		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         // System.out.println(userRestModel.toString());
