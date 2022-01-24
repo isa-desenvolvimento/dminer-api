@@ -141,8 +141,18 @@ public class FavoriteController {
             dto.setId(f.getId());
             dto.setIdPost(f.getPost().getId());
             dto.setLogin(f.getUser().getLogin());
+
+            List<Favorites> favosPost = favoritesRepository.findAllByPost(f.getPost());
+            if (!favosPost.isEmpty()) {
+                favosPost.forEach(favpost -> {
+                    dto.getFavorites().add(favpost.getUser().getLogin());
+                });
+            }
+
             favosDto.add(dto);
         });
+
+
 
         response.setData(favosDto);
         return ResponseEntity.ok(response);
