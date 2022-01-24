@@ -58,6 +58,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -168,7 +169,7 @@ public class SearchController {
 
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<SearchDTO>> getAllEvents(@HeaderParam("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
