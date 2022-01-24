@@ -577,8 +577,8 @@ public class PostController {
 	
 
 	// /post/like/{id}/{login}
-	@PutMapping("/like/{id}/{login}/{react}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react) {
+	@PutMapping("/like/{id}/{login}/{react}/{toggle}")
+	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
@@ -593,13 +593,11 @@ public class PostController {
 		
 		Post post = optPost.get();
 
-		if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		//if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		if (!toggle) {
 			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
 			reactUserRepository.deleteById(reactUser.getId());
 			return ResponseEntity.ok().build();
-			
-			// response.getErrors().add("Este usuário já está associado a este post");
-            // return ResponseEntity.badRequest().body(response);
 		}
 		
 		React reactObj = reactRepository.findByReact(react);
