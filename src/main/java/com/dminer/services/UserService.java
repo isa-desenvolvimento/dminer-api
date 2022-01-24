@@ -158,11 +158,6 @@ public class UserService implements IUserService {
 			}
 		}
 
-		// se não encontrar nada na pesquisa, retorna todos os usuários
-		if (pesquisa.isEmpty()) {
-			return users;
-		}
-
 		return pesquisa;
 	}
 
