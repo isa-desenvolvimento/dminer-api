@@ -19,6 +19,5 @@ import lombok.ToString;
 public class FavoriteDTO {    
     private Integer id;
     private String login;
-    private Integer idPost;
-    private List<String> favorites = new ArrayList<>();
+    private PostDTO postDto;
 }

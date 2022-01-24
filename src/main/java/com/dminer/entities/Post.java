@@ -20,11 +20,16 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.dminer.dto.CommentDTO;
+import com.dminer.dto.PostDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.enums.PostType;
+import com.dminer.utils.UtilDataHora;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +46,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class Post {
 
 	@Id
@@ -76,6 +82,24 @@ public class Post {
 	public Post(Integer id) { this.id = id; }
 
 	public Post(String content) { this.content = content; }
+
+
+
+	public PostDTO convertDto() {
+		return PostDTO
+		.builder()
+		.id(id)
+		.content(content)
+		.anexo(anexo)
+		.title(title)
+		.comments(new ArrayList<CommentDTO>())
+		.user(new UserReductDTO(login))
+		.type(type.name())
+		.dateCreated(UtilDataHora.dateToFullStringUTC(createDate))
+		.build();
+	}
+
+
 
 	public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
