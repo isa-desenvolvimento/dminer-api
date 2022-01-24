@@ -176,7 +176,7 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();

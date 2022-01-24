@@ -335,14 +335,14 @@ public class UserService implements IUserService {
         }
         
 		UserReductDTO dto = new UserReductDTO();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
+		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
 			if (login.equals(u.getLogin())) {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());
 				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
-				return;
-			}
-        });
+				return dto;
+			}			
+		}
 		return dto;
     }
 
