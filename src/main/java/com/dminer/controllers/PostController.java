@@ -599,8 +599,8 @@ public class PostController {
 		
 		Post post = optPost.get();
 
-		//if (reactUserRepository.existsByLoginAndPost(login, post)) {
-		if (!toggle) {
+		if (reactUserRepository.existsByLoginAndPost(login, post)) {
+		// if (!toggle) {
 			ReactUser reactUser = reactUserRepository.findByLoginAndPost(login, post);
 			reactUserRepository.deleteById(reactUser.getId());
 			return ResponseEntity.ok().build();
