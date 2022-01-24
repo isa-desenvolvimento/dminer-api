@@ -213,7 +213,7 @@ public class UserService implements IUserService {
     public UserRestModel carregarUsuariosApi(String token) {
     	
 		if (token == null) {
-			token = TokenService.getToken();
+			return null;
 		}
 
 		if (userRestModel != null) {
@@ -316,9 +316,9 @@ public class UserService implements IUserService {
 		return dto;
     }
 
-	public UserReductDTO buscarUsuarioApiReduct(String login) {
-		return buscarUsuarioApiReduct(login, TokenService.getToken());
-	}
+	// public UserReductDTO buscarUsuarioApiReduct(String login) {
+	// 	return buscarUsuarioApiReduct(login, TokenService.getToken());
+	// }
 
 	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");

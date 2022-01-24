@@ -125,9 +125,12 @@ public class SearchController {
     private Response<List<UserDTO>> aniversariantes(String token, String keyword) {
     	Response<List<UserDTO>> response = new Response<>();
 
-        if (token == null) {
-            token = TokenService.getToken();
+        if (token == null || token.isBlank()) {
+            response.getErrors().add("Token precisa ser informado");    		
+    		return response;
         }
+
+        
     	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
 
         if (userRestModel == null) {

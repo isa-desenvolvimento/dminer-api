@@ -178,7 +178,7 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post, null));
+		response.setData(postToDto(post, null, null));
 		
 		post = postService.persist(post);
 
@@ -333,10 +333,15 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get(@PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
+
+		if (token == null || token.getToken().isBlank()) {
+			response.getErrors().add("Token precisa ser informado");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
 		Optional<Post> post = postService.findById(id);
 		if (!post.isPresent()) {
@@ -345,7 +350,7 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get());
+		PostDTO dto = postToDto(post.get(), comment.get(), token.getToken());
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
@@ -379,7 +384,7 @@ public class PostController {
 
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments) {
+	private PostDTO postToDto(Post post, List<Comment> comments, String token) {
 		PostDTO dto = new PostDTO();
 		
 		dto.setType(post.getType().toString());
@@ -393,28 +398,35 @@ public class PostController {
 			dto.getFavorites().add(f.getUser().getLogin());
 		});
 
-		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
-		dto.setUser(user);
-        
-		if (comments != null && !comments.isEmpty()) {
-			comments = comments.stream()
-			.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
-			.collect(Collectors.toList());
-
-			comments.forEach(comment -> {
-				dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
-			});			
+		if (token != null) {
+			UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), token);      	
+			dto.setUser(user);
+			
+			if (comments != null && !comments.isEmpty()) {
+				comments = comments.stream()
+				.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
+				.collect(Collectors.toList());
+	
+				comments.forEach(comment -> {
+					dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
+				});			
+			}
 		}
 		return dto;
 	}
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
 		log.info("Recuperando todos os Post");
+
+		if (token == null || token.getToken().isBlank()) {
+			response.getErrors().add("Token precisa ser informado");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 
 		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
@@ -428,7 +440,7 @@ public class PostController {
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -437,7 +449,7 @@ public class PostController {
 	
 	
 	@GetMapping()
-	public ResponseEntity<Response<List<PostDTO>>> getAll() {
+	public ResponseEntity<Response<List<PostDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -449,13 +461,18 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
+		if (token == null || token.getToken().isBlank()) {
+			response.getErrors().add("Token precisa ser informado");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
 		posts = posts.stream()
 		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
 		.collect(Collectors.toList());
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get());
+			PostDTO dto = postToDto(post, comment.get(), token.getToken());
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -476,6 +493,11 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 
+		if (token == null || token.getToken().isBlank()) {
+            response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
 		Optional<Post> optPost = postService.findById(id);
         if (!optPost.isPresent()) {
         	response.getErrors().add("Post não encontrado");
@@ -490,11 +512,8 @@ public class PostController {
 		Optional<User> optUser = null;
 		Integer userId = null;
 		UserRestModel userRestModel = null;
-		if (token == null) {
-			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
-		} else {
-			userRestModel = userService.carregarUsuariosApi(token.getToken());
-		}
+	
+		userRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		if (userRestModel == null) {
 			response.getErrors().add("Não foi possível carregar os usuários do endpoint");
@@ -512,7 +531,7 @@ public class PostController {
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto(optPost.get(), comments);
+        PostDTO dto = postToDto(optPost.get(), comments, token.getToken());
         
 		dto.setReacts(getReacts(optPost.get()));
 
@@ -557,12 +576,13 @@ public class PostController {
 
 		UserRestModel userRestModel = null;
 
+		if (token == null || token.getToken().isBlank()) {
+            response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
 		if (user != null && !user.isBlank()) {
-			if (token == null) {
-				userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
-			} else {
-				userRestModel = userService.carregarUsuariosApi(token.getToken());
-			}
+			userRestModel = userService.carregarUsuariosApi(token.getToken());
 			
 			if (userRestModel == null) {
 				response.getErrors().add("Não foi possível carregar os usuários do endpoint");
@@ -586,14 +606,7 @@ public class PostController {
 		List<PostDTO> postsDto = new ArrayList<>();
         
 		for (Post p : posts) {
-			// List<Comment> comms = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(p, date, userOpt);
-			
-			PostDTO dto = postToDto(p, null);
-			// comms.forEach(c -> {
-				// CommentDTO commDto = commentConverter.entityToDTO(c);
-				// dto.getComments().add(commDto);
-			// });
-			
+			PostDTO dto = postToDto(p, null, token.getToken());
 			dto.setReacts(getReacts(p));
 			postsDto.add(dto);
 		}
@@ -606,7 +619,7 @@ public class PostController {
 
 	// /post/like/{id}/{login}
 	@PutMapping("/like/{id}/{login}/{react}/{toggle}")
-	public ResponseEntity<Response<PostDTO>> likes(@PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
+	public ResponseEntity<Response<PostDTO>> likes(@HeaderParam("x-access-token") Token token, @PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");
@@ -619,6 +632,11 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 		
+		if (token == null || token.getToken().isBlank()) {
+            response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
 		Post post = optPost.get();
 
 		if (reactUserRepository.existsByLoginAndPost(login, post)) {
@@ -637,7 +655,7 @@ public class PostController {
 
 		//post.getReacts().add(like);
 		post = postService.persist(post);
-		PostDTO dto = postToDto(post, null);
+		PostDTO dto = postToDto(post, null, token.getToken());
 		dto.setReacts(getReacts(post));
 		response.setData(dto);
 
