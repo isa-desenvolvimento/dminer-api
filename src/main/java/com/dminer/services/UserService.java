@@ -393,7 +393,7 @@ public class UserService implements IUserService {
     		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
     		if (image != null) {
     			UtilFilesStorage.saveImage(caminho, image);
-    			ImageResizer.resize(caminho, caminho, 0.5);
+    			//ImageResizer.resize(caminho, caminho, 0.5);
 				return caminho;
     		}
     	} catch (IOException e) {}
