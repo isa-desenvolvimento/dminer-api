@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+import javax.ws.rs.HeaderParam;
 
 import com.dminer.components.TokenService;
 import com.dminer.converters.NoticeConverter;
@@ -23,6 +24,7 @@ import com.dminer.converters.UserConverter;
 import com.dminer.dto.PostReductDTO;
 import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -37,6 +39,7 @@ import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
+import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.EventsService;
 import com.dminer.services.FeedService;
 import com.dminer.services.NoticeService;
@@ -119,10 +122,13 @@ public class SearchController {
 
 
     
-    private Response<List<UserDTO>> aniversariantes() {
+    private Response<List<UserDTO>> aniversariantes(String token, String keyword) {
     	Response<List<UserDTO>> response = new Response<>();
 
-    	UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+        if (token == null) {
+            token = TokenService.getToken();
+        }
+    	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
 
         if (userRestModel == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -136,12 +142,13 @@ public class SearchController {
         	return response;
         }
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
-        	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
-        		aniversariantes.add(u.toUserDTO());
-        	}
-        });
+        for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
+            if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
+                aniversariantes.add(u.toUserDTO());
+            }            
+        }
         
+        aniversariantes = userService.search(keyword, aniversariantes);
         if (aniversariantes.isEmpty()) {
             response.getErrors().add("Nenhum aniversariante encontrado");
             return response;
@@ -155,7 +162,7 @@ public class SearchController {
 
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
+    public ResponseEntity<Response<SearchDTO>> getAllEvents(@HeaderParam("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
@@ -171,7 +178,7 @@ public class SearchController {
         });
             
         // aniversariantes
-        Response<List<UserDTO>> aniversariantes = aniversariantes();
+        Response<List<UserDTO>> aniversariantes = aniversariantes(token.getToken(), keyword);
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
                 String encodedString = userService.getAvatarBase64ByLogin(login);

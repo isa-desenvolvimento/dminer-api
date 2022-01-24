@@ -129,6 +129,43 @@ public class UserService implements IUserService {
 		return pesquisa;
 	}
 
+
+	public List<UserDTO> search(String termo, List<UserDTO> users) {
+
+		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
+
+		// se vier null ou conter erros, retorna lista vazia
+		if (users == null || users.isEmpty()) {
+			return pesquisa;
+		}
+
+		// se pesquisa for por null, retorna todos os usuário
+		if (termo == null) {			
+			return users;
+		}
+
+		// passa o termo de busca pra lowercase e sai procurando alguma
+		// ocorrencia em algum dos atributos do objeto
+		termo = termo.toLowerCase();
+		for (UserDTO u : users) {
+			String concat = (
+				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
+				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
+			).toLowerCase();
+
+			if (concat.contains(termo)) {
+				pesquisa.add(u);
+			}
+		}
+
+		// se não encontrar nada na pesquisa, retorna todos os usuários
+		if (pesquisa.isEmpty()) {
+			return users;
+		}
+
+		return pesquisa;
+	}
+
     
     public boolean existsByLogin(String login) {
         log.info("Verificando se usuário existe pelo login, {}", login);
