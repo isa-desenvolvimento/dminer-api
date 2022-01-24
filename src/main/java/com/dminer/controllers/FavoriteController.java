@@ -2,7 +2,9 @@ package com.dminer.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -14,8 +16,12 @@ import com.dminer.dto.PostDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Favorites;
 import com.dminer.entities.Post;
+import com.dminer.entities.React;
+import com.dminer.entities.ReactUser;
 import com.dminer.entities.User;
 import com.dminer.repository.FavoritesRepository;
+import com.dminer.repository.ReactRepository;
+import com.dminer.repository.ReactUserRepository;
 import com.dminer.response.Response;
 import com.dminer.services.CommentService;
 import com.dminer.services.PostService;
@@ -54,6 +60,13 @@ public class FavoriteController {
     @Autowired
     private FavoritesRepository favoritesRepository;
 
+    @Autowired
+	private ReactRepository reactRepository;
+
+    @Autowired
+	private ReactUserRepository reactUserRepository;
+
+    
 
     private void validateRequestDto(FavoriteRequestDTO dto, BindingResult result) {
         if (dto.getLogin() == null || dto.getLogin().isBlank()) {
@@ -120,7 +133,72 @@ public class FavoriteController {
 
 
     @GetMapping("/all-by-user/{login}")
-    public ResponseEntity<Response<List<FavoriteDTO>>> allByUser(@PathVariable String login) {
+    public ResponseEntity<Response<List<PostDTO>>> allByUser(@PathVariable String login) {
+        
+        log.info("Buscando todos por usuário {}", login);
+
+        Response<List<PostDTO>> response = new Response<>();
+
+        if (login == null || login.isBlank()) {
+            response.setErrors(Arrays.asList("Informe o login do usuário"));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        List<Favorites> favs = new ArrayList<>();
+        List<Post> allPost = postService.findAllByLogin(login);
+        List<PostDTO> allPostFiltrado = new ArrayList<>();
+
+        for (Post post : allPost) {
+            if (post.getFavorites() != null && !post.getFavorites().isEmpty()) {
+                post.getFavorites().forEach(fav -> {
+                    if (fav.getUser().getLogin().equals(login)) {
+                        Optional<List<Comment>> comment = commentService.findByPost(post);
+                        List<CommentDTO> comments = new ArrayList<>();
+                        if (comment.isPresent()) {
+                            comment.get().forEach(c -> {
+                                comments.add(c.convertDto());
+                            });
+                        }
+                        PostDTO dto = post.convertDto();
+                        dto.setComments(comments);
+                        dto.setReacts(getReacts(post));
+                        allPostFiltrado.add(dto);
+                    }
+                });
+            }
+        }
+        response.setData(allPostFiltrado);
+        return ResponseEntity.ok(response);
+    }
+
+
+    private Map<String, List<String>> getReacts(Post post) {
+		Map<String, List<String>> dto = new HashMap<>();
+		
+		List<React> reacts = reactRepository.findAll();
+		reacts.forEach(react -> {
+			dto.put(react.getReact(), new ArrayList<String>());
+		});
+
+		List<ReactUser> reactsUsers = reactUserRepository.findByPost(post);
+		
+		if (reactsUsers != null && !reactsUsers.isEmpty()) {
+			reactsUsers.forEach(like -> {
+				String login = like.getLogin();
+				String react = like.getReact().getReact();
+				if (dto.containsKey(react)) {
+					dto.get(react).add(login);
+				} else {
+					dto.put(react, Arrays.asList(login));
+				}
+			});
+		}
+		return dto;
+	} 
+    
+
+    // @GetMapping("/all-by-user/{login}")
+    public ResponseEntity<Response<List<FavoriteDTO>>> allByUser2(@PathVariable String login) {
         
         log.info("Buscando todos por usuário {}", login);
 
