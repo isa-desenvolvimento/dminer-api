@@ -217,11 +217,11 @@ public class UserService implements IUserService {
 			return null;
 		}
 
-		// if (userRestModel != null) {
-		// 	if (userRestModel.getOutput().getResult().getUsuarios() != null) {
-		// 		return userRestModel;
-		// 	}
-		// }
+		if (userRestModel != null ) {
+			if (userRestModel.getOutput().getResult().getUsuarios() != null && !userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
+				return userRestModel;
+			}
+		}
 
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
@@ -240,7 +240,7 @@ public class UserService implements IUserService {
 				response += scanner.next();
 			}
 			scanner.close();
-			if (response.contains("expirou") || response.contains("não fez login")) {
+			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
 				userRestModel = new UserRestModel();
 				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema"));
 				return userRestModel;
@@ -248,6 +248,7 @@ public class UserService implements IUserService {
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			try {
+				System.out.println(response.toString());
 				userRestModel = gson.fromJson(response, UserRestModel.class);
 				return userRestModel;				
 			} catch (IllegalStateException e) {
