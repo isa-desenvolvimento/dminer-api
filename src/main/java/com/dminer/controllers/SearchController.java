@@ -49,6 +49,8 @@ import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +68,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class SearchController {
     
+    private static final Logger log = LoggerFactory.getLogger(SearchController.class);
 
     @Autowired
     private NotificationService notificationService;
@@ -171,6 +174,8 @@ public class SearchController {
         SearchDTO searchDTO = new SearchDTO();
         
         if (token.naoPreenchido()) { 
+            log.info("{}", token); 
+            log.info(token.getToken());
             response.getErrors().add("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
