@@ -1,9 +1,14 @@
 package com.dminer.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.dminer.entities.Notification;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.NotificationRepository;
 import com.dminer.services.interfaces.INotificationService;
 
@@ -19,6 +24,12 @@ public class NotificationService implements INotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private GenericRepositoryPostgres genericRepositoryPostgres;
+
+    @Autowired
+    private GenericRepositorySqlServer genericRepositorySqlServer;
 
     
     @Override
@@ -45,15 +56,20 @@ public class NotificationService implements INotificationService {
 		notificationRepository.deleteById(id);		        
     }
     
-    public Optional<List<Notification>> search(String keyword) {
+    public List<Notification> search(String keyword, String login, boolean isProd) {
+        List<Notification> result = new ArrayList<>();
         if (keyword != null) {
-            List<Notification> result = notificationRepository.search(keyword);
-            System.out.println(result.size());
-            if (result.isEmpty()) {
-                return Optional.ofNullable(notificationRepository.findAll()); 
-            }
-            return Optional.of(result);
+            if (isProd) {
+                result = genericRepositoryPostgres.searchNotification(keyword, login);
+            } else {
+                result = genericRepositorySqlServer.searchNotification(keyword, login);
+            }          
+        } else {
+            result = notificationRepository.findAll();
         }
-        return Optional.ofNullable(notificationRepository.findAll());
+        result = result.stream()
+            .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
+            .collect(Collectors.toList());
+        return result;
     }
 }

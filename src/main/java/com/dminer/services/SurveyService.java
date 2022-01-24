@@ -1,12 +1,20 @@
 package com.dminer.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.dminer.converters.SurveyConverter;
+import com.dminer.dto.SurveyDTO;
 import com.dminer.entities.Survey;
+import com.dminer.entities.SurveyResponses;
+import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.SurveyRepository;
+import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.services.interfaces.ISurveyService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +33,13 @@ public class SurveyService implements ISurveyService {
 	@Autowired
 	private GenericRepositorySqlServer genericRepositorySqlServer;	
 
+	@Autowired
+    private SurveyResponseRepository surveyResponseRepository;
+	
+	@Autowired
+    private SurveyConverter surveyConverter;
+
+	
 
     @Override
     public Survey persist(Survey user) {
@@ -53,5 +68,44 @@ public class SurveyService implements ISurveyService {
 
 	public Optional<List<Survey>> searchSqlServer(String keyword) {
 		return Optional.ofNullable(genericRepositorySqlServer.searchSurvey(keyword));
+    }
+
+	public List<SurveyDTO> search(String keyword, String login, boolean isProd) {
+        List<Survey> result = new ArrayList<>();
+        if (keyword != null) {
+            if (isProd) {
+                result = genericRepositoryPostgres.searchSurvey(keyword);
+            } else {
+                result = genericRepositorySqlServer.searchSurvey(keyword);
+            }          
+        } else {
+            result = surveyRepository.findAll();
+        }
+
+		List<SurveyDTO> dtoList = new ArrayList<>();
+		
+		result.forEach(u -> {
+			
+			SurveyDTO dto = new SurveyDTO();
+			SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(u.getId());
+			if (responseDto != null) {
+				dto = u.convertDto(responseDto);
+			} else {
+				dto = u.convertDto();	
+			}
+
+			if (responseDto != null) {
+				User user = responseDto.getUsers().stream().
+				filter(f -> f.getLogin().equalsIgnoreCase(login)).
+				findAny().
+				orElse(null);
+	
+				if (user != null) {
+					dto.setVoted(true);
+				}
+			}
+			dtoList.add(dto);
+		});
+        return dtoList;
     }
 }

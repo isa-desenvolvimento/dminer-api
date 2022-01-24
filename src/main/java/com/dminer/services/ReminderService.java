@@ -1,9 +1,14 @@
 package com.dminer.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.dminer.entities.Reminder;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.ReminderRepository;
 import com.dminer.services.interfaces.IReminderService;
 
@@ -20,7 +25,13 @@ public class ReminderService implements IReminderService {
     @Autowired
     private ReminderRepository reminderRepository;
 
+    @Autowired
+    private GenericRepositoryPostgres genericRepositoryPostgres;
 
+    @Autowired
+    private GenericRepositorySqlServer genericRepositorySqlServer;
+
+    
     @Override
     public Reminder persist(Reminder reminder) {
         log.info("Persistindo lembrete: {}", reminder);
@@ -45,11 +56,21 @@ public class ReminderService implements IReminderService {
 		reminderRepository.deleteById(id);        
     }
 
-    public Optional<List<Reminder>> search(String keyword, String login) {
+    public List<Reminder> search(String keyword, String login, boolean isProd) {
+        List<Reminder> result = new ArrayList<>();
         if (keyword != null) {
-            return Optional.ofNullable(reminderRepository.search(keyword, login));
+            if (isProd) {
+                result = genericRepositoryPostgres.searchReminder(keyword, login);
+            } else {
+                result = genericRepositorySqlServer.searchReminder(keyword, login);
+            }            
+        } else {
+            result = reminderRepository.findAll();
         }
-        return Optional.ofNullable(reminderRepository.findAll());
+        result = result.stream()
+        .sorted(Comparator.comparing(Reminder::getDate).reversed())
+        .collect(Collectors.toList());
+        return result;
     }
     
 }

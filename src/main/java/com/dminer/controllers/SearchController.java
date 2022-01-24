@@ -105,7 +105,7 @@ public class SearchController {
 
     @Autowired
     private FeedService feedService;
-    
+
     @Autowired
     private SurveyResponseRepository surveyResponseRepository;
     
@@ -117,13 +117,6 @@ public class SearchController {
     @Autowired
     private Environment env;
 
-
-
-    // @PostConstruct
-    // private void init() {
-    //     token = userService.getToken();
-	// 	userRestModel = userService.carregarUsuariosApi(token);
-    // }
 
     
     private Response<List<UserDTO>> aniversariantes() {
@@ -158,6 +151,8 @@ public class SearchController {
         return response;
     }
     
+
+
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 50000)
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@PathVariable String login, @PathVariable String keyword) {
@@ -167,13 +162,15 @@ public class SearchController {
         
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
-        List<UserDTO> searchUsers = userService.search(keyword);           
+        // usuarios
+        List<UserDTO> searchUsers = userService.search(keyword);
         searchUsers.forEach(u -> {        	
         	String encodedString = userService.getAvatarBase64ByLogin(login);
         	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
-                
+            
+        // aniversariantes
         Response<List<UserDTO>> aniversariantes = aniversariantes();
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
         	aniversariantes.getData().forEach(ani -> {
@@ -183,234 +180,54 @@ public class SearchController {
         	});
         }
         
-        if (isProd()) {
-            
-            // reminder
-            List<Reminder> searchReminder = genericRepositoryPostgres.searchReminder(keyword, login);
-            
-            if (searchReminder != null && !searchReminder.isEmpty()) {
-                searchReminder = searchReminder.stream()
-                .sorted(Comparator.comparing(Reminder::getDate).reversed())
-                .collect(Collectors.toList());
 
-                searchReminder.forEach(u -> {
-                    searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
-                });
-            } else {
-                Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
-                if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
-                    searchReminder = searchReminder2.get().stream()
-                    .sorted(Comparator.comparing(Reminder::getDate).reversed())
-                    .collect(Collectors.toList());
+        // reminder
+        List<Reminder> searchReminder = reminderService.search(keyword, login, isProd());
+        if (!searchReminder.isEmpty()) {
+            searchReminder.forEach(u -> {
+                searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
+            });
+        }
 
-                    searchReminder.forEach(u -> {
-                        if (u.getUser().getLogin().equals(login))
-                            searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
-                    });
-                }
-            }
+        // Notification
+        List<Notification> notifications = notificationService.search(keyword, login, isProd());
+        if (!notifications.isEmpty()) {
+            notifications.forEach(u -> {            
+                searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+            }); 
+        }        
 
-            // Notification
-            List<Notification> searchNotification = genericRepositoryPostgres.searchNotification(keyword, login);
-            if (searchNotification != null &&  !searchNotification.isEmpty()) {
-                searchNotification = searchNotification.stream()
-                .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-                .collect(Collectors.toList());
+        // notice
+        List<Notice> notices = noticeService.search(keyword, isProd());
+        if (!notices.isEmpty()) {
+            notices.forEach(u -> {
+                searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
+            });
+        }
 
-                searchNotification.forEach(u -> {
-                    searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
-                });
-            } else {
-                Optional<List<Notification>> all = notificationService.findAll();
-                if (all.isPresent()) {
-                    searchNotification = all.get().stream()
-                    .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-                    .collect(Collectors.toList());
+        // events
+        List<Events> events = eventsService.search(keyword, isProd());
+        if (!events.isEmpty()) {
+            events.forEach(u -> {
+                searchDTO.getEventsList().add(u);
+            });
+        }
 
-                    searchNotification.forEach(u -> {
-                        if (u.getUser().getLogin().equals(login))
-                            searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
-                    }); 
-                }                
-            }
+        // surveys
+        List<SurveyDTO> searchSurvey = surveyService.search(keyword, login, isProd());
+        if (!searchSurvey.isEmpty()) {
+            searchSurvey.forEach(u -> {
+                searchDTO.getQuizList().add(u);
+            });
+        }
 
-            // notice
-            List<Notice> notices = genericRepositoryPostgres.searchNotice(keyword);
-            if (!notices.isEmpty()) {
-                notices = notices.stream()
-                    .sorted(Comparator.comparing(Notice::getDate).reversed())
-                    .collect(Collectors.toList());
-                notices.forEach(u -> {
-                	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                });
-            } else {
-                Optional<List<Notice>> result = noticeService.findAll();
-                if (result.isPresent() &&  !result.get().isEmpty()) {
-                    notices = result.get().stream()
-                    .sorted(Comparator.comparing(Notice::getDate).reversed())
-                    .collect(Collectors.toList());
 
-                    result.get().forEach(u -> {
-                    	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                    });
-                }    
-            }
-
-            // events
-            Optional<List<Events>> searchEvents = eventsService.searchPostgres(keyword);
-            if (searchEvents.isPresent() &&  !searchEvents.get().isEmpty()) {
-                searchEvents.get().forEach(u -> {
-                    searchDTO.getEventsList().add(u);
-                });
-            }
-            
-            // surveys
-            Optional<List<Survey>> searchSurvey = surveyService.searchPostgres(keyword);
-            if (!searchSurvey.isPresent() || searchSurvey.get().isEmpty()) {
-                searchSurvey = surveyService.findAll();
-            }
-
-            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                List<Survey> surveys = searchSurvey.get();
-                
-                surveys = surveys.stream()
-                .sorted(Comparator.comparing(Survey::getDate))
-                .collect(Collectors.toList());
-                
-                surveys.forEach(u -> {
-                    
-                    SurveyResponses responseDto = surveyResponseRepository.findByIdSurvey(u.getId());
-                    SurveyDTO dto = surveyConverter.entityToDTO(u);
-
-                    if (responseDto != null) {
-                        User user = responseDto.getUsers().stream().
-                        filter(f -> f.getLogin().equalsIgnoreCase(login)).
-                        findAny().
-                        orElse(null);
-            
-                        if (user != null) {
-                            dto.setVoted(true);
-                        }
-                    }
-
-                    searchDTO.getQuizList().add(dto);
-                });
-            }
-
-            // feed (post)
-            List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
-            if (!searchFeed.isEmpty()) {
-            	searchFeed.forEach(u -> {
-            		searchDTO.getFeedList().add(u);
-                });
-            } else {
-            	searchFeed = feedService.getReductAll();
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });
-            }
-            
-        } else {
-
-            // reminder
-            List<Reminder> searchReminder = genericRepositorySqlServer.searchReminder(keyword, login);
-            
-            if (searchReminder != null && !searchReminder.isEmpty()) {
-                searchReminder = searchReminder.stream()
-                .sorted(Comparator.comparing(Reminder::getDate).reversed())
-                .collect(Collectors.toList());
-
-                searchReminder.forEach(u -> {
-                    searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
-                });
-            } else {
-                Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
-                if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
-                    searchReminder = searchReminder2.get().stream()
-                    .sorted(Comparator.comparing(Reminder::getDate).reversed())
-                    .collect(Collectors.toList());
-
-                    searchReminder.forEach(u -> {
-                        if (u.getUser().getLogin().equals(login))
-                            searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
-                    });
-                }
-            }
-
-            // Notification
-            List<Notification> searchNotification = genericRepositorySqlServer.searchNotification(keyword, login);
-            if (searchNotification != null &&  !searchNotification.isEmpty()) {
-                searchNotification = searchNotification.stream()
-                .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-                .collect(Collectors.toList());
-
-                searchNotification.forEach(u -> {
-                    searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
-                });
-            } else {
-                Optional<List<Notification>> all = notificationService.findAll();
-                if (all.isPresent()) {
-                    searchNotification = all.get().stream()
-                    .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-                    .collect(Collectors.toList());
-
-                    searchNotification.forEach(u -> {
-                        if (u.getUser().getLogin().equals(login))
-                            searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
-                    }); 
-                }                
-            }
-
-        	// notice
-            List<Notice> notices = genericRepositorySqlServer.searchNotice(keyword);
-            if (!notices.isEmpty()) {
-                notices.forEach(u -> {
-                	searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                });
-            } else {
-                Optional<List<Notice>> result = noticeService.findAll();
-                if (result.isPresent() &&  !result.get().isEmpty()) {
-                    result.get().forEach(u -> {
-                        searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
-                    });
-                }    
-            }
-            
-            // events
-            Optional<List<Events>> searchEvents = eventsService.search(keyword);
-            if (searchEvents.isPresent() && !searchEvents.get().isEmpty()) {
-                searchEvents.get().forEach(u -> {
-                    searchDTO.getEventsList().add(u);
-                });
-            }
-            
-            // surveys
-            Optional<List<Survey>> searchSurvey = surveyService.searchSqlServer(keyword);
-            if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                searchSurvey.get().forEach(u -> {                    
-                    searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                });
-            } else {
-                searchSurvey = surveyService.findAll();
-                if (searchSurvey.isPresent() && !searchSurvey.get().isEmpty()) {
-                    searchSurvey.get().forEach(u -> {
-                        searchDTO.getQuizList().add(surveyConverter.entityToDTO(u));
-                    });
-                }
-            }
-            
-            // feed (post)
-            List<PostReductDTO> searchFeed = feedService.searchSqlServer(keyword);
-            if (!searchFeed.isEmpty()) {
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });
-            } else {            	
-            	searchFeed = feedService.getReductAll();
-            	searchFeed.forEach(u -> {
-                    searchDTO.getFeedList().add(u);
-                });            
-            }
+        // feed (post)
+        List<PostReductDTO> searchFeed = feedService.search(keyword, login, isProd());
+        if (!searchFeed.isEmpty()) {
+            searchFeed.forEach(u -> {
+                searchDTO.getFeedList().add(u);
+            });
         }
 
         response.setData(searchDTO);
