@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
-import javax.ws.rs.HeaderParam;
+
 
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -333,7 +334,7 @@ public class PostController {
 
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<PostDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("id") int id) {
+	public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
 		
 		Response<PostDTO> response = new Response<>();
 		log.info("Recuperando Post {}", id);
@@ -417,7 +418,7 @@ public class PostController {
 	
 	
 	@GetMapping("/all/{login}")
-	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
+	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -449,7 +450,7 @@ public class PostController {
 	
 	
 	@GetMapping()
-	public ResponseEntity<Response<List<PostDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
+	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
 		response.setData(new ArrayList<PostDTO>());
@@ -485,7 +486,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@RequestHeader("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -568,7 +569,7 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         
@@ -619,7 +620,7 @@ public class PostController {
 
 	// /post/like/{id}/{login}
 	@PutMapping("/like/{id}/{login}/{react}/{toggle}")
-	public ResponseEntity<Response<PostDTO>> likes(@HeaderParam("x-access-token") Token token, @PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
+	public ResponseEntity<Response<PostDTO>> likes(@RequestHeader("x-access-token") Token token, @PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
             response.getErrors().add("Id precisa ser informado");

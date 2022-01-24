@@ -12,7 +12,6 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
-import javax.ws.rs.HeaderParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +87,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}")
-    public ResponseEntity<Response<UserDTO>> get(@HeaderParam("x-access-token") Token token, @PathVariable("login") String login) {
+    public ResponseEntity<Response<UserDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
         
         Response<UserDTO> response = new Response<>();
@@ -126,7 +125,7 @@ public class UserController {
 
     @PostMapping(value = "/all")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (token.naoPreenchido()) { 
@@ -178,7 +177,7 @@ public class UserController {
     
     @PostMapping(value = "/dropdown")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token.naoPreenchido()) { 
@@ -231,7 +230,7 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@RequestHeader("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
@@ -329,7 +328,7 @@ public class UserController {
 
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> search(@HeaderParam("x-access-token") Token token, @PathVariable String keyword) {
+    public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
