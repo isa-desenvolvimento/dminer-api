@@ -217,11 +217,11 @@ public class UserService implements IUserService {
 			return null;
 		}
 
-		if (userRestModel != null) {
-			if (userRestModel.getOutput().getResult().getUsuarios() != null) {
-				return userRestModel;
-			}
-		}
+		// if (userRestModel != null) {
+		// 	if (userRestModel.getOutput().getResult().getUsuarios() != null) {
+		// 		return userRestModel;
+		// 	}
+		// }
 
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
