@@ -13,6 +13,7 @@ import com.dminer.dto.CommentDTO;
 import com.dminer.dto.FavoriteDTO;
 import com.dminer.dto.FavoriteRequestDTO;
 import com.dminer.dto.PostDTO;
+import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Favorites;
 import com.dminer.entities.Post;
@@ -159,7 +160,11 @@ public class FavoriteController {
                                 comments.add(c.convertDto());
                             });
                         }
+                        
+                        UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
+                        
                         PostDTO dto = post.convertDto();
+		                dto.setUser(user);
                         dto.setComments(comments);
                         dto.setReacts(getReacts(post));
                         allPostFiltrado.add(dto);
