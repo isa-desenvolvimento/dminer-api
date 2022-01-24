@@ -297,8 +297,6 @@ public class SearchController {
                 });
             }
 
-            
-
             // feed (post)
             List<PostReductDTO> searchFeed = feedService.searchPostgres(keyword);
             if (!searchFeed.isEmpty()) {
@@ -313,6 +311,55 @@ public class SearchController {
             }
             
         } else {
+
+            // reminder
+            List<Reminder> searchReminder = genericRepositorySqlServer.searchReminder(keyword, login);
+            
+            if (searchReminder != null && !searchReminder.isEmpty()) {
+                searchReminder = searchReminder.stream()
+                .sorted(Comparator.comparing(Reminder::getDate).reversed())
+                .collect(Collectors.toList());
+
+                searchReminder.forEach(u -> {
+                    searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
+                });
+            } else {
+                Optional<List<Reminder>> searchReminder2 = reminderService.findAll();
+                if (searchReminder2.isPresent() &&  !searchReminder2.get().isEmpty()) {
+                    searchReminder = searchReminder2.get().stream()
+                    .sorted(Comparator.comparing(Reminder::getDate).reversed())
+                    .collect(Collectors.toList());
+
+                    searchReminder.forEach(u -> {
+                        if (u.getUser().getLogin().equals(login))
+                            searchDTO.getReminderList().add( reminderConverter.entityToDto(u) );
+                    });
+                }
+            }
+
+            // Notification
+            List<Notification> searchNotification = genericRepositorySqlServer.searchNotification(keyword, login);
+            if (searchNotification != null &&  !searchNotification.isEmpty()) {
+                searchNotification = searchNotification.stream()
+                .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
+                .collect(Collectors.toList());
+
+                searchNotification.forEach(u -> {
+                    searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+                });
+            } else {
+                Optional<List<Notification>> all = notificationService.findAll();
+                if (all.isPresent()) {
+                    searchNotification = all.get().stream()
+                    .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
+                    .collect(Collectors.toList());
+
+                    searchNotification.forEach(u -> {
+                        if (u.getUser().getLogin().equals(login))
+                            searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+                    }); 
+                }                
+            }
 
         	// notice
             List<Notice> notices = genericRepositorySqlServer.searchNotice(keyword);
@@ -375,7 +422,4 @@ public class SearchController {
         return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 
-    public boolean isProdCliente() {
-        return Arrays.asList(env.getActiveProfiles()).contains("prod-cliente");
-    }
 }

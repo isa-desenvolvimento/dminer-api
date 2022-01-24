@@ -14,8 +14,10 @@ import com.dminer.entities.Category;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
+import com.dminer.entities.Notification;
 import com.dminer.entities.Permission;
 import com.dminer.entities.Post;
+import com.dminer.entities.Reminder;
 import com.dminer.entities.Survey;
 import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
@@ -29,7 +31,7 @@ public class GenericRepositorySqlServer {
     private JdbcOperations jdbcOperations;
 
     @Autowired
-    private UserRepository userService;
+    private UserRepository userRepository;
     
     @Autowired
     private PermissionRepository permissionRepository;
@@ -221,7 +223,7 @@ public class GenericRepositorySqlServer {
             e.setTitle(rs.getString("TITLE"));
             e.setContent(rs.getString("CONTENT"));
             e.setDate(rs.getTimestamp("DATE"));
-            Optional<User> findById = userService.findById(rs.getInt("CREATOR"));
+            Optional<User> findById = userRepository.findById(rs.getInt("CREATOR"));
             if (findById.isPresent())
                 e.setCreator(findById.get());
             
@@ -364,6 +366,76 @@ public class GenericRepositorySqlServer {
             Optional<Category> c = categoryRepository.findById(rs.getInt("CATEGORY_ID"));
             if (c.isPresent())
                 e.setCategory(c.get());
+            return e;
+        });
+    }
+
+
+    public List<Notification> searchNotification(String keyword, String login) {
+    	String query = 
+    			"select " +
+    					"   notificati0_.id as id, " +
+    					"   notificati0_.active as active, " +
+    					"   notificati0_.notification as notification, " +
+                        "   notificati0_.create_date as create_date, " +
+    					"   notificati0_.user_id as user_id " +
+    					"from " +
+    					"   notification notificati0_ cross  " +
+    					"join " +
+    					"   users user1_  " +
+    					"where " +
+    					"   notificati0_.user_id=user1_.id  " +
+    					"   and user1_.login='" + login + "'";
+    					
+    	if (keyword != null) {
+    		query += "and ( " ;
+    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
+    	}
+    	
+    	log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Notification e = new Notification();
+            e.setId(rs.getInt("ID"));
+            e.setActive(rs.getBoolean("ACTIVE"));
+            e.setNotification(rs.getString("NOTIFICATION"));
+            e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
+            return e;
+        });
+    }
+
+
+    public List<Reminder> searchReminder(String keyword, String login) {
+        String query = 
+        "select * " +
+        "from " +
+        "   reminder reminder_1 cross  " +
+        "join " +
+        "   users user1_  " +
+        "where " +
+        "   reminder_1.user_id=user1_.id  ";
+        if (keyword != null) {        	
+            query +=
+        			"and ( " +        
+					"    lower(concat(reminder_1.reminder_describle, ' ', convert(varchar(100), reminder_1.date, 120), ' ', reminder_1.active, ' ', user1_.login, ' ')) like lower('%" + keyword + "%')  " +
+					") ";
+        }
+        query += "    and user1_.login = '" + login + "' " ;
+        
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Reminder e = new Reminder();
+            e.setId(rs.getInt("ID"));
+            e.setActive(rs.getBoolean("ACTIVE"));
+            e.setReminderDescrible(rs.getString("REMINDER_DESCRIBLE"));
+            e.setDate(rs.getTimestamp("DATE"));
+            Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+            if (findById.isPresent())
+                e.setUser(findById.get());
             return e;
         });
     }
