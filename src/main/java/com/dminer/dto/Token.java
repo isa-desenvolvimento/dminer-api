@@ -15,5 +15,5 @@ import lombok.ToString;
 @ToString
 public class Token {
 
-	private String token;
+	private String token = "";
 }
