@@ -178,13 +178,18 @@ public class UserService implements IUserService {
 	}
 
     
-	public void atualizarPermissaoApiExterna(User user, Integer permissao) {
-		
-	}
-
-
     public UserRestModel carregarUsuariosApi(String token) {
     	
+		if (token == null) {
+			token = TokenService.getToken();
+		}
+
+		if (userRestModel != null) {
+			if (userRestModel.getOutput().getResult().getUsuarios() != null) {
+				return userRestModel;
+			}
+		}
+
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
 
@@ -224,13 +229,10 @@ public class UserService implements IUserService {
     }
     
 
-    public List<UserReductDTO> carregarUsuariosApiReduct() {
+    public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
-		if (userRestModel == null) {
-			log.info("Usuário não carregados... Tentando recuperar da api externa");
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
-		}
+		userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
         // UserRestModel model = carregarUsuariosApi(token);
@@ -244,7 +246,9 @@ public class UserService implements IUserService {
         	UserReductDTO dto = new UserReductDTO();
         	dto.setLogin(u.getLogin());
         	dto.setUserName(u.getUserName());
-			dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+			if (carregarAvatar) {
+				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+			}
         	usuarios.add(dto);
         });
 
@@ -280,13 +284,16 @@ public class UserService implements IUserService {
 		return dto;
     }
 
-
 	public UserReductDTO buscarUsuarioApiReduct(String login) {
+		return buscarUsuarioApiReduct(login, TokenService.getToken());
+	}
+
+	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
 		if (userRestModel == null) {
 			log.info("Carregando usuário diretamente da API");
-			userRestModel = carregarUsuariosApi(TokenService.getToken());
+			userRestModel = carregarUsuariosApi(token);
 		}
 
         if (userRestModel == null || userRestModel.hasError()) {

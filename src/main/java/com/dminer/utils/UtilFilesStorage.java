@@ -18,10 +18,11 @@ public class UtilFilesStorage {
 	public final static String separator = File.separator;
 	
 	public static boolean createDirectory(String path) {
-        if (! new File(path).exists()) {
-            return (new File(path)).mkdirs();
-        }
-        return true;
+        return new File(path).mkdirs();
+        // if (! new File(path).exists()) {
+        //     return (new File(path)).mkdirs();
+        // }
+        // return true;
     }    
     
     public static String getNomeArquivo(String arq) {

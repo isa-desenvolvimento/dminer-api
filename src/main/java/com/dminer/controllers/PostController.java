@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
+import javax.ws.rs.HeaderParam;
 
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
 import com.dminer.dto.ReactDTO;
 import com.dminer.dto.SurveyRequestDTO;
+import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
@@ -466,7 +468,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@HeaderParam("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -487,7 +489,17 @@ public class PostController {
 		
 		Optional<User> optUser = null;
 		Integer userId = null;
-		UserRestModel userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+		UserRestModel userRestModel = null;
+		if (token == null) {
+			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+		} else {
+			userRestModel = userService.carregarUsuariosApi(token.getToken());
+		}
+
+		if (userRestModel == null) {
+			response.getErrors().add("Não foi possível carregar os usuários do endpoint");
+			return ResponseEntity.badRequest().body(response); 
+		}
 
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
@@ -537,7 +549,7 @@ public class PostController {
 	///api/post/search/all?date=&user=
 	@GetMapping(value = "/search/all")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@HeaderParam("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<List<PostDTO>> response = new Response<>();
         
@@ -546,7 +558,17 @@ public class PostController {
 		UserRestModel userRestModel = null;
 
 		if (user != null && !user.isBlank()) {
-			userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+			if (token == null) {
+				userRestModel = userService.carregarUsuariosApi(TokenService.getToken());
+			} else {
+				userRestModel = userService.carregarUsuariosApi(token.getToken());
+			}
+			
+			if (userRestModel == null) {
+				response.getErrors().add("Não foi possível carregar os usuários do endpoint");
+				return ResponseEntity.badRequest().body(response); 
+			}
+
 			userOpt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!userOpt.isPresent()) {
 				response.getErrors().add("Nenhum usuário encontrado");

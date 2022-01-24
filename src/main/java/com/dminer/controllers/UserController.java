@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+import javax.ws.rs.HeaderParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,7 +121,7 @@ public class UserController {
 
     @PostMapping(value = "/all")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (token == null) { 
@@ -155,12 +156,11 @@ public class UserController {
         });
         
         userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());
+            String avatarPath = userService.gravarAvatarDiretorio(u.getLogin());        	
             if (avatarPath != null) {
             	String avatarBase64 = userService.getAvatarBase64(avatarPath);
             	u.setAvatar(avatarBase64);
-            }
-            
+            }            
             String banner = userService.getBannerString(u.getLogin());
             u.setBanner(banner);
         });
@@ -172,24 +172,18 @@ public class UserController {
     
     @PostMapping(value = "/dropdown")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
-    	
-        log.info("Dropdown: ");
-        log.info(token.getToken());
-    	System.out.println(token.getToken());
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@HeaderParam("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token != null) {
             
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
+            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
 
             if (usuariosApiReduct.isEmpty()) {   
                 response.getErrors().add("Nenhum usuario encontrado");             
                 return ResponseEntity.badRequest().body(response);
             }
-            usuariosApiReduct.forEach(u -> {
-                u.setAvatar(null);
-            });
+            
         	response.setData(usuariosApiReduct); 
         }
         return ResponseEntity.ok().body(response);
@@ -229,11 +223,11 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@HeaderParam("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
+        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -297,7 +291,7 @@ public class UserController {
 
 
     @PutMapping("/atualizar-avatar/{login}")
-    public ResponseEntity<Response<String>> atulizarAvatar( @PathVariable String login ) {
+    public ResponseEntity<Response<String>> atualizarAvatar( @PathVariable String login ) {
 
         log.info("Alterando avatar do usuário {}", login);
 
