@@ -59,12 +59,6 @@ public class Post {
 	@Column
 	private String content; 
 
-	@OneToMany(fetch = FetchType.EAGER)
-	private List<Favorites> favorites;
-	
-	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-	// private List<Like> likes = new ArrayList<>();
-	
     @Column(length = 9999999)
     private String anexo;
     

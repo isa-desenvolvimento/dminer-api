@@ -48,10 +48,10 @@ public class PostService implements IPostService {
 	public Optional<Post> findById(int id) {
 		log.info("Buscando uma publicação pelo id {}", id);
 		Optional<Post> p = postRepository.findById(id);
-		if (p.isPresent()) {
-			List<Favorites> favs = carregarFavoritos(p.get());
-			p.get().setFavorites(favs);
-		}
+		// if (p.isPresent()) {
+		// 	List<Favorites> favs = carregarFavoritos(p.get());
+		// 	p.get().setFavorites(favs);
+		// }
 		return p;
 	}
 
@@ -64,34 +64,34 @@ public class PostService implements IPostService {
 	public List<Post> findAll() {
 		log.info("Buscando todas as publicações ");
 		List<Post> p = postRepository.findAll();
-		if (p != null && !p.isEmpty()) {
-			p.forEach(post -> {
-				List<Favorites> favs = carregarFavoritos(post);
-				post.setFavorites(favs);
-			});
-		}
+		// if (p != null && !p.isEmpty()) {
+		// 	p.forEach(post -> {
+		// 		List<Favorites> favs = carregarFavoritos(post);
+		// 		post.setFavorites(favs);
+		// 	});
+		// }
 		return p;
 	}
 	
 	public List<Post> findAllByLogin(String login) {
 		log.info("Buscando todas as publicações de {}", login);
 		List<Post> p = postRepository.findAllByLogin(login);
-		if (p != null && !p.isEmpty()) {
-			p.forEach(post -> {
-				List<Favorites> favs = carregarFavoritos(post);
-				post.setFavorites(favs);
-			});
-		}
+		// if (p != null && !p.isEmpty()) {
+		// 	p.forEach(post -> {
+		// 		List<Favorites> favs = carregarFavoritos(post);
+		// 		post.setFavorites(favs);
+		// 	});
+		// }
 		return p;
 	}
 
-	public List<Favorites> carregarFavoritos(Post post) {
-		List<Favorites> favs = favoritesRepository.findAllByPost(post);
-		if (favs.isEmpty()) {
-			return new ArrayList<>();
-		}
-		return favs;
-	}
+	// public List<Favorites> carregarFavoritos(Post post) {
+	// 	List<Favorites> favs = favoritesRepository.findAllByPost(post);
+	// 	if (favs.isEmpty()) {
+	// 		return new ArrayList<>();
+	// 	}
+	// 	return favs;
+	// }
 
 	public HttpStatus salvarApiExterna(Post entity) {
 		String url = "https://www.dminer.com.br/blog/wp-json/wp/v2/posts";

@@ -112,22 +112,25 @@ public class FavoriteController {
         }
 
         Optional<Post> opt = postService.findById(dtoReq.getIdPost()); 
-        Post post = opt.get();        
+        Post post = opt.get();
         
         Favorites favorite = new Favorites();
         favorite.setPost(new Post(dtoReq.getIdPost()));
         favorite.setUser(user.get());
-        if (post.getFavorites() == null) post.setFavorites(new ArrayList<>());
-        post.getFavorites().add(favorite);
+        // if (post.getFavorites() == null) post.setFavorites(new ArrayList<>());
+        // post.getFavorites().add(favorite);
         favorite = favoritesRepository.save(favorite);
 
         FavoriteDTO dto = new FavoriteDTO();
         dto.setId(favorite.getId());
         dto.setPostDto(new PostDTO(dtoReq.getIdPost()));
         dto.setLogin(dtoReq.getLogin());
-        post.getFavorites().forEach(fav -> {
-            dto.getPostDto().getFavorites().add(fav.getUser().getLogin());
-        });
+        List<Favorites> favs = favoritesRepository.findAllByPost(post);
+        if (favs != null) {
+            favs.forEach(fav -> {
+                dto.getPostDto().getFavorites().add(fav.getUser().getLogin());
+            });
+        }
         response.setData(dto);
         return ResponseEntity.ok(response);
     }
@@ -145,34 +148,43 @@ public class FavoriteController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<Favorites> favs = new ArrayList<>();
-        List<Post> allPost = postService.findAllByLogin(login);
-        List<PostDTO> allPostFiltrado = new ArrayList<>();
+        Optional<User> user = userService.findByLogin(login);
+        List<Favorites> favoritos = favoritesRepository.findAllByUser(user.get());
+        
+        List<PostDTO> postsDto = new ArrayList<>();
 
-        for (Post post : allPost) {
-            if (post.getFavorites() != null && !post.getFavorites().isEmpty()) {
-                post.getFavorites().forEach(fav -> {
-                    if (fav.getUser().getLogin().equals(login)) {
-                        Optional<List<Comment>> comment = commentService.findByPost(post);
-                        List<CommentDTO> comments = new ArrayList<>();
-                        if (comment.isPresent()) {
-                            comment.get().forEach(c -> {
-                                comments.add(c.convertDto());
-                            });
-                        }
-                        
-                        UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
-                        
-                        PostDTO dto = post.convertDto();
-		                dto.setUser(user);
-                        dto.setComments(comments);
-                        dto.setReacts(getReacts(post));
-                        allPostFiltrado.add(dto);
-                    }
+        favoritos.forEach(fav -> {
+            PostDTO postDto = fav.getPost().convertDto();
+            postsDto.add(postDto);
+        });
+
+        postsDto.forEach(dtoPost -> {
+            favoritos.forEach(fav -> {                
+                if (fav.getPost().getId() == dtoPost.getId()) {
+                    if (dtoPost.getFavorites() == null) dtoPost.setFavorites(new ArrayList<>());
+                    dtoPost.getFavorites().add(fav.getUser().getLogin());
+                }
+            }); 
+        });
+
+
+        postsDto.forEach(dtoPost -> {
+            Optional<List<Comment>> comment = commentService.findByPost(new Post(dtoPost.getId()));
+            List<CommentDTO> comments = new ArrayList<>();
+            if (comment.isPresent()) {
+                comment.get().forEach(c -> {
+                    comments.add(c.convertDto());
                 });
             }
-        }
-        response.setData(allPostFiltrado);
+            dtoPost.setComments(comments);
+
+            String avatar = userService.getAvatarBase64ByLogin(dtoPost.getUser().getLogin());
+            dtoPost.getUser().setAvatar(avatar);
+            dtoPost.setReacts(getReacts(new Post(dtoPost.getId())));
+
+        });
+
+        response.setData(postsDto);
         return ResponseEntity.ok(response);
     }
 

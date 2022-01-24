@@ -53,6 +53,7 @@ import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
+import com.dminer.entities.Favorites;
 import com.dminer.entities.FileInfo;
 import com.dminer.entities.ReactUser;
 import com.dminer.entities.Post;
@@ -60,6 +61,7 @@ import com.dminer.entities.React;
 import com.dminer.entities.User;
 import com.dminer.enums.PostType;
 import com.dminer.repository.CommentRepository;
+import com.dminer.repository.FavoritesRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.ReactRepository;
 import com.dminer.repository.ReactUserRepository;
@@ -116,6 +118,11 @@ public class PostController {
 	@Autowired
 	private GenericRepositoryPostgres genericRepositoryPostgres;
 	
+	@Autowired
+	private FavoritesRepository favoritesRepository;
+
+
+
 	private Gson gson = new Gson();
 	
 	private String token;
@@ -372,16 +379,15 @@ public class PostController {
 
 	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO dto = new PostDTO();
-		// post.getReacts().forEach(like -> {
-		// 	dto.getReacts().add(like.getLogin());
-		// });
-
+		
 		dto.setType(post.getType().toString());
 		dto.setId(post.getId());
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
-		post.getFavorites().forEach(f -> {
+
+		List<Favorites> favorites = favoritesRepository.findAllByPost(post);
+		favorites.forEach(f -> {
 			dto.getFavorites().add(f.getUser().getLogin());
 		});
 
