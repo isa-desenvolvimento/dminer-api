@@ -381,7 +381,9 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
-
+		post.getFavorites().forEach(f -> {
+			dto.getFavorites().add(f.getUser().getLogin());
+		});
 
 		UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin());      	
 		dto.setUser(user);

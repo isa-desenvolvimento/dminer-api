@@ -374,4 +374,8 @@ public class SearchController {
     public boolean isProd() {
         return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
+
+    public boolean isProdCliente() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod-cliente");
+    }
 }
