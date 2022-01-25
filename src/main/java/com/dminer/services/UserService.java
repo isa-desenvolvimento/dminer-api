@@ -403,7 +403,22 @@ public class UserService implements IUserService {
 		return null;
 	}
 
-    
+    public String getAvatarEndpointEGravaDiretorio(String login) {
+		try {
+			BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
+    		if (image != null) {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ImageIO.write(image, "png", baos);
+				byte[] bytes = baos.toByteArray();
+    			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(bytes));
+    			log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
+    			return base64AsString;
+    		}
+    	} catch (IOException e) {}
+    	return null;
+	}
+
+	
     public String getAvatarBase64ByLogin(String login) {
 		String dir = this.getAvatarDir(login);
 		if (dir != null) {

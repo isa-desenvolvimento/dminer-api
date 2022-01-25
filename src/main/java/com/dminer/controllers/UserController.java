@@ -157,17 +157,14 @@ public class UserController {
         
         List<UserDTO> userList = new ArrayList<>();
         users.getOutput().getResult().getUsuarios().forEach(u -> {
-        	userList.add(u.toUserDTO());
-        });
-        
-        userList.forEach(u -> {
-            String avatarPath = userService.gravarAvatarDiretorio(u.getLogin());        	
-            if (avatarPath != null) {
-            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
-            	u.setAvatar(avatarBase64);
+            UserDTO userDto = u.toUserDTO();
+            String avatarBase64 = userService.getAvatarEndpointEGravaDiretorio(u.getLogin());        	
+            if (avatarBase64 != null) {
+                userDto.setAvatar(avatarBase64);
             }            
             String banner = userService.getBannerString(u.getLogin());
-            u.setBanner(banner);
+            userDto.setBanner(banner);
+        	userList.add(userDto);
         });
         
         response.setData(userList);
