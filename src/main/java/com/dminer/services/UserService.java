@@ -242,7 +242,7 @@ public class UserService implements IUserService {
 			scanner.close();
 			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
 				userRestModel = new UserRestModel();
-				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema"));
+				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
 				return userRestModel;
 			}
 			
