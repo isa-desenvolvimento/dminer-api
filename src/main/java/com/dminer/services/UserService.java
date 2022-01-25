@@ -265,9 +265,8 @@ public class UserService implements IUserService {
     
 
     public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
-        log.info("Recuperando todos os usuário reduzidos na api externa");
+        log.info("Recuperando todos os usuários reduzidos na api externa");
         
-		userRestModel = new UserRestModel();
 		userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
@@ -275,6 +274,15 @@ public class UserService implements IUserService {
 
         if (userRestModel == null || userRestModel.hasError()) {
 			log.info("Nenhum usuário carregado da api");
+			if (userRestModel.hasError()) {
+				userRestModel.getOutput().getMessages().forEach(message -> {
+					log.info("Messagem: {}", message);
+				});
+			}
+
+			if (userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
+				log.info("Messagem: Coleção de usuarios tá vazia");
+			}
         	return usuarios;
         }
         
