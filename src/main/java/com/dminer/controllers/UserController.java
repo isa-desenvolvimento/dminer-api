@@ -162,9 +162,9 @@ public class UserController {
             // if (avatarBase64 != null) {
             //     userDto.setAvatar(avatarBase64);
             // }
-            // userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
-            // String banner = userService.getBannerString(u.getLogin());
-            // userDto.setBanner(banner);
+            userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
+            String banner = userService.getBannerString(u.getLogin());
+            userDto.setBanner(banner);
         	userList.add(userDto);
         });
         
