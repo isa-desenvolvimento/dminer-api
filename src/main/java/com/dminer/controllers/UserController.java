@@ -156,15 +156,15 @@ public class UserController {
         }
         
         List<UserDTO> userList = new ArrayList<>();
-        users.getOutput().getResult().getUsuarios().forEach(u -> {
+        users.getUsers().forEach(u -> {
             UserDTO userDto = u.toUserDTO();
             // String avatarBase64 = userService.getAvatarEndpointEGravaDiretorio(u.getLogin());        	
             // if (avatarBase64 != null) {
             //     userDto.setAvatar(avatarBase64);
             // }
-            userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
-            String banner = userService.getBannerString(u.getLogin());
-            userDto.setBanner(banner);
+            // userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
+            // String banner = userService.getBannerString(u.getLogin());
+            // userDto.setBanner(banner);
         	userList.add(userDto);
         });
         
@@ -174,7 +174,7 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
-    @Transactional(timeout = 90000)
+    @Transactional(timeout = 99999)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
