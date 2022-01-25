@@ -217,11 +217,11 @@ public class UserService implements IUserService {
 			return null;
 		}
 
-		if (userRestModel != null ) {
-			if (userRestModel.getOutput().getResult().getUsuarios() != null && userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
-				return userRestModel;
-			}
-		}
+		// if (userRestModel != null ) {
+		// 	if (userRestModel.getOutput().getResult().getUsuarios() != null && userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
+		// 		return userRestModel;
+		// 	}
+		// }
 
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
@@ -267,7 +267,13 @@ public class UserService implements IUserService {
     public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
         log.info("Recuperando todos os usuários reduzidos na api externa");
         
-		userRestModel = carregarUsuariosApi(token);
+		if (token == null) {
+			return null;
+		}
+
+		if (userRestModel == null) {
+			userRestModel = carregarUsuariosApi(token);
+		}
 
         List<UserReductDTO> usuarios = new ArrayList<>();
         // UserRestModel model = carregarUsuariosApi(token);
