@@ -267,6 +267,7 @@ public class UserService implements IUserService {
     public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
+		userRestModel = new UserRestModel();
 		userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
@@ -418,7 +419,7 @@ public class UserService implements IUserService {
     	return null;
 	}
 
-	
+
     public String getAvatarBase64ByLogin(String login) {
 		String dir = this.getAvatarDir(login);
 		if (dir != null) {

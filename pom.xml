@@ -12,11 +12,11 @@
 	<groupId>com.dminer</groupId>
 	<artifactId>dminer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>jar</packaging> 
 	<name>dminer</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>15</java.version>
+		<java.version>11</java.version>
 		<!-- <hibernate.version>5.4.28.Final</hibernate.version> -->
 	</properties> 
 
@@ -52,6 +52,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/.../org.hibernate/hibernate-core -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>5.6.4.Final</version>
+		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
 		<dependency>
