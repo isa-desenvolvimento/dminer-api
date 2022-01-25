@@ -124,7 +124,7 @@ public class UserController {
 
 
     @PostMapping(value = "/all")
-    @Transactional(timeout = 10000)
+    @Transactional(timeout = 999999)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
