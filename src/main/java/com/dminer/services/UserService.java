@@ -51,14 +51,7 @@ public class UserService implements IUserService {
     @Autowired
 	private UserRepository userRepository;
     
-	// @Autowired
-	// private TokenService tokenService;
-
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
-
-
-	private UserRestModel userRestModel;
-	
 
 
     @Override
@@ -90,7 +83,7 @@ public class UserService implements IUserService {
 
 		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
 
-		userRestModel = carregarUsuariosApi(token);
+		UserRestModel userRestModel = carregarUsuariosApi(token);
 
 		// se vier null ou conter erros, retorna lista vazia
 		if (userRestModel == null || userRestModel.hasError()) {
@@ -99,7 +92,7 @@ public class UserService implements IUserService {
 
 		// se pesquisa for por null, retorna todos os usuário
 		if (termo == null) {
-			userRestModel.getOutput().getResult().getUsuarios().forEach(m -> {
+			userRestModel.getUsers().forEach(m -> {
 				pesquisa.add(m.toUserDTO());
 			});
 			return pesquisa;
@@ -108,7 +101,7 @@ public class UserService implements IUserService {
 		// passa o termo de busca pra lowercase e sai procurando alguma
 		// ocorrencia em algum dos atributos do objeto
 		termo = termo.toLowerCase();
-		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
+		for (Usuario u : userRestModel.getUsers()) {
 			String concat = (
 				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
 				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
@@ -179,7 +172,7 @@ public class UserService implements IUserService {
     }
 
 	public void atualizarDadosNoBancoComApiExterna(UserRestModel usuarios) {				
-		for (Usuario usuario : usuarios.getOutput().getResult().getUsuarios()) {
+		for (Usuario usuario : usuarios.getUsers()) {
 			User u = new User();
 			if (!existsByLoginAndUserName(usuario.getLogin(), usuario.getUserName())) {
 				if (existsByLogin(usuario.getLogin())) {
@@ -217,12 +210,6 @@ public class UserService implements IUserService {
 			return null;
 		}
 
-		// if (userRestModel != null ) {
-		// 	if (userRestModel.getOutput().getResult().getUsuarios() != null && userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
-		// 		return userRestModel;
-		// 	}
-		// }
-
 		log.info("Recuperando todos os usuários na api externa");
 		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
 
@@ -240,8 +227,9 @@ public class UserService implements IUserService {
 				response += scanner.next();
 			}
 			scanner.close();
+			
+			UserRestModel userRestModel = new UserRestModel();
 			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
-				userRestModel = new UserRestModel();
 				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
 				return userRestModel;
 			}
@@ -271,9 +259,7 @@ public class UserService implements IUserService {
 			return null;
 		}
 
-		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(token);
-		}
+		UserRestModel userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
         // UserRestModel model = carregarUsuariosApi(token);
@@ -292,10 +278,8 @@ public class UserService implements IUserService {
         	return usuarios;
         }
         
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
-        	UserReductDTO dto = new UserReductDTO();
-        	dto.setLogin(u.getLogin());
-        	dto.setUserName(u.getUserName());
+        userRestModel.getUsers().forEach(u -> {
+        	UserReductDTO dto = u.toUserReductDTO();
 			if (carregarAvatar) {
 				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
 			}
@@ -308,12 +292,8 @@ public class UserService implements IUserService {
     public UserDTO buscarUsuarioApi(String login, String token) {
         log.info("Recuperando todos os usuário na api externa");
         
-        // UserRestModel model = carregarUsuariosApi(token);
-		if (userRestModel == null) {
-			userRestModel = carregarUsuariosApi(token);
-		}
-
-        // System.out.println(userRestModel.toString());
+        UserRestModel userRestModel = carregarUsuariosApi(token);
+		
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
         }
@@ -341,6 +321,7 @@ public class UserService implements IUserService {
 	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
+		UserRestModel userRestModel = carregarUsuariosApi(token);
 		if (userRestModel == null) {
 			log.info("Carregando usuário diretamente da API");
 			userRestModel = carregarUsuariosApi(token);
