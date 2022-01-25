@@ -218,7 +218,7 @@ public class UserService implements IUserService {
 		}
 
 		if (userRestModel != null ) {
-			if (userRestModel.getOutput().getResult().getUsuarios() != null && !userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
+			if (userRestModel.getOutput().getResult().getUsuarios() != null && userRestModel.getOutput().getResult().getUsuarios().isEmpty()) {
 				return userRestModel;
 			}
 		}
