@@ -11,16 +11,12 @@ import javax.validation.Valid;
 
 import com.dminer.converters.BenefitsConverter;
 import com.dminer.dto.BenefitsRequestDTO;
-import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.entities.Benefits;
-import com.dminer.entities.Document;
-import com.dminer.entities.User;
 import com.dminer.repository.BenefitsRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
-import com.dminer.repository.UserRepository;
 import com.dminer.response.Response;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
