@@ -2,6 +2,7 @@ package com.dminer.dto;
 
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -22,7 +23,7 @@ public class BenefitsRequestDTO {
     @NotBlank(message = "Responsável precisa estar preenchido")
     private String creator;
     
-    @NotBlank(message = "Titulo precisa estar preenchido")
+    @NotBlank(message = "Titulo precisa estar preenchido")    
 	private String title;
     
     @NotBlank(message = "Conteúdo precisa estar preenchido")
@@ -32,7 +33,7 @@ public class BenefitsRequestDTO {
     @NotBlank(message = "Data precisa estar preenchida")
     private String date;
     
-    @NotBlank(message = "Permissão precisa estar preenchido")
+    @NotNull(message = "Permissão precisa estar preenchido")
     private Integer permission;
 
     private String image;

@@ -26,6 +26,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/benefits")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
+@Validated
 public class BenefitsController {
     
     private static final Logger log = LoggerFactory.getLogger(BenefitsController.class);
