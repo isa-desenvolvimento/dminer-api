@@ -93,7 +93,7 @@ public class NotificationController {
         validateRequestDto(notificationRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando notificationRequest: {}", notificationRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -114,7 +114,7 @@ public class NotificationController {
         validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando NotificationDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -130,13 +130,13 @@ public class NotificationController {
         
         Response<NotificationDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Notification> user = notificationService.findById(id);
         if (!user.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -151,19 +151,19 @@ public class NotificationController {
         
         Response<NotificationDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Notification> not = notificationService.findById(id);
         if (!not.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
         try {notificationService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrado");
+            response.addError("Notificação não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -179,7 +179,7 @@ public class NotificationController {
 
         Optional<List<Notification>> user = notificationService.findAll();
         if (user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 

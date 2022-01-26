@@ -48,7 +48,7 @@ public class ReminderConverter {
         notificationDTO.setId(reminder.getId());
         notificationDTO.setLogin(reminder.getUser().getLogin());
         notificationDTO.setReminder(reminder.getReminderDescrible());
-        notificationDTO.setDate(UtilDataHora.timestampToString(reminder.getDate()));
+        notificationDTO.setDate(UtilDataHora.timestampToStringOrNow(reminder.getDate()));
         notificationDTO.setActive(reminder.getActive());
         return notificationDTO;
     }

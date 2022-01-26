@@ -126,7 +126,7 @@ public class ReminderController {
         validateRequestDto(notificationRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando notificationRequest: {}", notificationRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -146,7 +146,7 @@ public class ReminderController {
 		validateDto(reminderRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", reminderRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -162,13 +162,13 @@ public class ReminderController {
         
         Response<ReminderDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Reminder> remi = reminderService.findById(id);
         if (!remi.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -183,19 +183,19 @@ public class ReminderController {
         
         Response<ReminderDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Reminder> not = reminderService.findById(id);
         if (!not.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
         try {reminderService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrado");
+            response.addError("Notificação não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -212,7 +212,7 @@ public class ReminderController {
 
         Optional<List<Reminder>> remi = reminderService.findAll();
         if (remi.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
         List<Reminder> reminder = remi.get();

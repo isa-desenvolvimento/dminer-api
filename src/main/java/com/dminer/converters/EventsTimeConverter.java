@@ -54,12 +54,12 @@ public class EventsTimeConverter {
         dto.setAllDay(e.getAllDay());
         dto.setDescription(e.getDescription());
         if (e.getEndDate() != null) {
-            dto.setEndDate(UtilDataHora.timestampToString(e.getEndDate()));
+            dto.setEndDate(UtilDataHora.timestampToStringOrNow(e.getEndDate()));
             if (dto.getEndDate().contains("1970") || dto.getEndDate().contains("1969")) dto.setEndDate(null);
         }
         
         if (e.getStartDate() != null)
-            dto.setStartDate(UtilDataHora.timestampToString(e.getStartDate()));
+            dto.setStartDate(UtilDataHora.timestampToStringOrNow(e.getStartDate()));
         dto.setEndRepeat(e.getEndRepeat().getEventTime());
         dto.setStartRepeat(e.getStartRepeat().getEventTime());
         dto.setLocation(e.getLocation());

@@ -90,7 +90,7 @@ public class CommentController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 

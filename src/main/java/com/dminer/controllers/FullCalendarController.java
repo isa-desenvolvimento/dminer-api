@@ -81,7 +81,7 @@ public class FullCalendarController {
         validateRequestDto(fullCalendarRequestDTO, result);
         if (result.hasErrors()) {
             log.info("Erro validando fullCalendarRequestDTO: {}", fullCalendarRequestDTO);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -102,13 +102,13 @@ public class FullCalendarController {
         
         Response<FullCalendarDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<FullCalendar> calendar = fullCalendarService.findById(id);
         if (!calendar.isPresent()) {
-            response.getErrors().add("Calendário não encontrado");
+            response.addError("Calendário não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -122,19 +122,19 @@ public class FullCalendarController {
         
         Response<FullCalendarDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<FullCalendar> calendar = fullCalendarService.findById(id);
         if (!calendar.isPresent()) {
-            response.getErrors().add("Calendário não encontrado");
+            response.addError("Calendário não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
         try {fullCalendarService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Calendário não encontrado");
+            response.addError("Calendário não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -150,7 +150,7 @@ public class FullCalendarController {
 
         Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
         if (calendar.get().isEmpty()) {
-            response.getErrors().add("Calendários não encontrados");
+            response.addError("Calendários não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -170,7 +170,7 @@ public class FullCalendarController {
 
         Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
         if (calendar.get().isEmpty()) {
-            response.getErrors().add("Calendários não encontrados");
+            response.addError("Calendários não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 

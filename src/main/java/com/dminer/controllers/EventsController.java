@@ -88,7 +88,7 @@ public class EventsController {
         validateRequestDto(eventsRequestDTO, result);
         if (result.hasErrors()) {
             log.info("Erro validando eventsRequestDTO: {}", eventsRequestDTO);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -104,13 +104,13 @@ public class EventsController {
         
         Response<EventsDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Events> user = eventService.findById(id);
         if (!user.isPresent()) {
-            response.getErrors().add("Evento não encontrado");
+            response.addError("Evento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -123,13 +123,13 @@ public class EventsController {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         try {eventService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Evento não encontrado");
+            response.addError("Evento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -144,7 +144,7 @@ public class EventsController {
 
         Optional<List<Events>> user = eventService.findAll();
         if (user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -163,7 +163,7 @@ public class EventsController {
         log.info("Parametro recebido: {}", year);
         Response<List<EventsDTO>> response = new Response<>();
         validarEntradaDatas(year, "Informe um ano", response);        
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             log.info("Erro validando getEventsByYear");            
             return ResponseEntity.badRequest().body(response);
         }
@@ -176,7 +176,7 @@ public class EventsController {
         }
 
         if (user.isPresent() && user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -194,7 +194,7 @@ public class EventsController {
         
         Response<List<EventsDTO>> response = new Response<>();
         validarEntradaDatas(year, month, "Informe um ano", "Informe um mês", response);
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             log.info("Erro validando getEventsByMonth");
             return ResponseEntity.badRequest().body(response);
         }
@@ -217,7 +217,7 @@ public class EventsController {
 
 
         if (user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -236,7 +236,7 @@ public class EventsController {
         Response<List<EventsDTO>> response = new Response<>();
         validarEntradaDatas(year, month, day, "Informe um ano", "Informe um mês", "Informe um dia", response);
         
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             log.info("Erro validando getEventsByMonth");
             return ResponseEntity.badRequest().body(response);
         }
@@ -254,7 +254,7 @@ public class EventsController {
         }   
 
         if (user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -278,7 +278,7 @@ public class EventsController {
         validarEntradaDatas(year1, month1, day1, "Informe um ano", "Informe um mês", "Informe um dia", response);
         validarEntradaDatas(year2, month2, day2, "Informe um ano", "Informe um mês", "Informe um dia", response);
         
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             log.info("Erro validando getEventsInBetween");
             return ResponseEntity.badRequest().body(response);
         }
@@ -298,7 +298,7 @@ public class EventsController {
         }   
 
         if (user.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
         
@@ -313,7 +313,7 @@ public class EventsController {
 
     private void validarEntradaDatas(String v1, String msg, Response result) {
         if (v1 == null || v1.isEmpty()) {
-            result.getErrors().add(msg);
+            result.addError(msg);
         }
     }
 

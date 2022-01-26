@@ -1,7 +1,6 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -9,22 +8,20 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.dminer.constantes.MessagesConst;
 import com.dminer.converters.BenefitsConverter;
 import com.dminer.dto.BenefitsRequestDTO;
 import com.dminer.dto.BenefitsDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.repository.BenefitsRepository;
-import com.dminer.repository.GenericRepositoryPostgres;
-import com.dminer.repository.GenericRepositorySqlServer;
-import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
-import com.dminer.services.UserService;
+import com.dminer.services.BenefitsService;
 import com.dminer.utils.UtilDataHora;
+import com.dminer.validadores.Validators;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -50,125 +47,31 @@ public class BenefitsController {
     private static final Logger log = LoggerFactory.getLogger(BenefitsController.class);
 
     @Autowired 
+    private Validators validators;
+
+    @Autowired 
     private BenefitsConverter benefitsConverter;
 
     @Autowired
     private BenefitsRepository benefitsRepository;
 
     @Autowired
-    private PermissionRepository permissionRepository;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private GenericRepositoryPostgres genericRepositoryPostgres;
-
-    @Autowired
-    private GenericRepositorySqlServer genericRepositorySqlServer;
-
-    @Autowired
-    private Environment env;
-
-    
-
-    private void validateRequestDto(BenefitsRequestDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Titulo precisa estar preenchido."));
-        }
-
-        if (dto.getContent() == null || dto.getContent().isEmpty()) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Conteúdo precisa estar preenchido."));
-        }
-
-        if (dto.getPermission() == null) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Permissão precisa estar preenchido."));
-        } else {
-            if(!permissionRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("BenefitsRequestDTO", "Permissão não é válida."));
-            }
-        }
-        
-        if (dto.getCreator() == null) {
-            result.addError(new ObjectError("dto", "Responsável precisa estar preenchido."));
-        } else {
-        	String login = dto.getCreator();
-            if (!userService.existsByLogin(login)) {
-                result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
-            }
-        } 
-
-        if (dto.getDate() == null || dto.getDate().isEmpty()) {
-            result.addError(new ObjectError("BenefitsRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
-        }
-       
-        if (dto.getDate() == null || dto.getDate().isEmpty()) {
-            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
-        } else {
-        	if (!UtilDataHora.isTimestampValid(dto.getDate())) {
-        		result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
-        	}
-        }
-    }
-    
-   
-    private void validateDto(BenefitsDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty()) {
-            result.addError(new ObjectError("dto", "Title precisa estar preenchido."));
-        }
-
-        if (dto.getContent() == null || dto.getContent().isEmpty()) {
-            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
-        }
-
-        if (dto.getId() == null) {
-            result.addError(new ObjectError("dto", "Id do benefício precisa estar preenchido."));
-        } else {
-            if(!benefitsRepository.existsById(dto.getId())) {
-                result.addError(new ObjectError("dto", "Id do benefício não é válida."));
-            }
-        }
-
-        if (dto.getPermission() == null) {
-            result.addError(new ObjectError("dto", "Permissão precisa estar preenchido."));
-        } else {
-            if(!permissionRepository.existsById(dto.getPermission())) {
-                result.addError(new ObjectError("dto", "Permissão não é válida."));
-            }
-        }
-        
-        if (dto.getCreator() == null) {
-            result.addError(new ObjectError("dto", "Responsável precisa estar preenchido."));
-        } else {
-        	String login = dto.getCreator();
-            if (!userService.existsByLogin(login)) {
-                result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
-            }
-        }
-
-        if (dto.getDate() == null || dto.getDate().isEmpty()) {
-            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
-        } else {
-        	if (!UtilDataHora.isTimestampValid(dto.getDate())) {
-        		result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
-        	}
-        }       
-    }
+    private BenefitsService benefitsService;
 
 
     @PostMapping
     public ResponseEntity<Response<BenefitsDTO>> create(@Valid @RequestBody BenefitsRequestDTO dto, BindingResult result) {
     
 		Response<BenefitsDTO> response = new Response<>();
-        validateRequestDto(dto, result);
+        
+        validateRequestDto(dto, result);        
         if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
         }
         
-        Benefits doc = benefitsRepository.save(benefitsConverter.requestDtoToEntity(dto));
-        response.setData(benefitsConverter.entityToDTO(doc));
+        Benefits entity = benefitsRepository.save(benefitsConverter.dtoRequestToEntity(dto));
+        response.setData(benefitsConverter.entityToDto(entity));
 
         return ResponseEntity.ok().body(response);
     }
@@ -177,19 +80,18 @@ public class BenefitsController {
     @PutMapping()
     public ResponseEntity<Response<BenefitsDTO>> put( @Valid @RequestBody BenefitsDTO dto, BindingResult result) {
 
-        log.info("Alterando um categoria {}", dto);
+        log.info(MessagesConst.ALTERANDO_REGISTRO, dto);
 
         Response<BenefitsDTO> response = new Response<>();
 
         validateDto(dto, result);
         if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
         }
 
         Benefits benefits = benefitsRepository.save(benefitsConverter.dtoToEntity(dto));
-        response.setData(benefitsConverter.entityToDTO(benefits));
+        response.setData(benefitsConverter.entityToDto(benefits));
         return ResponseEntity.ok().body(response);
     }
     
@@ -199,70 +101,43 @@ public class BenefitsController {
         
         Response<BenefitsDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError(MessagesConst.INFORME_ID);
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Benefits> doc = benefitsRepository.findById(id);
-        if (!doc.isPresent()) {
-            response.getErrors().add("Beneficio não encontrado");
+        Optional<Benefits> entity = benefitsRepository.findById(id);
+        if (!entity.isPresent()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.status(404).body(response);
         }
 
-        response.setData(benefitsConverter.entityToDTO(doc.get()));
+        response.setData(benefitsConverter.entityToDto(entity.get()));
         return ResponseEntity.ok().body(response);
     }
 
-//    @GetMapping(value = "/seacrh/{search}")
-//    public ResponseEntity<Response<BenefitsDTO>> search(@PathVariable("search") String search) {
-//        
-//        Response<BenefitsDTO> response = new Response<>();
-//        if (search == null) {
-//            response.getErrors().add("Informe algo para pesquisar");
-//            return ResponseEntity.badRequest().body(response);
-//        }
-//
-//        List<Benefits> search2 = new ArrayList<>();
-//
-//        if (isProd()) {
-//            search2 = genericRepositoryPostgres.searchBenefits(search);            
-//        } else {
-//            search2 = genericRepositorySqlServer.searchBenefits(search);
-//        }
-//
-//        if (!search2.isEmpty()) {
-//            response.getErrors().add("Nenhum dado encontrado");
-//            return ResponseEntity.status(404).body(response);
-//        }
-//        
-//        search2.forEach(s -> {
-//            response.setData(benefitsConverter.entityToDTO(s));
-//        });
-//        return ResponseEntity.ok().body(response);
-//    }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<BenefitsDTO>> delete(@PathVariable("id") Integer id) {
         
         Response<BenefitsDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError(MessagesConst.INFORME_ID);
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Benefits> doc = benefitsRepository.findById(id);
-        if (!doc.isPresent()) {
-            response.getErrors().add("Beneficio não encontrado");
+        Optional<Benefits> enetity = benefitsRepository.findById(id);
+        if (!enetity.isPresent()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.status(404).body(response);
         }
 
         try {benefitsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Beneficio não encontrado");
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.status(404).body(response);
         }
 
-        response.setData(benefitsConverter.entityToDTO(doc.get()));
+        response.setData(benefitsConverter.entityToDto(enetity.get()));
         return ResponseEntity.ok().body(response);
     }
 
@@ -274,19 +149,18 @@ public class BenefitsController {
 
         List<Benefits> doc = benefitsRepository.findAll();
         if (doc.isEmpty()) {
-            response.getErrors().add("Beneficios não encontrados");
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.status(404).body(response);
         }
-
-        List<BenefitsDTO> eventos = new ArrayList<>();
-
+        
         // ordenar do mais novo pro mais antigo
 		doc = doc.stream()
 		.sorted(Comparator.comparing(Benefits::getDate).reversed())
 		.collect(Collectors.toList());
-
+        
+        List<BenefitsDTO> eventos = new ArrayList<>();
         doc.forEach(u -> {        	
-            eventos.add(benefitsConverter.entityToDTO(u));
+            eventos.add(benefitsConverter.entityToDto(u));
         });
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
@@ -298,35 +172,62 @@ public class BenefitsController {
         
         Response<List<BenefitsDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
-            response.getErrors().add("Informe um termo");
+            response.addError(MessagesConst.INFORME_TERMO);
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<Benefits> doc = new ArrayList<>();
-        if (isProd()) {
-        	doc = genericRepositoryPostgres.searchBenefits(keyword);        	
-        } else {
-        	doc = genericRepositorySqlServer.searchBenefits(keyword);
-        }
-        if (doc == null || doc.isEmpty()) {
-            response.getErrors().add("Nenhum documento encontrado");
+        List<Benefits> entities = benefitsService.search(keyword);
+
+        if (entities == null || entities.isEmpty()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.status(404).body(response);
         }
         
-        doc = doc.stream()
+        entities = entities.stream()
 		.sorted(Comparator.comparing(Benefits::getDate).reversed())
 		.collect(Collectors.toList());
 
         List<BenefitsDTO> ret = new ArrayList<>();
-        for (Benefits document : doc) {        	
-        	ret.add(benefitsConverter.entityToDTO(document));
+        for (Benefits entity : entities) {        	
+        	ret.add(benefitsConverter.entityToDto(entity));
 		}
         
         response.setData(ret);
         return ResponseEntity.ok().body(response);
     }
     
-    public boolean isProd() {
-        return Arrays.asList(env.getActiveProfiles()).contains("prod");
+
+    private void validateRequestDto(BenefitsRequestDTO dto, BindingResult result) {
+        String login = dto.getCreator();
+        if (! validators.existsUserByLogin(login)) {
+            result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
+        }
+
+        if (!UtilDataHora.isTimestampValid(dto.getDate())) {
+            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss, porém foi informado: " + dto.getDate()));
+        }
     }
+    
+   
+    private void validateDto(BenefitsDTO dto, BindingResult result) {
+
+        if(! validators.existsBenefitsById(dto.getId())) {
+            result.addError(new ObjectError("dto", "Id do benefício não é válida."));
+        }
+
+        if(!validators.existsPermissionById(dto.getPermission())) {
+            result.addError(new ObjectError("dto", "Permissão não é válida."));
+        }
+        
+        String login = dto.getCreator();
+        if (! validators.existsUserByLogin(login)) {
+            result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
+        }
+
+        if (!UtilDataHora.isTimestampValid(dto.getDate())) {
+            result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss, porém foi informado: " + dto.getDate()));
+        }
+    }
+
+    
 }

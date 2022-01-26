@@ -12,7 +12,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.dminer.dto.BenefitsDTO;
+import com.dminer.utils.UtilDataHora;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +31,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class Benefits {
 
     @Id
@@ -52,4 +57,18 @@ public class Benefits {
 
     @Column
     private String image;
+
+
+    public BenefitsDTO convertDto() {
+        return BenefitsDTO.builder()
+        .id(id)
+        .title(title)
+        .content(content)
+        .creator(creator.getLogin())
+        .permission(permission.getId())
+        .date(UtilDataHora.timestampToStringOrNull(date))
+        .image(image)
+        .build();
+    }
+    
 }

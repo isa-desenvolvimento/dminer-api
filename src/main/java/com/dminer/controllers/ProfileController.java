@@ -74,7 +74,7 @@ public class ProfileController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -96,14 +96,14 @@ public class ProfileController {
         validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando ProfileRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Profile> optProfile = profileRepository.findById(dto.getId());
         if (! optProfile.isPresent()) {
             log.info("Perfil não encontrado: {}", dto);
-            response.getErrors().add("Perfil não encontrado");
+            response.addError("Perfil não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -121,13 +121,13 @@ public class ProfileController {
         
         Response<ProfileDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Profile> profile = profileRepository.findById(id);
         if (!profile.isPresent()) {
-            response.getErrors().add("Perfil não encontrado");
+            response.addError("Perfil não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -143,7 +143,7 @@ public class ProfileController {
 
         List<Profile> profile = profileRepository.findAll();
         if (profile == null || profile.isEmpty()) {
-            response.getErrors().add("Perfis não encontrados");
+            response.addError("Perfis não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -161,13 +161,13 @@ public class ProfileController {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         try {profileRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Perfil não encontrado");
+            response.addError("Perfil não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 

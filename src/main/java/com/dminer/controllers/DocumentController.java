@@ -130,7 +130,7 @@ public class DocumentController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -146,13 +146,13 @@ public class DocumentController {
         
         Response<DocumentDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Document> doc = documentRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -166,19 +166,19 @@ public class DocumentController {
         
         Response<DocumentDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Document> doc = documentRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
         try {documentRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -197,7 +197,7 @@ public class DocumentController {
         validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando CategoryRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -214,7 +214,7 @@ public class DocumentController {
 
         List<Document> doc = documentRepository.findAllByOrderByCreateDateDesc();
         if (doc.isEmpty()) {
-            response.getErrors().add("Documentos não encontrados");
+            response.addError("Documentos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -232,13 +232,13 @@ public class DocumentController {
         
         Response<List<DocumentDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
-            response.getErrors().add("Informe um termo");
+            response.addError("Informe um termo");
             return ResponseEntity.badRequest().body(response);
         }
 
         List<Document> doc = genericRepositorySqlServer.searchDocuments(keyword);
         if (doc == null || doc.isEmpty()) {
-            response.getErrors().add("Nenhum documento encontrado");
+            response.addError("Nenhum documento encontrado");
             return ResponseEntity.status(404).body(response);
         }
         

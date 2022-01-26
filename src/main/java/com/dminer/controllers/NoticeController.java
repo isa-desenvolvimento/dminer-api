@@ -119,7 +119,7 @@ public class NoticeController {
         //validateRequestDto(avisosRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", avisosRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -140,7 +140,7 @@ public class NoticeController {
         //validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -156,13 +156,13 @@ public class NoticeController {
         
         Response<NoticeDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Notice> user = avisosService.findById(id);
         if (!user.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -177,19 +177,19 @@ public class NoticeController {
         
         Response<NoticeDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Notice> not = avisosService.findById(id);
         if (!not.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
         try {avisosService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrada");
+            response.addError("Notificação não encontrada");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -205,7 +205,7 @@ public class NoticeController {
 
         Optional<List<Notice>> userOpt = avisosService.findAll();
         if (userOpt.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -232,7 +232,7 @@ public class NoticeController {
 
         Optional<List<Notice>> userOpt = avisosService.findAll();
         if (userOpt.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
+            response.addError("Eventos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 

@@ -131,7 +131,7 @@ public class TutorialsController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -161,13 +161,13 @@ public class TutorialsController {
         
         Response<TutorialsDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Tutorial não encontrado");
+            response.addError("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -180,7 +180,7 @@ public class TutorialsController {
         
         Response<TutorialsDTO> response = new Response<>();
         if (search == null) {
-            response.getErrors().add("Informe algo para pesquisar");
+            response.addError("Informe algo para pesquisar");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -193,7 +193,7 @@ public class TutorialsController {
         }
 
         if (search2.isEmpty()) {
-            response.getErrors().add("Nenhum dado encontrado");
+            response.addError("Nenhum dado encontrado");
             return ResponseEntity.status(404).body(response);
         }
         
@@ -208,19 +208,19 @@ public class TutorialsController {
         
         Response<TutorialsDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Tutorial não encontrado");
+            response.addError("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
         try {tutorialsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Tutorial não encontrado");
+            response.addError("Tutorial não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -236,7 +236,7 @@ public class TutorialsController {
 
         List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();   
         if (doc.isEmpty()) {
-            response.getErrors().add("Tutorials não encontrados");
+            response.addError("Tutorials não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 

@@ -156,7 +156,7 @@ public class UtilDataHora {
      * @param Timestamp date
      * @return String
      */
-    public static String timestampToString(Timestamp date) {        
+    public static String timestampToStringOrNow(Timestamp date) {        
         if (date != null)
             return date.toString().substring(0, date.toString().length() -2);
 
@@ -164,6 +164,11 @@ public class UtilDataHora {
         return timestamp.toString().substring(0, timestamp.toString().length() -2);
     }
 
+    public static String timestampToStringOrNull(Timestamp date) {        
+        if (date != null)
+            return date.toString().substring(0, date.toString().length() -2);
+        return null;
+    }
 
      /**
      * Recebe uma data no formato yyyy-MM-dd HH:mm:ss e retorna um objeto Date

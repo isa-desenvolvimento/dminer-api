@@ -98,23 +98,23 @@ public class SurveyController {
         Response<String> response = new Response<>();
         if (id == null) {
             log.info("Informe o id do questionário");
-            response.getErrors().add("Informe o id do questionário");
+            response.addError("Informe o id do questionário");
         } else {
             Optional<Survey> findById = surveyService.findById(id);
             if (!findById.isPresent()) {
                 log.info("Questionário não encontrado");
-                response.getErrors().add("Questionário não encontrado");
+                response.addError("Questionário não encontrado");
             }
         }
         
         if (loginUser == null) {
             log.info("Informe o login do usuário que está respondendo o questionário");
-            response.getErrors().add("Informe o login do usuário que está respondendo o questionário");
+            response.addError("Informe o login do usuário que está respondendo o questionário");
         } 
         
         if (option == null || option.isEmpty() || (!option.equalsIgnoreCase("A") && !option.equalsIgnoreCase("B"))) {
             log.info("Informe uma opção válida para a resposta = {}", option);
-            response.getErrors().add("Informe uma opção válida para a resposta");
+            response.addError("Informe uma opção válida para a resposta");
         }
 
         return response;
@@ -130,7 +130,7 @@ public class SurveyController {
         validateRequestDto(surveyRequestDto, result);
         if (result.hasErrors()) {
             log.info("Erro validando surveyRequestDto: {}", surveyRequestDto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -150,7 +150,7 @@ public class SurveyController {
     public ResponseEntity<Response<String>> answerQuestion( @PathVariable("idSurvey") Integer id, @PathVariable("login") String loginUser, @PathVariable("option") String option, @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique) {
 
         Response<String> response = validateAnswerQuestion(id, loginUser, option);
-        if (! response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -189,7 +189,7 @@ public class SurveyController {
             surveyResponseRepository.save(surveyResponse);
         } catch (DataIntegrityViolationException e) {
             log.error("Questionário já foi respondido por este usuário");
-            response.getErrors().add("Questionário já foi respondido por este usuário");
+            response.addError("Questionário já foi respondido por este usuário");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -203,13 +203,13 @@ public class SurveyController {
         
         Response<SurveyResponseDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
         if (findByIdSurvey == null) {
-            response.getErrors().add("Questionário de id: "+ id +", não encontrado!");
+            response.addError("Questionário de id: "+ id +", não encontrado!");
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -227,7 +227,7 @@ public class SurveyController {
 
         Optional<Survey> survey = surveyService.findById(surveyDto.getId());
         if (! survey.isPresent()) {
-            response.getErrors().add("Questionário de id: "+ surveyDto.getId() +", não encontrado!");
+            response.addError("Questionário de id: "+ surveyDto.getId() +", não encontrado!");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -248,13 +248,13 @@ public class SurveyController {
         
         Response<SurveyDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Survey> user = surveyService.findById(id);
         if (!user.isPresent()) {
-            response.getErrors().add("Questionário não encontrado");
+            response.addError("Questionário não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -270,7 +270,7 @@ public class SurveyController {
 
         Optional<List<Survey>> surveysOpt = surveyService.findAll();
         if (surveysOpt.get().isEmpty()) {
-            response.getErrors().add("Questionários não encontrados");
+            response.addError("Questionários não encontrados");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -309,13 +309,13 @@ public class SurveyController {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         try {surveyService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Questionário não encontrado");
+            response.addError("Questionário não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 

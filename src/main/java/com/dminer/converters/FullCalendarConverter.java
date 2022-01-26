@@ -83,12 +83,12 @@ public class FullCalendarConverter {
             dto.setBorderColor(e.getBorderColor());
         }
         if (e.getEnd() != null) {
-            dto.setEnd(UtilDataHora.timestampToString(e.getEnd()));
+            dto.setEnd(UtilDataHora.timestampToStringOrNow(e.getEnd()));
             if (dto.getEnd().contains("1970") || dto.getEnd().contains("1969")) dto.setEnd(null);
         }
         
         if (e.getStart() != null)
-            dto.setStart(UtilDataHora.timestampToString(e.getStart()));
+            dto.setStart(UtilDataHora.timestampToStringOrNow(e.getStart()));
         dto.setTitle(e.getTitle());
         dto.setCreator(e.getCreator());
         if (! e.getUsers().isEmpty()) {

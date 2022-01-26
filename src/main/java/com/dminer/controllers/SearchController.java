@@ -130,7 +130,7 @@ public class SearchController {
     	Response<List<UserDTO>> response = new Response<>();
 
         if (token == null || token.isBlank()) {
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return response;
         }
 
@@ -138,13 +138,13 @@ public class SearchController {
     	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
 
         if (userRestModel == null) {
-    		response.getErrors().add("Nenhum usuario encontrado");    		
+    		response.addError("Nenhum usuario encontrado");    		
     		return response;
     	}
         
         if (userRestModel.hasError()) {
         	userRestModel.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
+    			response.addError(u);
     		});
         	return response;
         }
@@ -157,7 +157,7 @@ public class SearchController {
         
         aniversariantes = userService.search(keyword, aniversariantes);
         if (aniversariantes.isEmpty()) {
-            response.getErrors().add("Nenhum aniversariante encontrado");
+            response.addError("Nenhum aniversariante encontrado");
             return response;
         }
 
@@ -177,7 +177,7 @@ public class SearchController {
         if (token.naoPreenchido()) { 
             log.info("{}", token); 
             log.info(token.getToken());
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 

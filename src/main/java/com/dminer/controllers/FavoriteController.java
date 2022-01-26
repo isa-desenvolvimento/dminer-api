@@ -100,7 +100,7 @@ public class FavoriteController {
         validateRequestDto(dtoReq, result);
         if (result.hasErrors()) {
             log.info("Erro validando dtoReq: {}", dtoReq);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 

@@ -74,7 +74,7 @@ public class CategoryController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -95,14 +95,14 @@ public class CategoryController {
         validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando CategoryRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Category> optProfile = categoryRepository.findById(dto.getId());
         if (! optProfile.isPresent()) {
             log.info("Categoria não encontrado: {}", dto);
-            response.getErrors().add("Categoria não encontrado");
+            response.addError("Categoria não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -120,13 +120,13 @@ public class CategoryController {
         
         Response<CategoryDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Category> category = categoryRepository.findById(id);
         if (!category.isPresent()) {
-            response.getErrors().add("Categoria não encontrado");
+            response.addError("Categoria não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -142,7 +142,7 @@ public class CategoryController {
 
         List<Category> category = categoryRepository.findAll();
         if (category == null || category.isEmpty()) {
-            response.getErrors().add("Categorias não encontradas");
+            response.addError("Categorias não encontradas");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -160,13 +160,13 @@ public class CategoryController {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         try {categoryRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Categoria não encontrada");
+            response.addError("Categoria não encontrada");
             return ResponseEntity.badRequest().body(response);
         }
 

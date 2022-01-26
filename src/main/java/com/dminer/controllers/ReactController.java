@@ -33,7 +33,7 @@ public class ReactController {
         List<React> reacts = reactRepository.findAll();
 
         if (reacts.isEmpty()) {
-            response.getErrors().add("Nenhum react encontrado");
+            response.addError("Nenhum react encontrado");
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);    
         }
         

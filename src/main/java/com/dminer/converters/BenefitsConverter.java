@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class BenefitsConverter {
+public class BenefitsConverter implements Converter<Benefits, BenefitsDTO, BenefitsRequestDTO> {
 
     @Autowired
     private UserService userService;
@@ -24,20 +24,23 @@ public class BenefitsConverter {
     private PermissionRepository permissionRepository;
 
 
-    public BenefitsDTO entityToDTO(Benefits entity) {
+    @Override
+    public BenefitsDTO entityToDto(Benefits entity) {
+        
         BenefitsDTO dto = new BenefitsDTO();
         dto.setId(entity.getId());
         dto.setContent(entity.getContent() != null ? entity.getContent() : "");
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
-        dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);
+        dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToStringOrNow(entity.getDate()) : null);
         if (entity.getCreator() != null)
-        	dto.setCreator(entity.getCreator().getLogin());
+            dto.setCreator(entity.getCreator().getLogin());
         dto.setImage(entity.getImage());
         if (entity.getPermission() != null)
             dto.setPermission(entity.getPermission().getId());
-        return dto;
+        return dto;    
     }
 
+    @Override
     public Benefits dtoToEntity(BenefitsDTO dto) {
         Benefits c = new Benefits();
         c.setId(dto.getId());
@@ -54,7 +57,8 @@ public class BenefitsConverter {
         return c;
     }
 
-    public Benefits requestDtoToEntity(BenefitsRequestDTO dto) {
+    @Override
+    public Benefits dtoRequestToEntity(BenefitsRequestDTO dto) {
         Benefits c = new Benefits();
         c.setTitle(dto.getTitle() != null ? dto.getTitle() : "");
         c.setContent(dto.getContent() != null ? dto.getContent() : "");

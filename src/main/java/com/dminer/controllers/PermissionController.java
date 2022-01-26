@@ -57,9 +57,9 @@ public class PermissionController {
 
     //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
     //     if (model == null || model.hasError()) {
-    //         response.getErrors().add("Permissões não encontradas");
+    //         response.addError("Permissões não encontradas");
     //         model.getOutput().getMessages().forEach(u -> {
-    // 			response.getErrors().add(u);
+    // 			response.addError(u);
     // 		});
     //         return ResponseEntity.badRequest().body(response);
     //     }
@@ -80,7 +80,7 @@ public class PermissionController {
 
         List<Permission> permissions = permissionRepository.findAll();
         if (permissions == null) {
-            response.getErrors().add("Permissões não encontradas");            
+            response.addError("Permissões não encontradas");            
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -100,9 +100,9 @@ public class PermissionController {
 
     //     ConfigRestModel model = permissionService.carregarPermissoesApi(token.getToken());
     //     if (model == null || model.hasError()) {
-    //         response.getErrors().add("Permissões não encontradas");
+    //         response.addError("Permissões não encontradas");
     //         model.getOutput().getMessages().forEach(u -> {
-    // 			response.getErrors().add(u);
+    // 			response.addError(u);
     // 		});
     //         return ResponseEntity.badRequest().body(response);
     //     }

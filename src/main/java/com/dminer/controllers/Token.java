@@ -28,7 +28,7 @@ public class Token {
         Response<String> response = new Response<>();
 
         if (senha == null || senha.isEmpty() || !senha.equals("Pa$$")) {
-        	response.getErrors().add("Senha inválida");
+        	response.addError("Senha inválida");
         	return ResponseEntity.badRequest().body(response);            
         }
         response.setData(TokenService.getToken());

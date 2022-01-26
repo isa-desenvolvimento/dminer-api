@@ -92,12 +92,12 @@ public class UserController {
         
         Response<UserDTO> response = new Response<>();
         if (login == null || login.isEmpty()) {
-            response.getErrors().add("Informe um login");
+            response.addError("Informe um login");
             return ResponseEntity.badRequest().body(response);
         }
         
         if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
@@ -129,29 +129,29 @@ public class UserController {
         
         Response<List<UserDTO>> response = new Response<>();
         if (token.naoPreenchido()) { 
-        	response.getErrors().add("Token precisa ser informado");
+        	response.addError("Token precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
                 
         UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
-        	response.getErrors().add("Token inválido ou expirado!");
+        	response.addError("Token inválido ou expirado!");
         	return ResponseEntity.badRequest().body(response);
         }
         
         if (users.hasError()) {
         	users.getOutput().getMessages().forEach(e -> {
-        		response.getErrors().add(e);
+        		response.addError(e);
         	});
         	return ResponseEntity.badRequest().body(response);
         }
         
         if (users.getOutput().getResult().getUsuarios().isEmpty()) {
-            response.getErrors().add("Usuários não encontrados");
+            response.addError("Usuários não encontrados");
         }
         
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
         	return ResponseEntity.badRequest().body(response);        	
         }
         
@@ -179,7 +179,7 @@ public class UserController {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token.naoPreenchido()) { 
-        	response.getErrors().add("Token precisa ser informado");
+        	response.addError("Token precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
     
@@ -187,7 +187,7 @@ public class UserController {
         UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
 
         if (restModel.isEmptyUsers()) {
-            response.getErrors().add("Nenhum usuario encontrado");             
+            response.addError("Nenhum usuario encontrado");             
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -204,22 +204,22 @@ public class UserController {
         Response<List<UserReductDTO>> response = new Response<>();
 
     	if (permissionUser.getLogin() == null || permissionUser.getLogin().isBlank()) {
-            response.getErrors().add("Informe o login");
+            response.addError("Informe o login");
         } else {
             if (!userService.existsByLogin(permissionUser.getLogin())) {
-                response.getErrors().add("Usuário não encontrado");
+                response.addError("Usuário não encontrado");
             }
         }
 
         if (permissionUser.getPermission() == null || permissionUser.getPermission().isBlank()) {
-            response.getErrors().add("Informe a permissão");
+            response.addError("Informe a permissão");
         } else {
             if (permissionRepository.findByName(permissionUser.getPermission()) == null) {
-                response.getErrors().add("Permissão não encontrada");
+                response.addError("Permissão não encontrada");
             }
         }
     	
-        if (!response.getErrors().isEmpty()) {
+        if (response.containErrors()) {
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -235,20 +235,20 @@ public class UserController {
         Response<List<UserDTO>> response = new Response<>();
 
         if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
         UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
-    		response.getErrors().add("Nenhum usuario encontrado");    		
+    		response.addError("Nenhum usuario encontrado");    		
     		return ResponseEntity.badRequest().body(response);
     	}
         
         if (users.hasError()) {
         	users.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
+    			response.addError(u);
     		});
     		return ResponseEntity.badRequest().body(response);
         }
@@ -261,7 +261,7 @@ public class UserController {
         });
         
         if (aniversariantes.isEmpty()) {
-            response.getErrors().add("Nenhum aniversariante encontrado");
+            response.addError("Nenhum aniversariante encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -283,13 +283,13 @@ public class UserController {
         Response<UserDTO> response = new Response<>();
 
         if (dto.getLogin() == null || dto.getLogin().isBlank()) {
-            response.getErrors().add("Login precisa ser informado");
+            response.addError("Login precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<User> optUser = userService.findByLogin(dto.getLogin());
         if (!optUser.isPresent()) {
-            response.getErrors().add("Nenhum usuário encontrado");
+            response.addError("Nenhum usuário encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -310,13 +310,13 @@ public class UserController {
         Response<String> response = new Response<>();
 
         if (login == null || login.isBlank()) {
-            response.getErrors().add("Login precisa ser informado");
+            response.addError("Login precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<User> optUser = userService.findByLogin(login);
         if (!optUser.isPresent()) {
-            response.getErrors().add("Nenhum usuário encontrado");
+            response.addError("Nenhum usuário encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -332,12 +332,12 @@ public class UserController {
         
         Response<List<UserDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
-            response.getErrors().add("Informe um termo");
+            response.addError("Informe um termo");
             return ResponseEntity.badRequest().body(response);
         }
         
         if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 

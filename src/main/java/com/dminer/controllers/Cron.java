@@ -52,8 +52,8 @@ public class Cron {
         Timestamp agora = new Timestamp(Date.from(Instant.now()).getTime());
         
         if (time.getTime() < agora.getTime()) {
-            response.getErrors().add("Data precisa ser superior a data atual");
-            response.getErrors().add("Data informada: " + dto.getDate() + "\t Data atual: " + UtilDataHora.dateToStringUTC(agora));
+            response.addError("Data precisa ser superior a data atual");
+            response.addError("Data informada: " + dto.getDate() + "\t Data atual: " + UtilDataHora.dateToStringUTC(agora));
         }
         
         Optional<User> opt = userService.findByLogin(dto.getLogin());
@@ -70,7 +70,7 @@ public class Cron {
             return ResponseEntity.ok().body(response);
         } 
 
-        response.getErrors().add("Usuário não encontrado");
+        response.addError("Usuário não encontrado");
         return ResponseEntity.badRequest().body(response);
     }
 
