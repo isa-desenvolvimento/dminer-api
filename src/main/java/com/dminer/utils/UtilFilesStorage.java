@@ -91,14 +91,16 @@ public class UtilFilesStorage {
     	return os.toByteArray();
     }
     
-    public static void copyFiles(String origem, String destino) {
+    public static boolean copyFiles(String origem, String destino) {        
         File source = new File(origem);
         File dest = new File(destino);
         try {
             FileUtils.copyFileToDirectory(source, dest); //copyDirectory
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }    	
+        return true;
     }
 
 
