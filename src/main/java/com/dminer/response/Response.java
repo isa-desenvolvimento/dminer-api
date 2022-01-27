@@ -33,7 +33,7 @@ public class Response<T> {
 	}
 
 	public boolean containErrors() {
-		return getErrors().isEmpty();
+		return !getErrors().isEmpty();
 	}
 
 	public void setErrors(List<String> errors) {
