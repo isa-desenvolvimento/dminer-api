@@ -30,11 +30,9 @@ public class DocumentConverter {
         Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
         if (findById2.isPresent())
             doc.setCategory(findById2.get());
-        // Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
-        // if (findById.isPresent())
-        //     doc.setPermission(findById.get());
         doc.setPermission(dto.getPermission());
         doc.setContentLink(dto.getContentLink() != null ? dto.getContentLink() : null);
+        doc.setContentLinkDownload(dto.getContentLinkDownload() != null ? dto.getContentLinkDownload() : null);
         doc.setTitle(dto.getTitle());
         return doc;
     }
@@ -44,9 +42,6 @@ public class DocumentConverter {
         Optional<Category> findById2 = categoryRepository.findById(dto.getCategory());
         if (findById2.isPresent())
             doc.setCategory(findById2.get());
-        // Optional<Permission> findById = permissionRepository.findById(dto.getPermission());
-        // if (findById.isPresent())
-        //     doc.setPermission(findById.get());
         doc.setPermission(dto.getPermission());
         doc.setContentLink(dto.getContentLink() != null ? dto.getContentLink() : null);
         doc.setTitle(dto.getTitle());
@@ -58,10 +53,9 @@ public class DocumentConverter {
         dto.setId(doc.getId());
         if (doc.getCategory() != null)
             dto.setCategory(doc.getCategory().getId());
-        // if (doc.getPermission() != null)
-        //     dto.setPermission(doc.getPermission().getId());
         dto.setPermission(doc.getPermission());
         dto.setContentLink(doc.getContentLink() != null ? doc.getContentLink() : null);
+        dto.setContentLinkDownload(doc.getContentLinkDownload() != null ? doc.getContentLinkDownload() : null);
         dto.setTitle(doc.getTitle());
         return dto;
     }

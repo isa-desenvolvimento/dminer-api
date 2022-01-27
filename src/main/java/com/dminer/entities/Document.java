@@ -40,6 +40,9 @@ public class Document {
     @Column
     private String contentLink;
 
+    @Column
+    private String contentLinkDownload;
+
     @OneToOne
     @JoinColumn(name = "category_id")
     private Category category;

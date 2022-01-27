@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
+
 public class UtilFilesStorage {
 
 		
@@ -23,7 +25,17 @@ public class UtilFilesStorage {
         //     return (new File(path)).mkdirs();
         // }
         // return true;
-    }    
+    }
+    
+    public static boolean createDirectory(String path, boolean checkIfExists) {
+        if (checkIfExists) {
+            if (! new File(path).exists()) {
+                return (new File(path)).mkdirs();
+            }
+            return true;
+        }
+        return (new File(path)).mkdirs();
+    }
     
     public static String getNomeArquivo(String arq) {
         //arq = arq.replace("\\", "/");
@@ -76,4 +88,15 @@ public class UtilFilesStorage {
     	return os.toByteArray();
     }
     
+    public static void copyFiles(String origem, String destino) {
+        File source = new File("H:\\work-temp\\file");
+        File dest = new File("H:\\work-temp\\file2");
+        try {
+            FileUtils.copyFile(source, dest);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }    	
+    }
+
+
 }

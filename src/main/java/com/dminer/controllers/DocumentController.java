@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import com.dminer.constantes.Constantes;
 import com.dminer.converters.DocumentConverter;
 import com.dminer.dto.DocumentRequestDTO;
 import com.dminer.dto.DocumentDTO;
@@ -15,6 +16,7 @@ import com.dminer.repository.DocumentRepository;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
+import com.dminer.utils.UtilFilesStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +60,7 @@ public class DocumentController {
     @Autowired
     private GenericRepositorySqlServer genericRepositorySqlServer;
     
+
     private void validateRequestDto(DocumentRequestDTO dto, BindingResult result) {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
@@ -134,9 +137,16 @@ public class DocumentController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        Document doc = documentRepository.save(documentConverter.requestDtoToEntity(dto));
-        response.setData(documentConverter.entityToDto(doc));
-
+        Document doc = documentConverter.requestDtoToEntity(dto);
+        
+        if (! dto.getContentLink().isBlank()) {
+            UtilFilesStorage.copyFiles(dto.getContentLink(), Constantes.ROOT_FILES);
+            doc.setContentLinkDownload(Constantes.ROOT_FILES + "\\" + dto.getContentLink());
+        }
+        doc = documentRepository.save(doc);
+        
+        DocumentDTO dtoTemp = documentConverter.entityToDto(doc);
+        response.setData(dtoTemp);
         return ResponseEntity.ok().body(response);
     }
 
