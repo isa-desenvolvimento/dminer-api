@@ -140,16 +140,26 @@ public class DocumentController {
         Document doc = documentConverter.requestDtoToEntity(dto);
         
         if (! dto.getContentLink().isBlank()) {
+            
+            log.info("Tentando criar diretório 'files'");
             boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
             if (!criou) {
                 response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
                 return ResponseEntity.ok().body(response);
             }
+
+            log.info("Diretório 'files' criado com sucesso!");
             String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES;
             
             String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink());
+            log.info("Tentando copiar arquivo: {}", dto.getContentLink());
 
-            UtilFilesStorage.copyFiles(dto.getContentLink(), link);
+            boolean copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), link);
+            if (!copiou) {
+                response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
+                return ResponseEntity.ok().body(response);
+            }
+            log.info("Arquivo copiado com sucesso para: {}", link);
             doc.setContentLinkDownload(link + UtilFilesStorage.separator + nomeArquivo);
         }
         doc = documentRepository.save(doc);
