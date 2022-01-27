@@ -149,26 +149,27 @@ public class DocumentController {
             }
 
             log.info("Diretório 'files' criado com sucesso!");
-            String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES;
             
             String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink(), "/");
+            String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + nomeArquivo;
+            
             log.info("Tentando copiar arquivo: {}", dto.getContentLink());
 
-            boolean copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), link);
+            boolean copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), link);
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
                 return ResponseEntity.internalServerError().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", link);
 
-            copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), "/tmp");
+            copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), "/tmp/" + nomeArquivo);
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
                 return ResponseEntity.internalServerError().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", "/tmp");
 
-            doc.setContentLinkDownload(link + UtilFilesStorage.separator + nomeArquivo);
+            doc.setContentLinkDownload(link);
         }
         doc = documentRepository.save(doc);
         DocumentDTO dtoTemp = documentConverter.entityToDto(doc);

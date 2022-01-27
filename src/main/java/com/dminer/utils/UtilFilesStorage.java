@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,6 +101,32 @@ public class UtilFilesStorage {
     	return os.toByteArray();
     }
     
+    public static boolean copyFiles4(String origem, String destino) {
+        try {
+            FileReader fr = new FileReader(origem);  
+            FileWriter fw = new FileWriter(destino);
+
+            String str = "";
+            int i;
+            while ((i = fr.read()) != -1) {
+                str += (char)i;
+            }
+            System.out.println(str);
+            fw.write(str);
+            fr.close();
+            fw.close();
+  
+            // Display message
+            System.out.println("File reading and writing both done");
+            return true;
+        }
+        catch (IOException e) {
+            System.out.println("There are some IOException");
+            e.printStackTrace();            
+        }
+        return false;
+    }
+
     public static boolean copyFiles3(String origem, String destino) {
         try {
             Path src = Paths.get(origem);
