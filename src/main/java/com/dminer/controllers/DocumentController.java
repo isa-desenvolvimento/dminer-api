@@ -151,7 +151,7 @@ public class DocumentController {
             log.info("Diretório 'files' criado com sucesso!");
             String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES;
             
-            String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink());
+            String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink(), "/");
             log.info("Tentando copiar arquivo: {}", dto.getContentLink());
 
             boolean copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), link);
