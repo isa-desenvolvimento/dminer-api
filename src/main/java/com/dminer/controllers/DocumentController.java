@@ -140,12 +140,17 @@ public class DocumentController {
         Document doc = documentConverter.requestDtoToEntity(dto);
         
         if (! dto.getContentLink().isBlank()) {
-            UtilFilesStorage.copyFiles(dto.getContentLink(), Constantes.ROOT_FILES);
-            doc.setContentLinkDownload(Constantes.ROOT_FILES + "\\" + dto.getContentLink());
+            UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+            String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES;
+            
+            String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink());
+
+            UtilFilesStorage.copyFiles(dto.getContentLink(), link);
+            doc.setContentLinkDownload(link + UtilFilesStorage.separator + nomeArquivo);
         }
         doc = documentRepository.save(doc);
-        
         DocumentDTO dtoTemp = documentConverter.entityToDto(doc);
+        
         response.setData(dtoTemp);
         return ResponseEntity.ok().body(response);
     }

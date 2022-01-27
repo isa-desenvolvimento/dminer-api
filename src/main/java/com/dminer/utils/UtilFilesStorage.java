@@ -40,7 +40,10 @@ public class UtilFilesStorage {
     public static String getNomeArquivo(String arq) {
         //arq = arq.replace("\\", "/");
         String[] explode = arq.split(separator);
-        String nomeArq = explode[explode.length-1];
+        String nomeArq = "";
+        if (explode.length > 0) {
+            nomeArq = explode[explode.length-1];
+        }
         return nomeArq;
     }
 
@@ -89,10 +92,10 @@ public class UtilFilesStorage {
     }
     
     public static void copyFiles(String origem, String destino) {
-        File source = new File("H:\\work-temp\\file");
-        File dest = new File("H:\\work-temp\\file2");
+        File source = new File(origem);
+        File dest = new File(destino);
         try {
-            FileUtils.copyFile(source, dest);
+            FileUtils.copyFileToDirectory(source, dest); //copyDirectory
         } catch (IOException e) {
             e.printStackTrace();
         }    	
