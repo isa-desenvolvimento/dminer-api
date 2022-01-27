@@ -140,6 +140,12 @@ public class UtilDataHora {
         return Timestamp.from(Instant.now());
     }
 
+    public static Timestamp toTimestampOrNull(String date) {
+        if (date != null)
+            return Timestamp.valueOf(date);
+        return null;
+    }
+
     public static boolean isTimestampValid(String date) {
         try {
             if (date == null || date.isEmpty())

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dminer.constantes.MessagesConst;
 import com.dminer.converters.CategoryConverter;
 import com.dminer.dto.CategoryDTO;
 import com.dminer.dto.CategoryRequestDTO;
@@ -37,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/category")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
+@Validated
 public class CategoryController {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
@@ -47,90 +50,49 @@ public class CategoryController {
     @Autowired
     private CategoryConverter categoryConverter;
 
-
-    private void validateRequestDto(CategoryRequestDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
-            result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
-		}
-    }
-
-    private void validateDto(CategoryDTO dto, BindingResult result) {
-        if (dto.getId() == null)  {
-            result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
-		}
-
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
-            result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
-		}
-    }
     
     @PostMapping()
-    public ResponseEntity<Response<CategoryDTO>> create(@Valid @RequestBody CategoryRequestDTO dto, BindingResult result) {        
-
-		log.info("Salvando uma nova categoria {}", dto.getTitle());
+    public ResponseEntity<Response<CategoryDTO>> create(@Valid @RequestBody CategoryRequestDTO dto, BindingResult result) {
+		log.info(MessagesConst.SALVANDO_REGISTRO, dto.getTitle());
 
         Response<CategoryDTO> response = new Response<>();
 
-        validateRequestDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-       Category category = categoryRepository.save(categoryConverter.requestDtoToEntity(dto));
+        Category category = categoryRepository.save(categoryConverter.dtoRequestToEntity(dto));
         
-        response.setData(categoryConverter.entityToDTO(category));
-        return ResponseEntity.ok().body(response);
+        response.setData(categoryConverter.entityToDto(category));
+        return ResponseEntity.status(201).body(response);
     }
 
 
     @PutMapping()
     public ResponseEntity<Response<CategoryDTO>> put( @Valid @RequestBody CategoryDTO dto, BindingResult result) {
 
-        log.info("Alterando um categoria {}", dto);
-
+        log.info(MessagesConst.ALTERANDO_REGISTRO, dto);
         Response<CategoryDTO> response = new Response<>();
 
-        validateDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando CategoryRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
+        Category category = categoryRepository.save(
+            categoryConverter.dtoToEntity(dto)
+        );
 
-        Optional<Category> optProfile = categoryRepository.findById(dto.getId());
-        if (! optProfile.isPresent()) {
-            log.info("Categoria não encontrado: {}", dto);
-            response.addError("Categoria não encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        optProfile.get().setTitle(dto.getTitle());
-
-       Category category = categoryRepository.save(optProfile.get());
-        response.setData(categoryConverter.entityToDTO(category));
+        response.setData(
+            categoryConverter.entityToDto(category)
+        );
         return ResponseEntity.ok().body(response);
     }
 
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<CategoryDTO>> get(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<CategoryDTO>> get(@PathVariable("id") @NotNull(message = MessagesConst.INFORME_ID) Integer id) {
         log.info("Buscando categoria {}", id);
         
         Response<CategoryDTO> response = new Response<>();
-        if (id == null) {
-            response.addError("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
 
         Optional<Category> category = categoryRepository.findById(id);
         if (!category.isPresent()) {
-            response.addError("Categoria não encontrado");
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.badRequest().body(response);
         }
-
-        response.setData(categoryConverter.entityToDTO(category.get()));
+        response.setData(categoryConverter.entityToDto(category.get()));
         return ResponseEntity.ok().body(response);
     }
 
@@ -142,36 +104,32 @@ public class CategoryController {
 
         List<Category> category = categoryRepository.findAll();
         if (category == null || category.isEmpty()) {
-            response.addError("Categorias não encontradas");
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<CategoryDTO> ps = new ArrayList<>();
-        category.forEach(p -> {
-            ps.add(categoryConverter.entityToDTO(p));
+        List<CategoryDTO> dto = new ArrayList<>();
+        category.forEach(categoryTemp -> {
+            dto.add(categoryConverter.entityToDto(categoryTemp));
         });
-        response.setData(ps);
+        response.setData(dto);
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
-        log.info("Deletando categoria {}", id);
+    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") @NotNull(message = MessagesConst.INFORME_ID) Integer id) {
+        log.info(MessagesConst.EXCLUINDO_REGISTRO, id);
         
         Response<Boolean> response = new Response<>();
-        if (id == null) {
-            response.addError("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
+       
         try {categoryRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.addError("Categoria não encontrada");
+            response.addError(MessagesConst.EXCLUINDO_REGISTRO);
             return ResponseEntity.badRequest().body(response);
         }
 
         response.setData(true);
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.accepted().body(response);
     }
 
 

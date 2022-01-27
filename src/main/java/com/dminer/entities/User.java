@@ -40,7 +40,7 @@ public class User {
 	@Column()
 	private String userName;
 
-	@Column(length = 8000)
+	@Column(length = 9999999)
 	private String banner; 
 
 	@Transient

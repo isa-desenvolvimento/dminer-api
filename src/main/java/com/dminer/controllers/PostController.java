@@ -179,9 +179,11 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post, null, null));
-		
 		post = postService.persist(post);
+		PostDTO dtoPost = postToDto(post, null, null);
+		UserReductDTO userReduct = new UserReductDTO();
+		userReduct.setLogin(dto.getLogin());		
+		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
 			// salvar na api externa
@@ -393,7 +395,8 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
-
+		dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+		
 		List<Favorites> favorites = favoritesRepository.findAllByPost(post);
 		favorites.forEach(f -> {
 			dto.getFavorites().add(f.getUser().getLogin());
@@ -409,7 +412,7 @@ public class PostController {
 				.collect(Collectors.toList());
 	
 				comments.forEach(comment -> {
-					dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
+					dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
 				});			
 			}
 		}

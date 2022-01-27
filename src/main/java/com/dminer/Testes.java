@@ -6,8 +6,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.dminer.constantes.Constantes;
 import com.dminer.dto.PostDTO;
 import com.dminer.utils.UtilDataHora;
+import com.dminer.utils.UtilFilesStorage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -23,6 +25,28 @@ import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 
 public class Testes {
+
+
+	
+	public static void main3(String[] args) {
+		// String arq = "C:/Users/rhuan/OneDrive/Documentos/rhuanpablo.pdf";
+		String arq = "C:\\Users\\rhuan\\OneDrive\\Documentos\\rhuanpablo.pdf";
+		// UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+		// System.out.println("C:/Users/rhuan/OneDrive/Documentos/rhuanpablo.pdf");
+		// System.out.println(UtilFilesStorage.getProjectPath() + "\\" + Constantes.ROOT_FILES);
+		// UtilFilesStorage.copyFiles("C:/Users/rhuan/OneDrive/Documentos/rhuanpablo.pdf", UtilFilesStorage.getProjectPath() + "\\" + Constantes.ROOT_FILES + "\\");
+
+		System.out.println(UtilFilesStorage.separator);
+		String arq2 = arq.replace("/", UtilFilesStorage.separator);
+		System.out.println(arq2);
+		// System.out.println(UtilFilesStorage.getNomeArquivo(arq.replace("/", UtilFilesStorage.separator)));
+
+		System.out.println(arq2.split("\\")[0]);
+
+
+		// System.out.println(UtilFilesStorage.getNomeArquivo(("C:/Users/rhuan/OneDrive/Documentos/rhuanpablo.pdf")));
+	}
+
 
 	public static void main2(String[] args) {
 

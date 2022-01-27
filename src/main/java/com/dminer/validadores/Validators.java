@@ -1,8 +1,8 @@
 package com.dminer.validadores;
 
-import com.dminer.entities.User;
 import com.dminer.repository.BenefitsRepository;
 import com.dminer.repository.PermissionRepository;
+import com.dminer.repository.PostRepository;
 import com.dminer.repository.UserRepository;
 
 import org.slf4j.Logger;
@@ -20,6 +20,9 @@ public class Validators {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PostRepository postRepository;
     
     @Autowired
     private PermissionRepository permissionRepository;
@@ -37,5 +40,10 @@ public class Validators {
     public boolean existsPermissionById(Integer id) {
         log.info("Verificando se Permission existe pelo id, {}", id);
         return permissionRepository.existsById(id);
+    }
+
+    public boolean existsPostById(Integer id) {
+        log.info("Verificando se Post existe pelo id, {}", id);
+        return postRepository.existsById(id);
     }
 }

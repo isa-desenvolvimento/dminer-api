@@ -1,0 +1,141 @@
+
+############# adicionando benefits ##################
+{
+  "content": "Conteudo para a classe Benefits 1",
+  "creator": "DANILO.COLLADO",
+  "date": "2022-01-27 02:25:00",
+  "image": null,
+  "permission": 0,
+  "title": "Titulo de teste"
+}
+
+{
+  "content": "Teste em Benefits para verificar se está indo tudo ok",
+  "creator": "DANILO.COLLADO",
+  "date": "2022-01-20 14:10:00",
+  "image": null,
+  "permission": 1,
+  "title": "Titulo de teste"
+}
+
+{
+  "content": "Inserindo Benefits para luis martins",
+  "creator": "luisMartins",
+  "date": "2022-01-15 11:10:00",
+  "image": null,
+  "permission": 1,
+  "title": "Titulo de teste"
+}
+
+{
+  "content": "Inserindo Benefits para matheus ribeiro",
+  "creator": "matheus.ribeiro1",
+  "date": "2022-01-12 09:10:00",
+  "image": null,
+  "permission": 0,
+  "title": "Titulo de teste"
+}
+
+
+
+
+
+
+################# adicionando posts ###############
+
+{
+  "anexo": null,
+  "content": "Lorem Ipsum is simply dummy text of the printing and typesetting",
+  "login": "matheus.ribeiro1",
+  "title": "Lorem Ipsum",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "It is a long established fact that a reader will be distracted by the",
+  "login": "matheus.ribeiro1",
+  "title": "It is a long established",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC",
+  "login": "luisMartins",
+  "title": "Contrary to popular belief",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "The standard chunk of Lorem Ipsum used since the 1500s",
+  "login": "luisMartins",
+  "title": "The standard chunk",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "Lorem Ipsum is simply dummy text of the printing and typesetting",
+  "login": "DANILO.COLLADO",
+  "title": "Lorem Ipsum",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour",
+  "login": "DANILO.COLLADO",
+  "title": "There are many variations",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words",
+  "login": "ana.maria2",
+  "title": "Hampden-Sydney",
+  "type": 1
+}
+
+{
+  "anexo": null,
+  "content": "Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham",
+  "login": "ana.maria2",
+  "title": "Finibus Bonorum",
+  "type": 1
+}
+
+
+
+
+####### adicionando comentários #########
+
+{
+  "content": "Comentário super legal",
+  "date": "2022-01-12 09:10:00",
+  "idPost": 122,
+  "login": "luisMartins"
+}
+
+{
+  "content": "Comentário aleatório",
+  "date": "2022-01-20 10:15:05",
+  "idPost": 122,
+  "login": "DANILO.COLLADO"
+}
+
+{
+  "content": "Comentário meia boca",
+  "date": "2022-01-05 19:15:40",
+  "idPost": 123,
+  "login": "matheus.ribeiro1"
+}
+
+{
+  "content": "Comentário bobão",
+  "date": "2022-01-22 10:15:05",
+  "idPost": 124,
+  "login": "ana.maria2"
+}

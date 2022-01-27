@@ -66,7 +66,7 @@ public class BenefitsController {
     
 		Response<BenefitsDTO> response = new Response<>();
         
-        validateRequestDto(dto, result);        
+        validateRequestDto(dto, result);
         if (result.hasErrors()) {
             response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
@@ -214,7 +214,7 @@ public class BenefitsController {
     private void validateDto(BenefitsDTO dto, BindingResult result) {
 
         if(! validators.existsBenefitsById(dto.getId())) {
-            result.addError(new ObjectError("dto", "Id do benefício não é válida."));
+            result.addError(new ObjectError("dto", "Id do Benefits não é válida."));
         }
 
         if(!validators.existsPermissionById(dto.getPermission())) {

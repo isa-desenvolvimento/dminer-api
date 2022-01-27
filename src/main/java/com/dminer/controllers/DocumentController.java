@@ -168,14 +168,6 @@ public class DocumentController {
                 return ResponseEntity.internalServerError().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", link);
-
-            copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), "/tmp/" + nomeArquivo);
-            if (!copiou) {
-                response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
-                return ResponseEntity.internalServerError().body(response);
-            }
-            log.info("Arquivo copiado com sucesso para: {}", "/tmp");
-
             doc.setContentLinkDownload(link);
         }
         doc = documentRepository.save(doc);
@@ -186,20 +178,21 @@ public class DocumentController {
     }
 
 
-    @GetMapping("/download/{fileName:.+}")
-    public ResponseEntity downloadFileFromLocal(@PathVariable String fileName) {
-        Path path = Paths.get(UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + fileName);
-        Resource resource = null;
-        try {
-            resource = new UrlResource(path.toUri());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-    }
+    // @GetMapping("/download/{fileName:.+}")
+    // public ResponseEntity downloadFileFromLocal(@PathVariable String fileName) {
+    //     Path path = Paths.get(UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + fileName);
+    //     Resource resource = null;
+    //     log.info("Baixando arquivo: {}", path);
+    //     try {
+    //         resource = new UrlResource(path.toUri());
+    //     } catch (MalformedURLException e) {
+    //         e.printStackTrace();
+    //     }
+    //     return ResponseEntity.ok()
+    //             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+    //             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+    //             .body(resource);
+    // }
 
 
     @GetMapping(value = "/find/{id}")

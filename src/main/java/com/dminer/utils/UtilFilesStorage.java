@@ -103,9 +103,9 @@ public class UtilFilesStorage {
     
     public static boolean copyFiles4(String origem, String destino) {
         try {
-            FileReader fr = new FileReader(origem);  
+            FileReader fr = new FileReader(origem);
             FileWriter fw = new FileWriter(destino);
-
+            
             String str = "";
             int i;
             while ((i = fr.read()) != -1) {

@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 
@@ -66,7 +67,8 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private String formatTimestamp(Timestamp date) {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");        
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
         try {
             return df.format(date);
         } catch (ParseException e) {

@@ -141,6 +141,7 @@ public class UserController {
         }
         
         if (users.hasError()) {
+            System.out.println("\n\nDeu pau 1 \n");
         	users.getOutput().getMessages().forEach(e -> {
         		response.addError(e);
         	});
@@ -148,13 +149,16 @@ public class UserController {
         }
         
         if (users.getOutput().getResult().getUsuarios().isEmpty()) {
+            System.out.println("\n\nDeu pau 2 \n");
             response.addError("Usuários não encontrados");
         }
         
         if (response.containErrors()) {
+            System.out.println("\n\nDeu pau 3 \n");
         	return ResponseEntity.badRequest().body(response);        	
         }
         
+        System.out.println("\n\nRecuperou os usuarios!!! \n");
         List<UserDTO> userList = new ArrayList<>();
         users.getUsers().forEach(u -> {
             UserDTO userDto = u.toUserDTO();
@@ -165,6 +169,7 @@ public class UserController {
             userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
             String banner = userService.getBannerString(u.getLogin());
             userDto.setBanner(banner);
+            System.out.println(userDto.toJson());
         	userList.add(userDto);
         });
         
@@ -354,7 +359,12 @@ public class UserController {
         return ResponseEntity.ok().body(response);
     }
 
-    
+    @GetMapping("/inserirDadosNoBancoComApiExterna")
+    public ResponseEntity<Boolean> inserirDadosNoBancoComApiExterna() {        
+        userService.inserirDadosNoBancoComApiExterna();
+        return ResponseEntity.ok().build();
+    }
+
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);
         return Arrays.asList(env.getActiveProfiles()).contains("prod");
