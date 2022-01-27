@@ -140,7 +140,11 @@ public class DocumentController {
         Document doc = documentConverter.requestDtoToEntity(dto);
         
         if (! dto.getContentLink().isBlank()) {
-            UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+            boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+            if (!criou) {
+                response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
+                return ResponseEntity.ok().body(response);
+            }
             String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES;
             
             String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink());
