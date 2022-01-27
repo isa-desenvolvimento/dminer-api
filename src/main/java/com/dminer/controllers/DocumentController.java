@@ -160,6 +160,14 @@ public class DocumentController {
                 return ResponseEntity.ok().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", link);
+
+            copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), "/tmp");
+            if (!copiou) {
+                response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
+                return ResponseEntity.ok().body(response);
+            }
+            log.info("Arquivo copiado com sucesso para: {}", "/tmp");
+
             doc.setContentLinkDownload(link + UtilFilesStorage.separator + nomeArquivo);
         }
         doc = documentRepository.save(doc);
