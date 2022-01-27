@@ -145,7 +145,7 @@ public class DocumentController {
             boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
             if (!criou) {
                 response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
-                return ResponseEntity.ok().body(response);
+                return ResponseEntity.internalServerError().body(response);
             }
 
             log.info("Diretório 'files' criado com sucesso!");
@@ -157,14 +157,14 @@ public class DocumentController {
             boolean copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), link);
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
-                return ResponseEntity.ok().body(response);
+                return ResponseEntity.internalServerError().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", link);
 
             copiou = UtilFilesStorage.copyFiles(dto.getContentLink(), "/tmp");
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
-                return ResponseEntity.ok().body(response);
+                return ResponseEntity.internalServerError().body(response);
             }
             log.info("Arquivo copiado com sucesso para: {}", "/tmp");
 
