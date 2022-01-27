@@ -1,11 +1,19 @@
 package com.dminer.utils;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,9 +45,9 @@ public class UtilFilesStorage {
         return (new File(path)).mkdirs();
     }
     
-    public static String getNomeArquivo(String arq) {
+    public static String getNomeArquivo(String arq, String separador) {
         //arq = arq.replace("\\", "/");
-        String[] explode = arq.split(separator);
+        String[] explode = arq.split(separador);
         String nomeArq = "";
         if (explode.length > 0) {
             nomeArq = explode[explode.length-1];
@@ -91,6 +99,41 @@ public class UtilFilesStorage {
     	return os.toByteArray();
     }
     
+    public static boolean copyFiles3(String origem, String destino) {
+        try {
+            Path src = Paths.get(origem);
+            Path dest = Paths.get(destino);
+            InputStream in = new BufferedInputStream(new FileInputStream(new File(origem)));
+            Files.copy(in, dest);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean copyFiles2(String origem, String destino) {        
+        File source = new File(origem);
+        File dest = new File(destino);
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(source));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
+    
+            byte[] buffer = new byte[1024];
+            int lengthRead;
+            while ((lengthRead = in.read(buffer)) > 0) {
+                out.write(buffer, 0, lengthRead);
+                out.flush();
+            }
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public static boolean copyFiles(String origem, String destino) {        
         File source = new File(origem);
         File dest = new File(destino);
