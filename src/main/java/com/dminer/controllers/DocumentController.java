@@ -166,7 +166,7 @@ public class DocumentController {
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
                 return ResponseEntity.internalServerError().body(response);
-            }
+            } 
             log.info("Arquivo copiado com sucesso para: {}", link);
             doc.setContentLinkDownload(link);
         }
@@ -177,6 +177,11 @@ public class DocumentController {
         return ResponseEntity.ok().body(response);
     }
 
+
+    public ResponseEntity<String> loadFileFromLocal(@PathVariable String filePath) {
+        return ResponseEntity.ok(UtilFilesStorage.loadFile(filePath));
+    }
+    
 
     // @GetMapping("/download/{fileName:.+}")
     // public ResponseEntity downloadFileFromLocal(@PathVariable String fileName) {
