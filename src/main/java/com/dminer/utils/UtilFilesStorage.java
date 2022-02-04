@@ -181,6 +181,8 @@ public class UtilFilesStorage {
 
 
     public static String loadFile(String filePath) {
+        System.out.println("Buscando: " + filePath);
+
         File file = new File(filePath);
  
         String content = null;
@@ -189,6 +191,7 @@ public class UtilFilesStorage {
         } catch (IOException e) {
             e.printStackTrace();
         }        
+        
         return content;
     }
 }

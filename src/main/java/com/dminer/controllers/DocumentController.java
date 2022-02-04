@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.dminer.dto.DocumentLoadDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -178,8 +179,11 @@ public class DocumentController {
     }
 
 
-    public ResponseEntity<String> loadFileFromLocal(@PathVariable String filePath) {
-        return ResponseEntity.ok(UtilFilesStorage.loadFile(filePath));
+    @GetMapping("/load")
+    public ResponseEntity<String> loadFileFromLocal(@RequestBody DocumentLoadDTO filePath) {
+        String file = UtilFilesStorage.loadFile(filePath.getPath());
+        System.out.println(file);
+        return ResponseEntity.ok(file);
     }
     
 
