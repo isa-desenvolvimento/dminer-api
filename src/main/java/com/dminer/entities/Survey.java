@@ -9,7 +9,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.dminer.dto.SurveyDTO;
+import com.dminer.utils.UtilDataHora;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +28,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class Survey {
     
     @Id
@@ -44,4 +49,31 @@ public class Survey {
 
     @Column
     private Boolean active = true;
+
+
+    public SurveyDTO convertDto() { 
+        SurveyDTO dto = new SurveyDTO();
+        dto.setId(id);
+        dto.setDate(date != null ? UtilDataHora.timestampToString(date) : null);
+        dto.setOptionA(optionA);
+        dto.setOptionB(optionB);
+        dto.setQuestion(question);        
+        dto.setCountA(0);
+        dto.setCountB(0);
+        dto.setActive(active);
+        return dto;
+    }
+
+    public SurveyDTO convertDto(SurveyResponses surveyResponses) { 
+        SurveyDTO dto = new SurveyDTO();
+        dto.setId(id);
+        dto.setDate(date != null ? UtilDataHora.timestampToString(date) : null);
+        dto.setOptionA(optionA);
+        dto.setOptionB(optionB);
+        dto.setQuestion(question);        
+        dto.setCountA(surveyResponses.getCountA());
+        dto.setCountB(surveyResponses.getCountB());
+        dto.setActive(active);
+        return dto;
+    }
 }

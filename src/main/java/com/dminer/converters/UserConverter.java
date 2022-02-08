@@ -38,10 +38,10 @@ public class UserConverter {
 
     public UserDTO entityToDto(User user) {
         UserDTO dto = new UserDTO();
-        Optional<User> opt = userService.findByLogin(dto.getLogin());
-        if (opt.isPresent()) {
-        	user.setId(opt.get().getId());        	
-        }
+        // Optional<User> opt = userService.findByLogin(dto.getLogin());
+        // if (opt.isPresent()) {
+        // 	user.setId(opt.get().getId());        	
+        // }
         
         dto.setLogin(user.getLogin());
         dto.setUserName(user.getUserName());

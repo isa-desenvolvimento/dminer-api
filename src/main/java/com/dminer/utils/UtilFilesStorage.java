@@ -1,16 +1,33 @@
 package com.dminer.utils;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
+
+import org.apache.commons.io.FileUtils;
+ 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class UtilFilesStorage {
 
@@ -18,16 +35,30 @@ public class UtilFilesStorage {
 	public final static String separator = File.separator;
 	
 	public static boolean createDirectory(String path) {
-        if (! new File(path).exists()) {
-            return (new File(path)).mkdirs();
-        }
-        return true;
-    }    
+        return new File(path).mkdirs();
+        // if (! new File(path).exists()) {
+        //     return (new File(path)).mkdirs();
+        // }
+        // return true;
+    }
     
-    public static String getNomeArquivo(String arq) {
+    public static boolean createDirectory(String path, boolean checkIfExists) {
+        if (checkIfExists) {
+            if (! new File(path).exists()) {
+                return (new File(path)).mkdirs();
+            }
+            return true;
+        }
+        return (new File(path)).mkdirs();
+    }
+    
+    public static String getNomeArquivo(String arq, String separador) {
         //arq = arq.replace("\\", "/");
-        String[] explode = arq.split(separator);
-        String nomeArq = explode[explode.length-1];
+        String[] explode = arq.split(separador);
+        String nomeArq = "";
+        if (explode.length > 0) {
+            nomeArq = explode[explode.length-1];
+        }
         return nomeArq;
     }
 
@@ -75,4 +106,92 @@ public class UtilFilesStorage {
     	return os.toByteArray();
     }
     
+    public static boolean copyFiles4(String origem, String destino) {
+        try {
+            FileReader fr = new FileReader(origem);
+            FileWriter fw = new FileWriter(destino);
+            
+            String str = "";
+            int i;
+            while ((i = fr.read()) != -1) {
+                str += (char)i;
+            }
+            System.out.println(str);
+            fw.write(str);
+            fr.close();
+            fw.close();
+  
+            // Display message
+            System.out.println("File reading and writing both done");
+            return true;
+        }
+        catch (IOException e) {
+            System.out.println("There are some IOException");
+            e.printStackTrace();            
+        }
+        return false;
+    }
+
+    public static boolean copyFiles3(String origem, String destino) {
+        try {
+            Path src = Paths.get(origem);
+            Path dest = Paths.get(destino);
+            InputStream in = new BufferedInputStream(new FileInputStream(new File(origem)));
+            Files.copy(in, dest);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean copyFiles2(String origem, String destino) {        
+        File source = new File(origem);
+        File dest = new File(destino);
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(source));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
+    
+            byte[] buffer = new byte[1024];
+            int lengthRead;
+            while ((lengthRead = in.read(buffer)) > 0) {
+                out.write(buffer, 0, lengthRead);
+                out.flush();
+            }
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean copyFiles(String origem, String destino) {        
+        File source = new File(origem);
+        File dest = new File(destino);
+        try {
+            FileUtils.copyFileToDirectory(source, dest); //copyDirectory
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }    	
+        return true;
+    }
+
+
+    public static String loadFile(String filePath) {
+        System.out.println("Buscando: " + filePath);
+
+        File file = new File(filePath);
+ 
+        String content = null;
+        try {
+            content = com.google.common.io.Files.asCharSource(file, StandardCharsets.UTF_8).read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }        
+        
+        return content;
+    }
 }

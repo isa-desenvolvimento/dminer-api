@@ -87,7 +87,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{login}")
-    public ResponseEntity<Response<UserDTO>> get(@PathVariable("login") String login) {
+    public ResponseEntity<Response<UserDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
         log.info("Buscando usuário {}", login);
         
         Response<UserDTO> response = new Response<>();
@@ -96,6 +96,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
         UserDTO userDto;
 
         Optional<User> opt = userService.findByLogin(login);
@@ -107,7 +112,7 @@ public class UserController {
             return ResponseEntity.ok().body(response);
         }
 
-        userDto = userService.buscarUsuarioApi(login);
+        userDto = userService.buscarUsuarioApi(login, token.getToken());
         
         if (userDto == null) {
         	return ResponseEntity.notFound().build();
@@ -119,12 +124,13 @@ public class UserController {
 
 
     @PostMapping(value = "/all")
-    @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestBody Token token) {
+    @Transactional(timeout = 999999)
+    public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
-        if (token == null) { 
+        if (token.naoPreenchido()) { 
         	response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
         }
                 
         UserRestModel users = userService.carregarUsuariosApi(token.getToken());
@@ -150,19 +156,16 @@ public class UserController {
         }
         
         List<UserDTO> userList = new ArrayList<>();
-        users.getOutput().getResult().getUsuarios().forEach(u -> {
-        	userList.add(u.toUserDTO());
-        });
-        
-        userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());
-            if (avatarPath != null) {
-            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
-            	u.setAvatar(avatarBase64);
-            }
-            
+        users.getUsers().forEach(u -> {
+            UserDTO userDto = u.toUserDTO();
+            // String avatarBase64 = userService.getAvatarEndpointEGravaDiretorio(u.getLogin());        	
+            // if (avatarBase64 != null) {
+            //     userDto.setAvatar(avatarBase64);
+            // }
+            userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
             String banner = userService.getBannerString(u.getLogin());
-            u.setBanner(banner);
+            userDto.setBanner(banner);
+        	userList.add(userDto);
         });
         
         response.setData(userList);
@@ -171,27 +174,25 @@ public class UserController {
     
     
     @PostMapping(value = "/dropdown")
-    @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestBody Token token) {
-    	
-        log.info("Dropdown: ");
-        log.info(token.getToken());
-    	System.out.println(token.getToken());
+    @Transactional(timeout = 99999)
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
-        if (token != null) {
-            
-            List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct();
-
-            if (usuariosApiReduct.isEmpty()) {   
-                response.getErrors().add("Nenhum usuario encontrado");             
-                return ResponseEntity.badRequest().body(response);
-            }
-            usuariosApiReduct.forEach(u -> {
-                u.setAvatar(null);
-            });
-        	response.setData(usuariosApiReduct); 
+        if (token.naoPreenchido()) { 
+        	response.getErrors().add("Token precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
         }
+    
+        // List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
+        UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
+
+        if (restModel.isEmptyUsers()) {
+            response.getErrors().add("Nenhum usuario encontrado");             
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        response.setData(restModel.toUserReductDtoList()); 
+    
         return ResponseEntity.ok().body(response);
     }
     
@@ -229,11 +230,16 @@ public class UserController {
 
     @GetMapping("/birthdays")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth() {
+    public ResponseEntity<Response<List<UserDTO>>> getBirthDaysOfMonth(@RequestHeader("x-access-token") Token token) {
         
         Response<List<UserDTO>> response = new Response<>();
 
-        UserRestModel users = userService.carregarUsuariosApi(TokenService.getToken());
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
     		response.getErrors().add("Nenhum usuario encontrado");    		
@@ -297,7 +303,7 @@ public class UserController {
 
 
     @PutMapping("/atualizar-avatar/{login}")
-    public ResponseEntity<Response<String>> atulizarAvatar( @PathVariable String login ) {
+    public ResponseEntity<Response<String>> atualizarAvatar( @PathVariable String login ) {
 
         log.info("Alterando avatar do usuário {}", login);
 
@@ -322,7 +328,7 @@ public class UserController {
 
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
-    public ResponseEntity<Response<List<UserDTO>>> search(@PathVariable String keyword) {
+    public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
@@ -330,7 +336,12 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
         
-        List<UserDTO> userList = userService.search(keyword);
+        if (token.naoPreenchido()) { 
+            response.getErrors().add("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+        List<UserDTO> userList = userService.search(keyword, token.getToken());
         userList.forEach(u -> {
         	String avatarPath = userService.getAvatarDir(u.getLogin());            
             if (avatarPath != null) {

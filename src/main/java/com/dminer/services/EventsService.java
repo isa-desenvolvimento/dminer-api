@@ -1,7 +1,10 @@
 package com.dminer.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.dminer.entities.Events;
 import com.dminer.repository.EventsTimeRepository;
@@ -120,5 +123,19 @@ public class EventsService implements IEventsService {
             return Optional.ofNullable(eventsTimeRepositoryPostgres.searchEvents(keyword));
         }
         return Optional.ofNullable(eventsTimeRepository.findAll());
+    }
+
+    public List<Events> search(String keyword, boolean isProd) {
+        List<Events> result = new ArrayList<>();
+        if (keyword != null) {
+            if (isProd) {
+                result = eventsTimeRepositoryPostgres.searchEvents(keyword);
+            } else {
+                result = eventsTimeRepositorySqlServe.searchEvents(keyword);
+            }          
+        } else {
+            result = eventsTimeRepository.findAll();
+        }        
+        return result;
     }
 }

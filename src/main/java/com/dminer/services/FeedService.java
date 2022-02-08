@@ -1,7 +1,9 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,4 +107,28 @@ public class FeedService {
 		dto.setTitle(post.getTitle());
 		return dto;
 	}
+
+
+    public List<PostReductDTO> search(String keyword, String login, boolean isProd) {
+        List<Post> result = new ArrayList<>();
+        if (keyword != null) {
+            if (isProd) {
+                result = genericRepositoryPostgres.searchPost(keyword);
+            } else {
+                result = genericRepositorySqlServer.searchPost(keyword);
+            }          
+        } else {
+            result = postService.findAll();
+        }
+        result = result.stream()
+            .sorted(Comparator.comparing(Post::getCreateDate).reversed())
+            .collect(Collectors.toList());
+        
+        List<PostReductDTO> reduct = new ArrayList<>();
+        for (Post post : result) {
+            reduct.add(postToReductDto(post));
+        }
+        return reduct;
+    }
+
 }
