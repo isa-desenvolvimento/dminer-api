@@ -19,4 +19,5 @@ public class DocumentDTO {
     private Integer category; 
     private Boolean permission;
     private String contentLink;
+    private String contentLinkDownload;
 }
