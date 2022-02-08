@@ -1,25 +1,35 @@
 package com.dminer.controllers;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
 
+import com.dminer.constantes.Constantes;
 import com.dminer.converters.DocumentConverter;
 import com.dminer.dto.DocumentRequestDTO;
 import com.dminer.dto.DocumentDTO;
+import com.dminer.dto.DocumentLoadDTO;
 import com.dminer.entities.Document;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.DocumentRepository;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
+import com.dminer.utils.UtilFilesStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -58,6 +68,7 @@ public class DocumentController {
     @Autowired
     private GenericRepositorySqlServer genericRepositorySqlServer;
     
+
     private void validateRequestDto(DocumentRequestDTO dto, BindingResult result) {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
@@ -130,15 +141,67 @@ public class DocumentController {
         validateRequestDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando dto: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
         
-        Document doc = documentRepository.save(documentConverter.requestDtoToEntity(dto));
-        response.setData(documentConverter.entityToDto(doc));
+        Document doc = documentConverter.requestDtoToEntity(dto);
+        
+        if (! dto.getContentLink().isBlank()) {
+            
+            log.info("Tentando criar diretório 'files'");
+            boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+            if (!criou) {
+                response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
+                return ResponseEntity.internalServerError().body(response);
+            }
 
+            log.info("Diretório 'files' criado com sucesso!");
+            
+            String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink(), "/");
+            String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + nomeArquivo;
+            
+            log.info("Tentando copiar arquivo: {}", dto.getContentLink());
+
+            boolean copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), link);
+            if (!copiou) {
+                response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
+                return ResponseEntity.internalServerError().body(response);
+            } 
+            log.info("Arquivo copiado com sucesso para: {}", link);
+            // doc.setContentLinkDownload(link);
+        }
+        doc = documentRepository.save(doc);
+        DocumentDTO dtoTemp = documentConverter.entityToDto(doc);
+        
+        response.setData(dtoTemp);
         return ResponseEntity.ok().body(response);
     }
+
+
+    @GetMapping("/load")
+    public ResponseEntity<String> loadFileFromLocal(@RequestBody DocumentLoadDTO filePath) {
+        String file = UtilFilesStorage.loadFile(filePath.getPath());
+        System.out.println(file);
+        return ResponseEntity.ok(file);
+    }
+    
+
+    // @GetMapping("/download/{fileName:.+}")
+    // public ResponseEntity downloadFileFromLocal(@PathVariable String fileName) {
+    //     Path path = Paths.get(UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + fileName);
+    //     Resource resource = null;
+    //     log.info("Baixando arquivo: {}", path);
+    //     try {
+    //         resource = new UrlResource(path.toUri());
+    //     } catch (MalformedURLException e) {
+    //         e.printStackTrace();
+    //     }
+    //     return ResponseEntity.ok()
+    //             .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+    //             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+    //             .body(resource);
+    // }
 
 
     @GetMapping(value = "/find/{id}")
@@ -146,13 +209,13 @@ public class DocumentController {
         
         Response<DocumentDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Document> doc = documentRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -166,19 +229,19 @@ public class DocumentController {
         
         Response<DocumentDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Informe um id");
+            response.addError("Informe um id");
             return ResponseEntity.badRequest().body(response);
         }
 
         Optional<Document> doc = documentRepository.findById(id);
         if (!doc.isPresent()) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
         try {documentRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Documento não encontrado");
+            response.addError("Documento não encontrado");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -197,7 +260,7 @@ public class DocumentController {
         validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando CategoryRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -214,7 +277,7 @@ public class DocumentController {
 
         List<Document> doc = documentRepository.findAllByOrderByCreateDateDesc();
         if (doc.isEmpty()) {
-            response.getErrors().add("Documentos não encontrados");
+            response.addError("Documentos não encontrados");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -232,13 +295,13 @@ public class DocumentController {
         
         Response<List<DocumentDTO>> response = new Response<>();
         if (keyword == null || keyword.isBlank()) {
-            response.getErrors().add("Informe um termo");
+            response.addError("Informe um termo");
             return ResponseEntity.badRequest().body(response);
         }
 
         List<Document> doc = genericRepositorySqlServer.searchDocuments(keyword);
         if (doc == null || doc.isEmpty()) {
-            response.getErrors().add("Nenhum documento encontrado");
+            response.addError("Nenhum documento encontrado");
             return ResponseEntity.status(404).body(response);
         }
         
