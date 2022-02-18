@@ -349,8 +349,7 @@ public class GenericRepositorySqlServer {
         "WHERE LOWER(CONCAT( " +
            "e.content_link, ' ', " +
            "e.title, ' ', " +
-           "e.category_id, ' ', " +           
-           "e.permission_id, ' '))" +
+           "e.category_id, ' ')) " +           
            " LIKE LOWER('%" + keyword + "%')";
         log.info("search = {}", query);
 
