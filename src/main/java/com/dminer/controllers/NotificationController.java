@@ -10,10 +10,8 @@ import com.dminer.converters.NotificationConverter;
 import com.dminer.dto.NotificationDTO;
 import com.dminer.dto.NotificationRequestDTO;
 import com.dminer.entities.Notification;
-import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.NotificationService;
-import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +45,6 @@ public class NotificationController {
 
     @Autowired 
     private NotificationConverter notificationConverter;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private ServerSendEvents sendEvents;

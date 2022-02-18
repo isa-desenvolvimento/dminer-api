@@ -54,7 +54,7 @@ public class Survey {
     public SurveyDTO convertDto() { 
         SurveyDTO dto = new SurveyDTO();
         dto.setId(id);
-        dto.setDate(date != null ? UtilDataHora.timestampToString(date) : null);
+        dto.setDate(date != null ? UtilDataHora.timestampToStringOrNow(date) : null);
         dto.setOptionA(optionA);
         dto.setOptionB(optionB);
         dto.setQuestion(question);        
@@ -67,7 +67,7 @@ public class Survey {
     public SurveyDTO convertDto(SurveyResponses surveyResponses) { 
         SurveyDTO dto = new SurveyDTO();
         dto.setId(id);
-        dto.setDate(date != null ? UtilDataHora.timestampToString(date) : null);
+        dto.setDate(date != null ? UtilDataHora.timestampToStringOrNow(date) : null);
         dto.setOptionA(optionA);
         dto.setOptionB(optionB);
         dto.setQuestion(question);        

@@ -45,4 +45,9 @@ public class FullCalendarService implements IFullCalendarService {
         fullCalendarRepository.deleteById(id);        
     }
     
+    // public List<FullCalendar> findAllByUser(int idUser) {
+    //     log.info("Buscando todos os calendários para o usuario: " + idUser);
+	// 	return Optional.ofNullable(fullCalendarRepository.findAll());
+    // }
+
 }

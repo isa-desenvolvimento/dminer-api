@@ -162,7 +162,7 @@ public class PostController {
 		validateRequestDto(dto, result);
 		if (result.hasErrors()) {
             log.info("Erro validando PostRequestDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            result.getAllErrors().forEach( e -> response.addError(e.getDefaultMessage()));
             return ResponseEntity.badRequest().body(response);
         }
 		
@@ -179,9 +179,11 @@ public class PostController {
 			post.setType(PostType.EXTERNAL);
 		}
 
-		response.setData(postToDto(post, null, null));
-		
 		post = postService.persist(post);
+		PostDTO dtoPost = postToDto(post, null, null);
+		UserReductDTO userReduct = new UserReductDTO();
+		userReduct.setLogin(dto.getLogin());		
+		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
 			// salvar na api externa
@@ -213,16 +215,16 @@ public class PostController {
 		
 		// log.info("Verificando se o usuário informado existe");
 		// if (postRequestDTO.getUser().getLogin() == null ) {
-		// 	response.getErrors().add("Usuário não encontrado.");			
+		// 	response.addError("Usuário não encontrado.");			
 		// }
 		
 		try {
 			PostType.valueOf(postRequestDTO.getType());				
 		} catch (IllegalArgumentException e) {
-			response.getErrors().add("Campo tipo é inválido.");
+			response.addError("Campo tipo é inválido.");
 		}
 		
-		if (!response.getErrors().isEmpty()) {
+		if (response.containErrors()) {
 			return ResponseEntity.badRequest().body(response);
 		}
 		
@@ -247,7 +249,7 @@ public class PostController {
 			caminhoAbsoluto = criarDiretorio(post.getId());
 		} catch(IOException e) {
 			rollback(post, null, null);
-			response.getErrors().add(e.getMessage());
+			response.addError(e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 
@@ -315,11 +317,11 @@ public class PostController {
 
 			fileStorageService.delete(Paths.get(Constantes.appendInRoot(post.get().getId() + "")));
 			if (fileStorageService.existsDirectory(Paths.get(ROOT_UPLOADS))) {		
-				response.getErrors().add("Diretório do Post não foi deletado corretamente");
+				response.addError("Diretório do Post não foi deletado corretamente");
 				return ResponseEntity.internalServerError().body(response);
 			}			
 		} else {
-			response.getErrors().add("Post não encontrado");
+			response.addError("Post não encontrado");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		return ResponseEntity.ok().body(response);
@@ -340,13 +342,13 @@ public class PostController {
 		log.info("Recuperando Post {}", id);
 
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
 		Optional<Post> post = postService.findById(id);
 		if (!post.isPresent()) {
-			response.getErrors().add("Post não encontrado na base de dados");
+			response.addError("Post não encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
@@ -393,7 +395,8 @@ public class PostController {
 		dto.setContent(post.getContent());
 		dto.setTitle(post.getTitle());
 		dto.setAnexo(post.getAnexo());
-
+		dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+		
 		List<Favorites> favorites = favoritesRepository.findAllByPost(post);
 		favorites.forEach(f -> {
 			dto.getFavorites().add(f.getUser().getLogin());
@@ -409,7 +412,7 @@ public class PostController {
 				.collect(Collectors.toList());
 	
 				comments.forEach(comment -> {
-					dto.getComments().add(commentConverter.entityToDTO(post.getId(), user, comment));
+					dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
 				});			
 			}
 		}
@@ -425,13 +428,13 @@ public class PostController {
 		log.info("Recuperando todos os Post");
 
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
 		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
-			response.getErrors().add("Nenhum post encontrado na base de dados");
+			response.addError("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		
@@ -458,12 +461,12 @@ public class PostController {
 
 		List<Post> posts = postService.findAll();
 		if (posts == null || posts.isEmpty()) {
-			response.getErrors().add("Nenhum post encontrado na base de dados");
+			response.addError("Nenhum post encontrado na base de dados");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
@@ -490,18 +493,18 @@ public class PostController {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
-            response.getErrors().add("Id precisa ser informado");
+            response.addError("Id precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
 		Optional<Post> optPost = postService.findById(id);
         if (!optPost.isPresent()) {
-        	response.getErrors().add("Post não encontrado");
+        	response.addError("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
         		
@@ -517,13 +520,13 @@ public class PostController {
 		userRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		if (userRestModel == null) {
-			response.getErrors().add("Não foi possível carregar os usuários do endpoint");
+			response.addError("Não foi possível carregar os usuários do endpoint");
 			return ResponseEntity.badRequest().body(response); 
 		}
 
 		optUser = userService.findByLoginApi(userSearch, userRestModel.getOutput().getResult().getUsuarios());
 		if (!optUser.isPresent()) {
-			response.getErrors().add("Nenhum usuário encontrado");
+			response.addError("Nenhum usuário encontrado");
 			return ResponseEntity.badRequest().body(response);
 		}
 		userId = optUser.get().getId();
@@ -578,7 +581,7 @@ public class PostController {
 		UserRestModel userRestModel = null;
 
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
@@ -586,13 +589,13 @@ public class PostController {
 			userRestModel = userService.carregarUsuariosApi(token.getToken());
 			
 			if (userRestModel == null) {
-				response.getErrors().add("Não foi possível carregar os usuários do endpoint");
+				response.addError("Não foi possível carregar os usuários do endpoint");
 				return ResponseEntity.badRequest().body(response); 
 			}
 
 			userOpt = userService.findByLoginApi(user, userRestModel.getOutput().getResult().getUsuarios());
 			if (!userOpt.isPresent()) {
-				response.getErrors().add("Nenhum usuário encontrado");
+				response.addError("Nenhum usuário encontrado");
 				return ResponseEntity.badRequest().body(response);
 			}			
 		}
@@ -623,18 +626,18 @@ public class PostController {
 	public ResponseEntity<Response<PostDTO>> likes(@RequestHeader("x-access-token") Token token, @PathVariable("id") Integer idPost, @PathVariable("login") String login, @PathVariable("react") String react, @PathVariable("toggle") Boolean toggle) {
 		Response<PostDTO> response = new Response<>();
 		if (idPost == null) {
-            response.getErrors().add("Id precisa ser informado");
+            response.addError("Id precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
 
 		Optional<Post> optPost = postService.findById(idPost);
         if (!optPost.isPresent()) {
-        	response.getErrors().add("Post não encontrado");
+        	response.addError("Post não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 		
 		if (token.naoPreenchido()) { 
-            response.getErrors().add("Token precisa ser informado");    		
+            response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 

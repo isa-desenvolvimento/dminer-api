@@ -38,7 +38,7 @@ public class SurveyConverter {
     public SurveyDTO entityToDTO(Survey survey) { 
         SurveyDTO dto = new SurveyDTO();
         dto.setId(survey.getId());
-        dto.setDate(survey.getDate() != null ? UtilDataHora.timestampToString(survey.getDate()) : null);
+        dto.setDate(survey.getDate() != null ? UtilDataHora.timestampToStringOrNow(survey.getDate()) : null);
         dto.setOptionA(survey.getOptionA());
         dto.setOptionB(survey.getOptionB());
         dto.setQuestion(survey.getQuestion());

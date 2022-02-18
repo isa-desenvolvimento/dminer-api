@@ -1,21 +1,9 @@
 package com.dminer.controllers;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
-import javax.ws.rs.HeaderParam;
-
-import com.dminer.components.TokenService;
 import com.dminer.converters.NoticeConverter;
 import com.dminer.converters.NotificationConverter;
 import com.dminer.converters.ReminderConverter;
@@ -97,7 +85,7 @@ public class SearchController {
     
     @Autowired
     private NoticeConverter noticeConverter;
-    
+
     @Autowired
     private ReminderConverter reminderConverter;
     
@@ -168,15 +156,13 @@ public class SearchController {
 
 
     @GetMapping(value = "/{login}/{keyword}")
-    @Transactional(timeout = 50000)
+    @Transactional(timeout = 90000)
     public ResponseEntity<Response<SearchDTO>> getAllEvents(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<SearchDTO> response = new Response<>();
         SearchDTO searchDTO = new SearchDTO();
         
         if (token.naoPreenchido()) { 
-            log.info("{}", token); 
-            log.info(token.getToken());
             response.getErrors().add("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }

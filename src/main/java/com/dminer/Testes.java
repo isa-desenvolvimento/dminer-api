@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.dminer.dto.PostDTO;
 import com.dminer.utils.UtilDataHora;
+import com.dminer.utils.UtilFilesStorage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -23,6 +24,13 @@ import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
 
 public class Testes {
+
+
+
+	public static void main3(String[] args) {
+		String file = UtilFilesStorage.loadFile("c:\\projeto-java-andressa\\dminer-api\\files\\rhuanpablo.pdf");
+        System.out.println(file);	
+	}
 
 	public static void main2(String[] args) {
 

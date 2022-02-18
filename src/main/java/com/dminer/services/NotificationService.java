@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.dminer.entities.Notification;
+import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.NotificationRepository;
@@ -24,6 +25,9 @@ public class NotificationService implements INotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private GenericRepositoryPostgres genericRepositoryPostgres;
@@ -67,6 +71,23 @@ public class NotificationService implements INotificationService {
         } else {
             result = notificationRepository.findAll();
         }
+
+        log.info("Buscando as notificações relacionadas ao calendário... Usuário: {}", login);
+        Optional<User> user = userService.findByLogin(login);
+
+        if (user.isPresent()) {
+            List<Notification> resultCalendar = new ArrayList<>();
+            if (isProd) {
+                resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
+            } else {
+                resultCalendar = genericRepositorySqlServer.getNotificationsByFullCalendarEvents(user.get().getId());
+            }
+            if (!resultCalendar.isEmpty()) {
+                log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());
+                result.addAll(resultCalendar);
+            }
+        }
+
         result = result.stream()
             .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
             .collect(Collectors.toList());
