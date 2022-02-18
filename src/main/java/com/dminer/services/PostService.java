@@ -1,10 +1,8 @@
 package com.dminer.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostExternalApiDTO;
-import com.dminer.entities.Favorites;
 import com.dminer.entities.Post;
-import com.dminer.repository.FavoritesRepository;
 import com.dminer.repository.PostRepository;
 import com.dminer.services.interfaces.IPostService;
 
@@ -31,8 +26,8 @@ public class PostService implements IPostService {
 	@Autowired
 	private PostRepository postRepository;	
 
-	@Autowired
-	private FavoritesRepository favoritesRepository;
+	// @Autowired
+	// private FavoritesRepository favoritesRepository;
 
 	
 	private static final Logger log = LoggerFactory.getLogger(PostService.class);

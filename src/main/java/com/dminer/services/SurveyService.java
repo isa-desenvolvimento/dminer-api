@@ -1,12 +1,9 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import com.dminer.converters.SurveyConverter;
 import com.dminer.dto.SurveyDTO;
 import com.dminer.entities.Survey;
 import com.dminer.entities.SurveyResponses;
@@ -35,10 +32,6 @@ public class SurveyService implements ISurveyService {
 
 	@Autowired
     private SurveyResponseRepository surveyResponseRepository;
-	
-	@Autowired
-    private SurveyConverter surveyConverter;
-
 	
 
     @Override
@@ -74,9 +67,9 @@ public class SurveyService implements ISurveyService {
         List<Survey> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = genericRepositoryPostgres.searchSurvey(keyword);
+				result = genericRepositorySqlServer.searchSurvey(keyword);
             } else {
-                result = genericRepositorySqlServer.searchSurvey(keyword);
+                result = genericRepositoryPostgres.searchSurvey(keyword);
             }          
         } else {
             result = surveyRepository.findAll();

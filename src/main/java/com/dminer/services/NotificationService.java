@@ -64,9 +64,9 @@ public class NotificationService implements INotificationService {
         List<Notification> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = genericRepositoryPostgres.searchNotification(keyword, login);
-            } else {
                 result = genericRepositorySqlServer.searchNotification(keyword, login);
+            } else {
+                result = genericRepositoryPostgres.searchNotification(keyword, login);
             }          
         } else {
             result = notificationRepository.findAll();
@@ -78,9 +78,9 @@ public class NotificationService implements INotificationService {
         if (user.isPresent()) {
             List<Notification> resultCalendar = new ArrayList<>();
             if (isProd) {
-                resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
-            } else {
                 resultCalendar = genericRepositorySqlServer.getNotificationsByFullCalendarEvents(user.get().getId());
+            } else {
+                resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
             }
             if (!resultCalendar.isEmpty()) {
                 log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());

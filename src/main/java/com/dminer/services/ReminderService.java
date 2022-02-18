@@ -60,9 +60,9 @@ public class ReminderService implements IReminderService {
         List<Reminder> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = genericRepositoryPostgres.searchReminder(keyword, login);
-            } else {
                 result = genericRepositorySqlServer.searchReminder(keyword, login);
+            } else {
+                result = genericRepositoryPostgres.searchReminder(keyword, login);
             }            
         } else {
             result = reminderRepository.findAll();
