@@ -85,7 +85,7 @@ public class NotificationService implements INotificationService {
             if (!resultCalendar.isEmpty()) {
                 log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());
                 result.addAll(resultCalendar);
-            }
+            } 
         }
 
         result = result.stream()

@@ -46,8 +46,14 @@ public class User {
 	@Transient
 	private String avatar;
 	
+
 	public User (Integer id) {
 		this.id = id;
+	}
+
+	public User (Integer id, String login) {
+		this.id = id;
+		this.login = login;
 	}
 
 	public User (String login, String userName) {

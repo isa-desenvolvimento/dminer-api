@@ -510,9 +510,10 @@ public class GenericRepositoryPostgres {
 
     public List<Notification> getNotificationsByFullCalendarEvents(Integer idUser) {
         String query = 
-        "select users_id as user_id, fc.title as notification , fc.start_date as create_date " + 
+        "select users_id as user_id, fc.title as notification , fc.start_date as create_date, u.login as login " + 
         "from full_calendar fc " + 
-        "inner join full_calendar_users fcu on fcu.full_calendar_id = fc.id " + 
+        "inner join full_calendar_users fcu on fcu.full_calendar_id = fc.id " +
+        "inner join users u on u.id = fcu.users_id " + 
         "WHERE "+ 
             "users_id = " + idUser + " " + 
             "and current_timestamp between start_date and end_date";
@@ -523,7 +524,7 @@ public class GenericRepositoryPostgres {
             Notification e = new Notification();            
             e.setNotification(rs.getString("notification"));
             e.setCreateDate(rs.getTimestamp("create_date"));
-            e.setUser(new User(rs.getInt("user_id")));
+            e.setUser(new User(rs.getInt("user_id"), rs.getString("login")));
             return e;
         });
     }
