@@ -113,9 +113,9 @@ public class FeedService {
         List<Post> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = genericRepositoryPostgres.searchPost(keyword);
-            } else {
                 result = genericRepositorySqlServer.searchPost(keyword);
+            } else {
+                result = genericRepositoryPostgres.searchPost(keyword);
             }          
         } else {
             result = postService.findAll();

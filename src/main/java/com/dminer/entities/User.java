@@ -12,6 +12,7 @@ import javax.persistence.Transient;
 import com.dminer.dto.UserReductDTO;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class User {
     
 	@Id
@@ -38,12 +40,22 @@ public class User {
 	@Column()
 	private String userName;
 
-	@Column(length = 8000)
+	@Column(length = 9999999)
 	private String banner; 
 
 	@Transient
 	private String avatar;
 	
+
+	public User (Integer id) {
+		this.id = id;
+	}
+
+	public User (Integer id, String login) {
+		this.id = id;
+		this.login = login;
+	}
+
 	public User (String login, String userName) {
 		this.login = login;
 		this.userName = userName;

@@ -61,14 +61,5 @@ public class Notification {
         }
         return null;
     }
-
 	
-	@Transient
-    @Autowired
-    private NotificationService notificationService;
-    
-    public void desactivate() {
-        this.active = false;
-        notificationService.persist(this);
-    }
 }

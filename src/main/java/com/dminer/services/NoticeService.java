@@ -53,9 +53,9 @@ public class NoticeService implements INoticeService {
         List<Notice> notices = new ArrayList<>();
         if (keyword != null) {
             if (prod) {
-                notices = genericRepositoryPostgres.searchNotice(keyword);
-            } else {
                 notices = genericRepositorySqlServer.searchNotice(keyword);
+            } else {
+                notices = genericRepositoryPostgres.searchNotice(keyword);
             }
             
         } else {

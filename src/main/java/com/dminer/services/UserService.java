@@ -8,36 +8,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
-import com.dminer.images.ImageResizer;
-import com.dminer.repository.GenericRepositoryPostgres;
-import com.dminer.repository.GenericRepositorySqlServer;
-import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
-import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.interfaces.IUserService;
@@ -185,6 +173,15 @@ public class UserService implements IUserService {
 		}
 	}
 
+	public void inserirDadosNoBancoComApiExterna() {
+		String token = TokenService.getToken();
+		UserRestModel usuarios = carregarUsuariosApi(token);
+		for (Usuario usuario : usuarios.getUsers()) {
+			User u = usuario.toUser();
+			u = persist(u);			
+		}
+	}
+
 
 	public Optional<User> findByLoginApi(String login, List<Usuario> users) {
 		
@@ -238,7 +235,7 @@ public class UserService implements IUserService {
 			try {
 				System.out.println(response.toString());
 				userRestModel = gson.fromJson(response, UserRestModel.class);
-				return userRestModel;				
+				return userRestModel;
 			} catch (IllegalStateException e) {
 				return null;
 			}

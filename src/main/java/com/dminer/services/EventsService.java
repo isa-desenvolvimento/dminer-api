@@ -1,10 +1,8 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.dminer.entities.Events;
 import com.dminer.repository.EventsTimeRepository;
@@ -129,9 +127,9 @@ public class EventsService implements IEventsService {
         List<Events> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = eventsTimeRepositoryPostgres.searchEvents(keyword);
-            } else {
                 result = eventsTimeRepositorySqlServe.searchEvents(keyword);
+            } else {
+                result = eventsTimeRepositoryPostgres.searchEvents(keyword);
             }          
         } else {
             result = eventsTimeRepository.findAll();
