@@ -171,7 +171,7 @@ public class SearchController {
 
         // usuarios
         List<UserDTO> searchUsers = userService.search(keyword, token.getToken());
-        searchUsers.forEach(u -> {        	
+        searchUsers.parallelStream().forEach(u -> {        	
         	String encodedString = userService.getAvatarBase64ByLogin(u.getLogin());
         	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
@@ -180,7 +180,7 @@ public class SearchController {
         // aniversariantes
         Response<List<UserDTO>> aniversariantes = aniversariantes(token.getToken(), keyword);
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
-        	aniversariantes.getData().forEach(ani -> {
+        	aniversariantes.getData().parallelStream().forEach(ani -> {
                 String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
         	    ani.setAvatar(encodedString);
         		searchDTO.getBirthdayList().add(ani);
@@ -191,7 +191,7 @@ public class SearchController {
         // reminder
         List<Reminder> searchReminder = reminderService.search(keyword, login, isProd());
         if (!searchReminder.isEmpty()) {
-            searchReminder.forEach(u -> {
+            searchReminder.parallelStream().forEach(u -> {
                 searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
             });
         }
@@ -199,7 +199,7 @@ public class SearchController {
         // Notification
         List<Notification> notifications = notificationService.search(keyword, login, isProd());
         if (!notifications.isEmpty()) {
-            notifications.forEach(u -> {            
+            notifications.parallelStream().forEach(u -> {            
                 searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
             }); 
         }        
@@ -207,7 +207,7 @@ public class SearchController {
         // notice
         List<Notice> notices = noticeService.search(keyword, isProd());
         if (!notices.isEmpty()) {
-            notices.forEach(u -> {
+            notices.parallelStream().forEach(u -> {
                 searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
             });
         }
@@ -215,7 +215,7 @@ public class SearchController {
         // events
         List<Events> events = eventsService.search(keyword, isProd());
         if (!events.isEmpty()) {
-            events.forEach(u -> {
+            events.parallelStream().forEach(u -> {
                 searchDTO.getEventsList().add(u);
             });
         }
@@ -223,7 +223,7 @@ public class SearchController {
         // surveys
         List<SurveyDTO> searchSurvey = surveyService.search(keyword, login, isProd());
         if (!searchSurvey.isEmpty()) {
-            searchSurvey.forEach(u -> {
+            searchSurvey.parallelStream().forEach(u -> {
                 searchDTO.getQuizList().add(u);
             });
         }
@@ -232,7 +232,7 @@ public class SearchController {
         // feed (post)
         List<PostReductDTO> searchFeed = feedService.search(keyword, login, isProd());
         if (!searchFeed.isEmpty()) {
-            searchFeed.forEach(u -> {
+            searchFeed.parallelStream().forEach(u -> {
                 searchDTO.getFeedList().add(u);
             });
         }
