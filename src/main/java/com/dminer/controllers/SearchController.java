@@ -143,10 +143,12 @@ public class SearchController {
             }            
         }
         
-        aniversariantes = userService.search(keyword, aniversariantes);
-        if (aniversariantes.isEmpty()) {
-            response.getErrors().add("Nenhum aniversariante encontrado");
-            return response;
+        if (keyword != null) {
+            aniversariantes = userService.search(keyword, aniversariantes);
+            if (aniversariantes.isEmpty()) {
+                response.getErrors().add("Nenhum aniversariante encontrado");
+                return response;
+            }
         }
 
         response.setData(aniversariantes);
