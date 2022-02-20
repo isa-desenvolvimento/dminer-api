@@ -193,7 +193,7 @@ public class SearchController {
         // reminder
         List<Reminder> searchReminder = reminderService.search(keyword, login, isProd());
         if (!searchReminder.isEmpty()) {
-            searchReminder.parallelStream().forEach(u -> {
+            searchReminder.forEach(u -> {
                 searchDTO.getReminderList().add(reminderConverter.entityToDto(u));
             });
         }
@@ -201,7 +201,7 @@ public class SearchController {
         // Notification
         List<Notification> notifications = notificationService.search(keyword, login, isProd());
         if (!notifications.isEmpty()) {
-            notifications.parallelStream().forEach(u -> {            
+            notifications.forEach(u -> {            
                 searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
             }); 
         }        
@@ -209,7 +209,7 @@ public class SearchController {
         // notice
         List<Notice> notices = noticeService.search(keyword, isProd());
         if (!notices.isEmpty()) {
-            notices.parallelStream().forEach(u -> {
+            notices.forEach(u -> {
                 searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
             });
         }
@@ -217,7 +217,7 @@ public class SearchController {
         // events
         List<Events> events = eventsService.search(keyword, isProd());
         if (!events.isEmpty()) {
-            events.parallelStream().forEach(u -> {
+            events.forEach(u -> {
                 searchDTO.getEventsList().add(u);
             });
         }
@@ -225,7 +225,7 @@ public class SearchController {
         // surveys
         List<SurveyDTO> searchSurvey = surveyService.search(keyword, login, isProd());
         if (!searchSurvey.isEmpty()) {
-            searchSurvey.parallelStream().forEach(u -> {
+            searchSurvey.forEach(u -> {
                 searchDTO.getQuizList().add(u);
             });
         }
@@ -234,7 +234,7 @@ public class SearchController {
         // feed (post)
         List<PostReductDTO> searchFeed = feedService.search(keyword, login, isProd());
         if (!searchFeed.isEmpty()) {
-            searchFeed.parallelStream().forEach(u -> {
+            searchFeed.forEach(u -> {
                 searchDTO.getFeedList().add(u);
             });
         }
