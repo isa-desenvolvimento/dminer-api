@@ -40,6 +40,10 @@ public class FeedService {
         posts.forEach(u -> {
         	response.add(postToDto(u));
         });
+        posts = posts.stream()
+        .sorted(Comparator.comparing(Post::getCreateDate).reversed())
+        .collect(Collectors.toList());
+
         return response;
     }
 
@@ -54,6 +58,11 @@ public class FeedService {
         posts.forEach(u -> {
         	response.add(postToReductDto(u));
         });
+        
+        posts = posts.stream()
+        .sorted(Comparator.comparing(Post::getCreateDate).reversed())
+        .collect(Collectors.toList());
+
         return response;
     }
     
