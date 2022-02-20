@@ -149,27 +149,29 @@ public class DocumentController {
         
         if (! dto.getContentLink().isBlank()) {
             
-            log.info("Tentando criar diretório 'files'");
-            boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
-            if (!criou) {
-                response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
-                // return ResponseEntity.internalServerError().body(response);
-            }
+            //log.info("Tentando criar diretório 'files'");
+            //boolean criou = UtilFilesStorage.createDirectory(Constantes.ROOT_FILES, true);
+            //if (!criou) {
+            //    response.addError("Erro ao criar o diretório: " + Constantes.ROOT_FILES);
+            //    return ResponseEntity.internalServerError().body(response);
+            //}
 
-            log.info("Diretório 'files' criado com sucesso!");
+            //log.info("Diretório 'files' criado com sucesso!");
             
             String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink(), "/");
-            String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + nomeArquivo;
+            //String link = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + Constantes.ROOT_FILES + UtilFilesStorage.separator + nomeArquivo;
             
+            String link = "/home/administrador/Desktop/dminer/dminer-develop/public";
+
             log.info("Tentando copiar arquivo: {}", dto.getContentLink());
 
             boolean copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), link);
             if (!copiou) {
                 response.addError("Erro ao copiar arquivo: " + dto.getContentLink());
                 // return ResponseEntity.internalServerError().body(response);
-            } 
-            log.info("Arquivo copiado com sucesso para: {}", link);
-            // doc.setContentLinkDownload(link);
+            } else {
+                log.info("Arquivo copiado com sucesso para: {}", link);                
+            }
         }
         doc = documentRepository.save(doc);
         DocumentDTO dtoTemp = documentConverter.entityToDto(doc);
