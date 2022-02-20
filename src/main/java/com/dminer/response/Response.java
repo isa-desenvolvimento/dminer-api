@@ -18,6 +18,9 @@ public class Response<T> {
 	}
 
 	public T getData() {
+		if (data == null) {
+			data = (T) new ArrayList<Object>();
+		}
 		return data;
 	}
 

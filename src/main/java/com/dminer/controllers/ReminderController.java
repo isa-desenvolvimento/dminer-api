@@ -169,7 +169,7 @@ public class ReminderController {
         Optional<Reminder> remi = reminderService.findById(id);
         if (!remi.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(reminderConverter.entityToDto(remi.get()));
@@ -190,13 +190,13 @@ public class ReminderController {
         Optional<Reminder> not = reminderService.findById(id);
         if (!not.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {reminderService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Notificação não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(reminderConverter.entityToDto(not.get()));
@@ -213,7 +213,7 @@ public class ReminderController {
         Optional<List<Reminder>> remi = reminderService.findAll();
         if (remi.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         List<Reminder> reminder = remi.get();
         

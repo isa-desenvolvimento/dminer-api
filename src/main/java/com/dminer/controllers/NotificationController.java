@@ -132,7 +132,7 @@ public class NotificationController {
         Optional<Notification> user = notificationService.findById(id);
         if (!user.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(notificationConverter.entityToDto(user.get()));
@@ -153,13 +153,13 @@ public class NotificationController {
         Optional<Notification> not = notificationService.findById(id);
         if (!not.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {notificationService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Notificação não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(notificationConverter.entityToDto(not.get()));
@@ -175,7 +175,7 @@ public class NotificationController {
         Optional<List<Notification>> user = notificationService.findAll();
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<NotificationDTO> eventos = new ArrayList<>();

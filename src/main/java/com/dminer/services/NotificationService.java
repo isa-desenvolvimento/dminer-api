@@ -72,21 +72,21 @@ public class NotificationService implements INotificationService {
             result = notificationRepository.findAll();
         }
 
-        log.info("Buscando as notificações relacionadas ao calendário... Usuário: {}", login);
-        Optional<User> user = userService.findByLogin(login);
+        // log.info("Buscando as notificações relacionadas ao calendário... Usuário: {}", login);
+        // Optional<User> user = userService.findByLogin(login);
 
-        if (user.isPresent()) {
-            List<Notification> resultCalendar = new ArrayList<>();
-            if (isProd) {
-                resultCalendar = genericRepositorySqlServer.getNotificationsByFullCalendarEvents(user.get().getId());
-            } else {
-                resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
-            }
-            if (!resultCalendar.isEmpty()) {
-                log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());
-                result.addAll(resultCalendar);
-            } 
-        }
+        // if (user.isPresent()) {
+        //     List<Notification> resultCalendar = new ArrayList<>();
+        //     if (isProd) {
+        //         resultCalendar = genericRepositorySqlServer.getNotificationsByFullCalendarEvents(user.get().getId());
+        //     } else {
+        //         resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
+        //     }
+        //     if (!resultCalendar.isEmpty()) {
+        //         log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());
+        //         result.addAll(resultCalendar);
+        //     } 
+        // }
 
         result = result.stream()
             .sorted(Comparator.comparing(Notification::getCreateDate).reversed())

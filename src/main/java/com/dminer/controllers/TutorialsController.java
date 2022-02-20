@@ -168,7 +168,7 @@ public class TutorialsController {
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(tutorialsConverter.entityToDTO(doc.get()));
@@ -194,7 +194,7 @@ public class TutorialsController {
 
         if (search2.isEmpty()) {
             response.getErrors().add("Nenhum dado encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         
         search2.forEach(s -> {
@@ -215,13 +215,13 @@ public class TutorialsController {
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {tutorialsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(tutorialsConverter.entityToDTO(doc.get()));
@@ -237,7 +237,7 @@ public class TutorialsController {
         List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();   
         if (doc.isEmpty()) {
             response.getErrors().add("Tutorials não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<TutorialsDTO> eventos = new ArrayList<>();

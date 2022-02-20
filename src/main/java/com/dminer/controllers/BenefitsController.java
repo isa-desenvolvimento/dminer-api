@@ -110,7 +110,7 @@ public class BenefitsController {
         Optional<Benefits> entity = benefitsRepository.findById(id);
         if (!entity.isPresent()) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(benefitsConverter.entityToDto(entity.get()));
@@ -130,13 +130,13 @@ public class BenefitsController {
         Optional<Benefits> enetity = benefitsRepository.findById(id);
         if (!enetity.isPresent()) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {benefitsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(benefitsConverter.entityToDto(enetity.get()));
@@ -152,7 +152,7 @@ public class BenefitsController {
         List<Benefits> doc = benefitsRepository.findAll();
         if (doc.isEmpty()) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         
         // ordenar do mais novo pro mais antigo
@@ -182,7 +182,7 @@ public class BenefitsController {
 
         if (entities == null || entities.isEmpty()) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         
         entities = entities.stream()

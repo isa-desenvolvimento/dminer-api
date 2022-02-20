@@ -52,6 +52,6 @@ public class Tutorials {
     @Column
     private Timestamp date;
 
-    @Column(length = 8000)
+    @Column(length = 9999999)
     private String image;
 }

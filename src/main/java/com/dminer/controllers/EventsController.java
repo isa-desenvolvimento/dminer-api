@@ -111,7 +111,7 @@ public class EventsController {
         Optional<Events> user = eventService.findById(id);
         if (!user.isPresent()) {
             response.getErrors().add("Evento não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(eventsTimeConverter.entityToDto(user.get()));
@@ -130,7 +130,7 @@ public class EventsController {
         try {eventService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Evento não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(true);
@@ -145,7 +145,7 @@ public class EventsController {
         Optional<List<Events>> user = eventService.findAll();
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<EventsDTO> eventos = new ArrayList<>();
@@ -177,7 +177,7 @@ public class EventsController {
 
         if (user.isPresent() && user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<EventsDTO> eventos = new ArrayList<>();
@@ -218,7 +218,7 @@ public class EventsController {
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<EventsDTO> eventos = new ArrayList<>();
@@ -255,7 +255,7 @@ public class EventsController {
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<EventsDTO> eventos = new ArrayList<>();
@@ -299,7 +299,7 @@ public class EventsController {
 
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         
         List<EventsDTO> eventos = new ArrayList<>();

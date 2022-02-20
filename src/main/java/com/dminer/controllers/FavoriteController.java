@@ -235,7 +235,7 @@ public class FavoriteController {
         List<Favorites> favos = favoritesRepository.findAllByUser(user.get());
         if (favos.isEmpty()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<FavoriteDTO> favosDto = new ArrayList<>();
@@ -296,7 +296,7 @@ public class FavoriteController {
         List<Favorites> favos = favoritesRepository.findAllByPost(new Post(idPost));
         if (favos.isEmpty()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<FavoriteDTO> favosDto = new ArrayList<>();

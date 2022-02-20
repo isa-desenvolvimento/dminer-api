@@ -34,7 +34,7 @@ public class FeedController {
         List<PostDTO> user = feedService.getAll();
         if (user.isEmpty()) {
             response.getErrors().add("Nenhum dado encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
 		response.setData(user);
