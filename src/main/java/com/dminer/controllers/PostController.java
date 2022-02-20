@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -58,6 +59,7 @@ import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Favorites;
 import com.dminer.entities.FileInfo;
+import com.dminer.entities.Notification;
 import com.dminer.entities.ReactUser;
 import com.dminer.entities.Post;
 import com.dminer.entities.React;
@@ -73,6 +75,7 @@ import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.CommentService;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
+import com.dminer.services.NotificationService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
@@ -124,39 +127,15 @@ public class PostController {
 	@Autowired
 	private FavoritesRepository favoritesRepository;
 
+	@Autowired
+	private NotificationService notificationService;
 
 
 	private Gson gson = new Gson();
 	
-	private String token;
-
-	//private UserRestModel userRestModel;
-
-
-	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
-        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
-            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
-        } 
-        
-        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
-            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
-        } 
-
-        if (dto.getContent() == null || dto.getContent().isBlank()) {
-            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
-        }
-        
-        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
-            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
-        }
-        
-    }
-
-
-	
 
 	@PostMapping()
-	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
+	public ResponseEntity<Response<PostDTO>> create(@RequestHeader("x-access-token") Token token, @RequestBody PostRequestDTO dto, BindingResult result) {
 	
 		Response<PostDTO> response = new Response<>();
 		validateRequestDto(dto, result);
@@ -191,7 +170,23 @@ public class PostController {
 			if (code.value() != 201) {
 				return ResponseEntity.internalServerError().body(null);
 			}
-		}		
+		}
+
+		List<UserReductDTO> usuariosApi = userService.carregarUsuariosApiReduct(token.getToken(), false);
+		if (!usuariosApi.isEmpty()) {
+			usuariosApi.forEach(usuario -> {
+				Notification notification = new Notification();
+				notification.setCreateDate(Timestamp.from(Instant.now()));
+	            notification.setNotification("Usuário {} fez um novo post!" + dto.getLogin());
+            	Optional<User> userTemp = userService.findByLogin(usuario.getLogin());
+				if (userTemp.isPresent()) {
+					notification.setUser(userTemp.get());
+					notificationService.persist(notification);
+				} else {
+					log.info("Usuário {} não encontrado na base de dados local", usuario);
+				}
+			});
+		}
 		return ResponseEntity.ok().body(response);
 	}
 	
@@ -677,5 +672,23 @@ public class PostController {
 	}
 
 	
+	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
+        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
+            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
+        } 
+        
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
+        } 
+
+        if (dto.getContent() == null || dto.getContent().isBlank()) {
+            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
+        }
+        
+        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
+            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
+        }
+        
+    }
 
 }
