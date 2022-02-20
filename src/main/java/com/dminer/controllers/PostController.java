@@ -348,7 +348,9 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get(), token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+
+		PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
@@ -382,7 +384,10 @@ public class PostController {
 
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments, String token) {
+	/**
+	 * todo -> Refatorar
+	 */
+	private PostDTO postToDto(Post post, List<Comment> comments, UserRestModel userRestModel) {
 		PostDTO dto = new PostDTO();
 		
 		dto.setType(post.getType().toString());
@@ -397,15 +402,11 @@ public class PostController {
 			dto.getFavorites().add(f.getUser().getLogin());
 		});
 
-		if (token != null) {
-			UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), token);      	
+		if (userRestModel != null) {
+			UserReductDTO user = userService.buscarUsuarioApiReduct(userRestModel, post.getLogin());
 			dto.setUser(user);
 			
 			if (comments != null && !comments.isEmpty()) {
-				comments = comments.stream()
-				.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
-				.collect(Collectors.toList());
-	
 				comments.forEach(comment -> {
 					dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
 				});			
@@ -433,13 +434,11 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), token.getToken());
+			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -465,13 +464,11 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), token.getToken());
+			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -530,7 +527,8 @@ public class PostController {
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto(optPost.get(), comments, token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+        PostDTO dto = postToDto(optPost.get(), comments, usersRestModel);
         
 		dto.setReacts(getReacts(optPost.get()));
 
@@ -597,15 +595,10 @@ public class PostController {
         
         List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
 
-		// ordenar do mais novo pro mais antigo
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
 		List<PostDTO> postsDto = new ArrayList<>();
         
 		for (Post p : posts) {
-			PostDTO dto = postToDto(p, null, token.getToken());
+			PostDTO dto = postToDto(p, null, null);
 			dto.setReacts(getReacts(p));
 			postsDto.add(dto);
 		}
@@ -654,7 +647,8 @@ public class PostController {
 
 		//post.getReacts().add(like);
 		post = postService.persist(post);
-		PostDTO dto = postToDto(post, null, token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		PostDTO dto = postToDto(post, null, usersRestModel);
 		dto.setReacts(getReacts(post));
 		response.setData(dto);
 

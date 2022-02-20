@@ -145,17 +145,17 @@ public class UserService implements IUserService {
 
     
     public boolean existsByLogin(String login) {
-        log.info("Verificando se usuário existe pelo login, {}", login);
+        log.info("Verificando se usuário existe pelo login no repositório, {}", login);
         return userRepository.findByLogin(login) != null;
     }
 
     public boolean existsByLoginAndUserName(String login, String userName) {
-        log.info("Verificando se usuário existe pelo login, {} e {}", login, userName);
+        log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
         return userRepository.findByLoginAndUserName(login, userName) != null;
     }
     
     public Optional<User> findByLogin(String login) {
-        log.info("Recuperando usuário pelo login, {}", login);
+        log.info("Recuperando usuário pelo login no repositório, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
@@ -327,7 +327,11 @@ public class UserService implements IUserService {
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
         }
-        
+		return buscarUsuarioApiReduct(userRestModel, login);
+    }
+
+
+	public UserReductDTO buscarUsuarioApiReduct(UserRestModel userRestModel, String login) {
 		UserReductDTO dto = new UserReductDTO();
 		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
 			if (login.equals(u.getLogin())) {
@@ -337,10 +341,8 @@ public class UserService implements IUserService {
 				return dto;
 			}			
 		}
-		return dto;
-    }
-
-
+		return null;
+	}
 
 	public String getAvatarBase64(String pathFile) {
     	try {
