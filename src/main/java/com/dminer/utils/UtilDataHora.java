@@ -171,8 +171,10 @@ public class UtilDataHora {
     }
 
     public static String timestampToStringOrNull(Timestamp date) {        
-        if (date != null)
-            return date.toString().substring(0, date.toString().length() -2);
+        if (date != null) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");            
+            return df.format(date);
+        }
         return null;
     }
 
