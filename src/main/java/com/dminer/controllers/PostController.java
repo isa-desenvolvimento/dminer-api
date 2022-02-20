@@ -177,7 +177,7 @@ public class PostController {
 			usuariosApi.forEach(usuario -> {
 				Notification notification = new Notification();
 				notification.setCreateDate(Timestamp.from(Instant.now()));
-	            notification.setNotification("Usuário {} fez um novo post!" + dto.getLogin());
+	            notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
             	Optional<User> userTemp = userService.findByLogin(usuario.getLogin());
 				if (userTemp.isPresent()) {
 					notification.setUser(userTemp.get());

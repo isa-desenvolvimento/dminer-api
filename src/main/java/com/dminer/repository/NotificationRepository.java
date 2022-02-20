@@ -3,6 +3,7 @@ package com.dminer.repository;
 import java.util.List;
 
 import com.dminer.entities.Notification;
+import com.dminer.entities.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,4 +14,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     
     @Query("SELECT n FROM Notification n WHERE LOWER(n.notification) LIKE LOWER('%?1%') OR LOWER(n.user.login) LIKE LOWER('%?1%')")
     public List<Notification> search(String keyword);
+
+    public List<Notification> findByUser(User user);
 }

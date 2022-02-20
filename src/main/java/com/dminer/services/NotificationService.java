@@ -69,7 +69,13 @@ public class NotificationService implements INotificationService {
                 result = genericRepositoryPostgres.searchNotification(keyword, login);
             }          
         } else {
-            result = notificationRepository.findAll();
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
+                result = notificationRepository.findByUser(user.get());
+                
+                System.out.println("Notificações: " + result.size());
+
+            }
         }
 
         // log.info("Buscando as notificações relacionadas ao calendário... Usuário: {}", login);
