@@ -7,6 +7,7 @@ import com.dminer.dto.NotificationRequestDTO;
 import com.dminer.entities.Notification;
 import com.dminer.entities.User;
 import com.dminer.services.UserService;
+import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ public class NotificationConverter {
         notificationDTO.setLogin(notification.getUser().getLogin());
         notificationDTO.setNotification(notification.getNotification());
         notificationDTO.setActive(notification.getActive());
+        notificationDTO.setCreateDate(UtilDataHora.timestampToStringOrNull(notification.getCreateDate()));
         return notificationDTO;
     }
 }
