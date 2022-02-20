@@ -300,7 +300,8 @@ public class GenericRepositorySqlServer {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "convert(varchar(100), e.date, 120))) " +
-           "LIKE LOWER('%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%') " +
+           "order by date desc ";
 
         log.info("search = {}", query);
 
@@ -384,7 +385,8 @@ public class GenericRepositorySqlServer {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'";
+    					"   and user1_.login='" + login + "'" +
+                        "   order by notificati0_ create_date desc ";
     					
     	if (keyword != null) {
     		query += "and ( " ;

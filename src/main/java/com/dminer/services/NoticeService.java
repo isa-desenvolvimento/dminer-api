@@ -40,7 +40,7 @@ public class NoticeService implements INoticeService {
 
     @Override
     public Optional<List<Notice>> findAll() {
-        return Optional.ofNullable(noticeRepository.findAll());
+        return Optional.ofNullable(noticeRepository.findAllByOrderByDateDesc());
     }
 
     @Override
@@ -59,11 +59,11 @@ public class NoticeService implements INoticeService {
             }
             
         } else {
-            notices = noticeRepository.findAll();
+            notices = noticeRepository.findAllByOrderByDateDesc();
         }
-        notices = notices.stream()
-        .sorted(Comparator.comparing(Notice::getDate).reversed())
-        .collect(Collectors.toList());
+        // notices = notices.stream()
+        // .sorted(Comparator.comparing(Notice::getDate).reversed())
+        // .collect(Collectors.toList());
         return notices;
     }
     

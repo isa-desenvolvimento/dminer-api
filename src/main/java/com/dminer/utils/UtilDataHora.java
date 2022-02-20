@@ -225,7 +225,7 @@ public class UtilDataHora {
     }
 
     public static Date stringToHour(String hora) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");        
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         try {
             return sdf.parse(hora);
         } catch (ParseException e) {

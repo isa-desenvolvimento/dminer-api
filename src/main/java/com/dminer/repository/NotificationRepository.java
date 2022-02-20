@@ -12,8 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
     
-    @Query("SELECT n FROM Notification n WHERE LOWER(n.notification) LIKE LOWER('%?1%') OR LOWER(n.user.login) LIKE LOWER('%?1%')")
+    @Query("SELECT n FROM Notification n WHERE LOWER(n.notification) LIKE LOWER('%?1%') OR LOWER(n.user.login) LIKE LOWER('%?1%') ORDER BY n.createDate DESC")
     public List<Notification> search(String keyword);
 
-    public List<Notification> findByUser(User user);
+    public List<Notification> findByUserOrderByCreateDateDesc(User user);
 }

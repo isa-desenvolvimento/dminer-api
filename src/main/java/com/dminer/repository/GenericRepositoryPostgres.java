@@ -298,7 +298,8 @@ public class GenericRepositoryPostgres {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
-           " LIKE LOWER('%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%') " +
+           "order by date desc ";
 
         log.info("search = {}", query);
 
@@ -355,7 +356,8 @@ public class GenericRepositoryPostgres {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'";
+    					"   and user1_.login='" + login + "'" +
+                        "   order by notificati0_ create_date desc ";
     					
     	if (keyword != null) {
     		query += "and ( " ;

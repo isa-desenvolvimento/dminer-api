@@ -45,15 +45,163 @@ public class NoticeController {
     private static final Logger log = LoggerFactory.getLogger(NoticeController.class);
 
     @Autowired 
-    private NoticeConverter avisosConverter;
+    private NoticeConverter noticeConverter;
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private NoticeService avisosService;
+    private NoticeService noticeService;
     
 
+
+    @PostMapping
+    public ResponseEntity<Response<NoticeDTO>> create(@Valid @RequestBody NoticeRequestDTO avisosRequest, BindingResult result) {
+    
+        log.info("Salvando um novo aviso {}", avisosRequest);
+
+		Response<NoticeDTO> response = new Response<>();
+        //validateRequestDto(avisosRequest, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando NoticeDTO: {}", avisosRequest);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Notice events = noticeService.persist(noticeConverter.requestDtoToEntity(avisosRequest));
+        response.setData(noticeConverter.entityToDTO(events));
+
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping()
+    public ResponseEntity<Response<NoticeDTO>> put( @Valid @RequestBody NoticeDTO dto, BindingResult result) {
+
+        log.info("Alterando um notice {}", dto);
+
+        Response<NoticeDTO> response = new Response<>();
+
+        //validateDto(dto, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando NoticeDTO: {}", dto);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Notice notice = noticeService.persist(noticeConverter.dtoToEntity(dto));
+        response.setData(noticeConverter.entityToDTO(notice));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/find/{id}")
+    public ResponseEntity<Response<NoticeDTO>> get(@PathVariable("id") Integer id) {
+        log.info("Buscando avisos {}", id);
+        
+        Response<NoticeDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Notice> user = noticeService.findById(id);
+        if (!user.isPresent()) {
+            response.getErrors().add("Notificação não encontrada");
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(noticeConverter.entityToDTO(user.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<NoticeDTO>> delete(@PathVariable("id") Integer id) {
+        log.info("Buscando avisos {}", id);
+        
+        Response<NoticeDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Notice> not = noticeService.findById(id);
+        if (!not.isPresent()) {
+            response.getErrors().add("Notificação não encontrada");
+            return ResponseEntity.ok().body(response);
+        }
+
+        try {noticeService.delete(id);}
+        catch (EmptyResultDataAccessException e) {
+            response.getErrors().add("Notificação não encontrada");
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(noticeConverter.entityToDTO(not.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping("/all")
+    public ResponseEntity<Response<List<NoticeDTO>>> getAll() {
+        
+        Response<List<NoticeDTO>> response = new Response<>();
+
+        Optional<List<Notice>> userOpt = noticeService.findAll();
+        if (userOpt.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.ok().body(response);
+        }
+
+        List<Notice> user = userOpt.get();
+        
+        user = user.stream()
+		.sorted(Comparator.comparing(Notice::getDate).reversed())
+		.collect(Collectors.toList());
+
+        List<NoticeDTO> eventos = new ArrayList<>();
+        user.forEach(u -> {
+            eventos.add(noticeConverter.entityToDTO(u));
+        });
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    //@PathVariable("login") String login
+    @GetMapping("/all/{login}")
+    public ResponseEntity<Response<List<NoticeDTO>>> getAll(@PathVariable("login") String login) {
+        
+        Response<List<NoticeDTO>> response = new Response<>();
+
+        Optional<List<Notice>> noticeOpt = noticeService.findAll();
+        if (noticeOpt.get().isEmpty()) {
+            response.getErrors().add("Eventos não encontrados");
+            return ResponseEntity.ok().body(response);
+        }
+
+        List<Notice> notice = noticeOpt.get();
+        
+        notice = notice.stream()
+        .filter(u -> u.getCreator().equals(login))
+        .collect(Collectors.toList());
+
+        notice = notice.stream()
+		.sorted(Comparator.comparing(Notice::getDate).reversed())
+		.collect(Collectors.toList());
+
+        List<NoticeDTO> eventos = new ArrayList<>();
+        notice.forEach(u -> {
+            eventos.add(noticeConverter.entityToDTO(u));
+        });
+        
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    
     private void validateRequestDto(NoticeRequestDTO avisosRequestDTO, BindingResult result) {
         if (avisosRequestDTO.getUsers() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Id do usuário precisa estar preenchido."));
@@ -109,151 +257,5 @@ public class NoticeController {
 		}
     }
     
-
-    @PostMapping
-    public ResponseEntity<Response<NoticeDTO>> create(@Valid @RequestBody NoticeRequestDTO avisosRequest, BindingResult result) {
-    
-        log.info("Salvando um novo aviso {}", avisosRequest);
-
-		Response<NoticeDTO> response = new Response<>();
-        //validateRequestDto(avisosRequest, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando NoticeDTO: {}", avisosRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        Notice events = avisosService.persist(avisosConverter.requestDtoToEntity(avisosRequest));
-        response.setData(avisosConverter.entityToDTO(events));
-
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @PutMapping()
-    public ResponseEntity<Response<NoticeDTO>> put( @Valid @RequestBody NoticeDTO dto, BindingResult result) {
-
-        log.info("Alterando um notice {}", dto);
-
-        Response<NoticeDTO> response = new Response<>();
-
-        //validateDto(dto, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando NoticeDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Notice notice = avisosService.persist(avisosConverter.dtoToEntity(dto));
-        response.setData(avisosConverter.entityToDTO(notice));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<NoticeDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando avisos {}", id);
-        
-        Response<NoticeDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Notice> user = avisosService.findById(id);
-        if (!user.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.ok().body(response);
-        }
-
-        response.setData(avisosConverter.entityToDTO(user.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<NoticeDTO>> delete(@PathVariable("id") Integer id) {
-        log.info("Buscando avisos {}", id);
-        
-        Response<NoticeDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Notice> not = avisosService.findById(id);
-        if (!not.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.ok().body(response);
-        }
-
-        try {avisosService.delete(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.ok().body(response);
-        }
-
-        response.setData(avisosConverter.entityToDTO(not.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping("/all")
-    public ResponseEntity<Response<List<NoticeDTO>>> getAll() {
-        
-        Response<List<NoticeDTO>> response = new Response<>();
-
-        Optional<List<Notice>> userOpt = avisosService.findAll();
-        if (userOpt.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.ok().body(response);
-        }
-
-        List<Notice> user = userOpt.get();
-        
-        user = user.stream()
-		.sorted(Comparator.comparing(Notice::getDate).reversed())
-		.collect(Collectors.toList());
-
-        List<NoticeDTO> eventos = new ArrayList<>();
-        user.forEach(u -> {
-            eventos.add(avisosConverter.entityToDTO(u));
-        });
-        response.setData(eventos);
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    //@PathVariable("login") String login
-    @GetMapping("/all/{login}")
-    public ResponseEntity<Response<List<NoticeDTO>>> getAll(@PathVariable("login") String login) {
-        
-        Response<List<NoticeDTO>> response = new Response<>();
-
-        Optional<List<Notice>> userOpt = avisosService.findAll();
-        if (userOpt.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.ok().body(response);
-        }
-
-        List<Notice> user = userOpt.get();
-        
-        user = user.stream()
-        .filter(u -> u.getCreator().equals(login))
-        .collect(Collectors.toList());
-
-        user = user.stream()
-		.sorted(Comparator.comparing(Notice::getDate).reversed())
-		.collect(Collectors.toList());
-
-        List<NoticeDTO> eventos = new ArrayList<>();
-        user.forEach(u -> {
-            eventos.add(avisosConverter.entityToDTO(u));
-        });
-        
-        response.setData(eventos);
-        return ResponseEntity.ok().body(response);
-    }
-
 
 }
