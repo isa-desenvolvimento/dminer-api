@@ -113,7 +113,19 @@ public class SearchController {
     private Environment env;
 
 
-    
+
+    private Response<List<UserDTO>> aniversariantes(List<UserDTO> usuarios) {
+        Response<List<UserDTO>> response = new Response<>();
+        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+        for (UserDTO u : usuarios) {
+            if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
+                aniversariantes.add(u);
+            }            
+        }
+        response.setData(aniversariantes);
+        return response;
+    }
+
     private Response<List<UserDTO>> aniversariantes(String token, String keyword) {
     	Response<List<UserDTO>> response = new Response<>();
 
@@ -136,6 +148,7 @@ public class SearchController {
     		});
         	return response;
         }
+
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
         for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
             if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
@@ -178,17 +191,23 @@ public class SearchController {
         	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
-            
-        // aniversariantes
-        Response<List<UserDTO>> aniversariantes = aniversariantes(token.getToken(), keyword);
-        if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
-        	aniversariantes.getData().parallelStream().forEach(ani -> {
-                String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
-        	    ani.setAvatar(encodedString);
-        		searchDTO.getBirthdayList().add(ani);
-        	});
-        }
         
+
+        // aniversariantes
+        Response<List<UserDTO>> aniversariantes = null;
+        if (keyword == null) {
+            aniversariantes = aniversariantes(searchUsers);
+        } else {
+            aniversariantes = aniversariantes(token.getToken(), keyword);
+        }
+
+        if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
+            aniversariantes.getData().parallelStream().forEach(ani -> {
+                String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
+                ani.setAvatar(encodedString);
+                searchDTO.getBirthdayList().add(ani);
+            });
+        }
 
         // reminder
         List<Reminder> searchReminder = reminderService.search(keyword, login, isProd());

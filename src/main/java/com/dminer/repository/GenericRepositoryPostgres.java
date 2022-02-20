@@ -323,15 +323,15 @@ public class GenericRepositoryPostgres {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
-           "e.title, ' '))" +
-           " LIKE LOWER('%" + keyword + "%')";
+           "e.title, ' ')) " +
+           "LIKE LOWER('%" + keyword + "%') " + 
+           "ORDER BY create_date desc" ;
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
@@ -396,6 +396,7 @@ public class GenericRepositoryPostgres {
 					") ";
         }
         query += "    and user1_.login = '" + login + "' " ;
+        query += " order by reminder_1.date desc  ";
         
         log.info("search = {}", query);
 
