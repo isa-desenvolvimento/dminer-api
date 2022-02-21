@@ -221,7 +221,7 @@ public class SearchController {
         List<Notification> notifications = notificationService.search(keyword, login, isProd());
         if (!notifications.isEmpty()) {
             notifications.forEach(u -> {            
-                searchDTO.getNotificationlist().add( notificationConverter.entityToDto(u) );
+                searchDTO.getNotificationList().add( notificationConverter.entityToDto(u) );
             }); 
         }        
 
@@ -245,7 +245,7 @@ public class SearchController {
         List<SurveyDTO> searchSurvey = surveyService.search(keyword, login, isProd());
         if (!searchSurvey.isEmpty()) {
             searchSurvey.forEach(u -> {
-                searchDTO.getQuizList().add(u);
+                searchDTO.getSurveyList().add(u);
             });
         }
 
