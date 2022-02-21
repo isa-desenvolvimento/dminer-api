@@ -162,8 +162,12 @@ public class PostController {
 		post = postService.persist(post);
 		PostDTO dtoPost = postToDto(post, null, null);
 		UserReductDTO userReduct = new UserReductDTO();
-		userReduct.setLogin(dto.getLogin());
-		userReduct.setAvatar(userService.getAvatarBase64ByLogin(dto.getLogin()));
+
+		UserDTO userDto = userService.buscarUsuarioApi(post.getLogin(), token.getToken());
+		userReduct.setLogin(userDto.getLogin());
+		userReduct.setUserName(userDto.getUserName());
+		userReduct.setAvatar(userDto.getAvatar());
+		
 		dtoPost.setUser(userReduct);
 		response.setData(dtoPost);	
 
