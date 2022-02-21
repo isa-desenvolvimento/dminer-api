@@ -167,8 +167,9 @@ public class PostController {
 		userReduct.setLogin(userDto.getLogin());
 		userReduct.setUserName(userDto.getUserName());
 		userReduct.setAvatar(userDto.getAvatar());
-		
+
 		dtoPost.setUser(userReduct);
+		dtoPost.setReacts(getReacts(post));
 		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
