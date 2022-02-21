@@ -43,8 +43,6 @@ import com.dminer.response.Response;
 import com.dminer.services.SurveyService;
 import com.dminer.services.UserService;
 
-import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/survey")

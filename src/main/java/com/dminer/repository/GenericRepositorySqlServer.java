@@ -385,15 +385,16 @@ public class GenericRepositorySqlServer {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'" +
-                        "   order by notificati0_ create_date desc ";
+    					"   and user1_.login='" + login + "' or notificati0_.all_users is true" ;
+                        
     					
     	if (keyword != null) {
     		query += "and ( " ;
-    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
+    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')) ";
     	}
-    	
-    	log.info("search = {}", query);
+    	query += "   order by notificati0_.create_date desc ";
+
+    	log.info("searchNotification = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Notification e = new Notification();

@@ -44,7 +44,7 @@ public class NotificationConverter {
     public NotificationDTO entityToDto(Notification notification) {
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setId(notification.getId());
-        notificationDTO.setLogin(notification.getUser().getLogin());
+        notificationDTO.setLogin(notification.getUser() != null ? notification.getUser().getLogin() : null);
         notificationDTO.setNotification(notification.getNotification());
         notificationDTO.setActive(notification.getActive());
         notificationDTO.setCreateDate(UtilDataHora.timestampToStringOrNull(notification.getCreateDate()));

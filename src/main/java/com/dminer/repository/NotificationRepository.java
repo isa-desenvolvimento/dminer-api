@@ -15,5 +15,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     @Query("SELECT n FROM Notification n WHERE LOWER(n.notification) LIKE LOWER('%?1%') OR LOWER(n.user.login) LIKE LOWER('%?1%') ORDER BY n.createDate DESC")
     public List<Notification> search(String keyword);
 
-    public List<Notification> findByUserOrderByCreateDateDesc(User user);
+    public List<Notification> findByUserOrAllUsersOrderByCreateDateDesc(User user, boolean allUsers);
 }

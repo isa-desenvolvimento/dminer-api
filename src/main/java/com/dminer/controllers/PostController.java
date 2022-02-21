@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -161,7 +162,9 @@ public class PostController {
 		post = postService.persist(post);
 		PostDTO dtoPost = postToDto(post, null, null);
 		UserReductDTO userReduct = new UserReductDTO();
-		userReduct.setLogin(dto.getLogin());		
+		userReduct.setLogin(dto.getLogin());
+		userReduct.setAvatar(userService.getAvatarBase64ByLogin(dto.getLogin()));
+		dtoPost.setUser(userReduct);
 		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
@@ -172,6 +175,20 @@ public class PostController {
 			}
 		}
 
+		// salvarNotificacoes(token, dto);
+
+		Notification notification = new Notification();
+		notification.setCreateDate(Timestamp.from(Instant.now()));
+		notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
+		notification.setAllUsers(true);
+		notificationService.persist(notification);
+
+		return ResponseEntity.ok().body(response);
+	}
+	
+	@Async
+	private void salvarNotificacoes(Token token, PostRequestDTO dto) {
+		log.info("Salvando notificações de forma assíncrona ");
 		List<UserReductDTO> usuariosApi = userService.carregarUsuariosApiReduct(token.getToken(), false);
 		if (!usuariosApi.isEmpty()) {
 			usuariosApi.forEach(usuario -> {
@@ -187,9 +204,8 @@ public class PostController {
 				}
 			});
 		}
-		return ResponseEntity.ok().body(response);
+		log.info("Fim salvando notificações de forma assíncrona ");
 	}
-	
 	
 	/**
 	 * Método para futura melhorias
@@ -330,6 +346,34 @@ public class PostController {
 	}
 
 
+	// @GetMapping(value = "/{id}")
+	// public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
+		
+	// 	Response<PostDTO> response = new Response<>();
+	// 	log.info("Recuperando Post {}", id);
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+	// 	Optional<Post> post = postService.findById(id);
+	// 	if (!post.isPresent()) {
+	// 		response.addError("Post não encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	Optional<List<Comment>> comment = commentService.findByPost(post.get());
+	// 	UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+
+	// 	PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
+	// 	dto.setReacts(getReacts(post.get()));
+
+	// 	response.setData(dto);
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
+
+
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
 		
@@ -348,15 +392,14 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		UserReductDTO userReductDTO = userService.findByLogin(post.get().getLogin()).get().convertReductDto();
 
-		PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
+		PostDTO dto = postToDto2(post.get(), comment.get(), userReductDTO);
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-
 
 
 	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
@@ -415,6 +458,32 @@ public class PostController {
 		return dto;
 	}
 	
+
+	private PostDTO postToDto2(Post post, List<Comment> comments, UserReductDTO user) {
+		PostDTO dto = new PostDTO();
+		
+		dto.setType(post.getType().toString());
+		dto.setId(post.getId());
+		dto.setContent(post.getContent());
+		dto.setTitle(post.getTitle());
+		dto.setAnexo(post.getAnexo());
+		dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+		
+		List<Favorites> favorites = favoritesRepository.findAllByPost(post);
+		favorites.forEach(f -> {
+			dto.getFavorites().add(f.getUser().getLogin());
+		});
+
+		dto.setUser(user);
+			
+		if (comments != null && !comments.isEmpty()) {
+			comments.forEach(comment -> {
+				dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
+			});			
+		}
+		return dto;
+	}
+
 	
 	@GetMapping("/all/{login}")
 	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
@@ -446,6 +515,36 @@ public class PostController {
 	}
 	
 	
+	// @GetMapping()
+	// public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
+		
+	// 	Response<List<PostDTO>> response = new Response<>();
+	// 	response.setData(new ArrayList<PostDTO>());
+	// 	log.info("Recuperando todos os Post");
+
+	// 	List<Post> posts = postService.findAll();
+	// 	if (posts == null || posts.isEmpty()) {
+	// 		response.addError("Nenhum post encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+	// 	UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		
+	// 	for (Post post : posts) {
+	// 		Optional<List<Comment>> comment = commentService.findByPost(post);
+	// 		PostDTO dto = postToDto(post, comment.get(), usersRestModel);
+	// 		dto.setReacts(getReacts(post));
+	// 		response.getData().add(dto);
+	// 	}
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
+
+
 	@GetMapping()
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
@@ -464,18 +563,16 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
 		
 		for (Post post : posts) {
+			UserReductDTO userReductDTO = userService.findByLogin(post.getLogin()).get().convertReductDto();
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
+			PostDTO dto = postToDto2(post, comment.get(), userReductDTO);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-
-
 	
 
 
