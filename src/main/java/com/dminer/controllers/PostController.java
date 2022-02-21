@@ -346,34 +346,6 @@ public class PostController {
 	}
 
 
-	// @GetMapping(value = "/{id}")
-	// public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
-		
-	// 	Response<PostDTO> response = new Response<>();
-	// 	log.info("Recuperando Post {}", id);
-
-	// 	if (token.naoPreenchido()) { 
-    //         response.addError("Token precisa ser informado");    		
-    // 		return ResponseEntity.badRequest().body(response);
-    //     }
-
-	// 	Optional<Post> post = postService.findById(id);
-	// 	if (!post.isPresent()) {
-	// 		response.addError("Post não encontrado na base de dados");
-	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-	// 	}
-
-	// 	Optional<List<Comment>> comment = commentService.findByPost(post.get());
-	// 	UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
-
-	// 	PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
-	// 	dto.setReacts(getReacts(post.get()));
-
-	// 	response.setData(dto);
-	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
-	// }
-
-
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
 		
@@ -392,14 +364,42 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		UserReductDTO userReductDTO = userService.findByLogin(post.get().getLogin()).get().convertReductDto();
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
 
-		PostDTO dto = postToDto2(post.get(), comment.get(), userReductDTO);
+		PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+
+
+	// @GetMapping(value = "/{id}")
+	// public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
+		
+	// 	Response<PostDTO> response = new Response<>();
+	// 	log.info("Recuperando Post {}", id);
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+	// 	Optional<Post> post = postService.findById(id);
+	// 	if (!post.isPresent()) {
+	// 		response.addError("Post não encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	Optional<List<Comment>> comment = commentService.findByPost(post.get());
+	// 	UserReductDTO userReductDTO = userService.findByLogin(post.get().getLogin()).get().convertReductDto();
+
+	// 	PostDTO dto = postToDto2(post.get(), comment.get(), userReductDTO);
+	// 	dto.setReacts(getReacts(post.get()));
+
+	// 	response.setData(dto);
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
 
 
 	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
@@ -459,30 +459,30 @@ public class PostController {
 	}
 	
 
-	private PostDTO postToDto2(Post post, List<Comment> comments, UserReductDTO user) {
-		PostDTO dto = new PostDTO();
+	// private PostDTO postToDto2(Post post, List<Comment> comments, UserReductDTO user) {
+	// 	PostDTO dto = new PostDTO();
 		
-		dto.setType(post.getType().toString());
-		dto.setId(post.getId());
-		dto.setContent(post.getContent());
-		dto.setTitle(post.getTitle());
-		dto.setAnexo(post.getAnexo());
-		dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+	// 	dto.setType(post.getType().toString());
+	// 	dto.setId(post.getId());
+	// 	dto.setContent(post.getContent());
+	// 	dto.setTitle(post.getTitle());
+	// 	dto.setAnexo(post.getAnexo());
+	// 	dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
 		
-		List<Favorites> favorites = favoritesRepository.findAllByPost(post);
-		favorites.forEach(f -> {
-			dto.getFavorites().add(f.getUser().getLogin());
-		});
+	// 	List<Favorites> favorites = favoritesRepository.findAllByPost(post);
+	// 	favorites.forEach(f -> {
+	// 		dto.getFavorites().add(f.getUser().getLogin());
+	// 	});
 
-		dto.setUser(user);
+	// 	dto.setUser(user);
 			
-		if (comments != null && !comments.isEmpty()) {
-			comments.forEach(comment -> {
-				dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
-			});			
-		}
-		return dto;
-	}
+	// 	if (comments != null && !comments.isEmpty()) {
+	// 		comments.forEach(comment -> {
+	// 			dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
+	// 		});			
+	// 	}
+	// 	return dto;
+	// }
 
 	
 	@GetMapping("/all/{login}")
@@ -515,36 +515,6 @@ public class PostController {
 	}
 	
 	
-	// @GetMapping()
-	// public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
-		
-	// 	Response<List<PostDTO>> response = new Response<>();
-	// 	response.setData(new ArrayList<PostDTO>());
-	// 	log.info("Recuperando todos os Post");
-
-	// 	List<Post> posts = postService.findAll();
-	// 	if (posts == null || posts.isEmpty()) {
-	// 		response.addError("Nenhum post encontrado na base de dados");
-	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-	// 	}
-
-	// 	if (token.naoPreenchido()) { 
-    //         response.addError("Token precisa ser informado");    		
-    // 		return ResponseEntity.badRequest().body(response);
-    //     }
-
-	// 	UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
-		
-	// 	for (Post post : posts) {
-	// 		Optional<List<Comment>> comment = commentService.findByPost(post);
-	// 		PostDTO dto = postToDto(post, comment.get(), usersRestModel);
-	// 		dto.setReacts(getReacts(post));
-	// 		response.getData().add(dto);
-	// 	}
-	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
-	// }
-
-
 	@GetMapping()
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
@@ -563,16 +533,46 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
 		
 		for (Post post : posts) {
-			UserReductDTO userReductDTO = userService.findByLogin(post.getLogin()).get().convertReductDto();
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto2(post, comment.get(), userReductDTO);
+			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+
+
+	// @GetMapping()
+	// public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
+		
+	// 	Response<List<PostDTO>> response = new Response<>();
+	// 	response.setData(new ArrayList<PostDTO>());
+	// 	log.info("Recuperando todos os Post");
+
+	// 	List<Post> posts = postService.findAll();
+	// 	if (posts == null || posts.isEmpty()) {
+	// 		response.addError("Nenhum post encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+		
+	// 	for (Post post : posts) {
+	// 		UserReductDTO userReductDTO = userService.findByLogin(post.getLogin()).get().convertReductDto();
+	// 		Optional<List<Comment>> comment = commentService.findByPost(post);
+	// 		PostDTO dto = postToDto2(post, comment.get(), userReductDTO);
+	// 		dto.setReacts(getReacts(post));
+	// 		response.getData().add(dto);
+	// 	}
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
 	
 
 
