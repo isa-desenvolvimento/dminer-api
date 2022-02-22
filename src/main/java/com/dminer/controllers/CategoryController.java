@@ -49,7 +49,7 @@ public class CategoryController {
 
 
     private void validateRequestDto(CategoryRequestDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
+        if (dto.getName() == null || dto.getName().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -59,7 +59,7 @@ public class CategoryController {
             result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
 		}
 
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
+        if (dto.getName() == null || dto.getName().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -67,7 +67,7 @@ public class CategoryController {
     @PostMapping()
     public ResponseEntity<Response<CategoryDTO>> create(@Valid @RequestBody CategoryRequestDTO dto, BindingResult result) {        
 
-		log.info("Salvando uma nova categoria {}", dto.getTitle());
+		log.info("Salvando uma nova categoria {}", dto.getName());
 
         Response<CategoryDTO> response = new Response<>();
 
@@ -106,7 +106,7 @@ public class CategoryController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        optProfile.get().setTitle(dto.getTitle());
+        optProfile.get().setName(dto.getName());
 
        Category category = categoryRepository.save(optProfile.get());
         response.setData(categoryConverter.entityToDTO(category));

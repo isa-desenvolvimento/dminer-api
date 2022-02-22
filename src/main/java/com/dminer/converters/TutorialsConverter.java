@@ -29,7 +29,7 @@ public class TutorialsConverter {
         dto.setImage(entity.getImage());
         dto.setPermission(entity.getPermission());
         if (entity.getCategory() != null)
-            dto.setCategory(entity.getCategory().getTitle());        
+            dto.setCategory(entity.getCategory().getName());        
         return dto;
     }
 

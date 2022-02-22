@@ -1,3 +1,3 @@
-INSERT INTO category (id,title) VALUES
+INSERT INTO category (id,"name") VALUES
 (2,'CATEGORY DEFAULT'),
 (3,'CATEGORY MASTER');
