@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -131,6 +132,8 @@ public class PostController {
 	@Autowired
 	private NotificationService notificationService;
 
+	@Autowired
+    private Environment env;
 
 	private Gson gson = new Gson();
 	
@@ -757,6 +760,38 @@ public class PostController {
 		return ResponseEntity.ok().body(response);
 	}
 
+
+	@GetMapping(value = "/search/{keyword}")
+    @Transactional(timeout = 50000)
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @RequestParam(name = "keyword", required = false) String keyword) {
+        
+        Response<List<PostDTO>> response = new Response<>();
+        
+		if (token.naoPreenchido()) { 
+            response.addError("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+		List<Post> posts = postService.search(keyword, isProd());
+		List<PostDTO> postsDto = new ArrayList<>();
+        
+		UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
+
+		for (Post p : posts) {
+			Optional<List<Comment>> comment = commentService.findByPost(p);
+			PostDTO dto = postToDto(p, comment.get(), userRestModel);
+			dto.setReacts(getReacts(p));
+			postsDto.add(dto);
+		}
+
+
+        response.setData(postsDto);
+        return ResponseEntity.ok().body(response);
+	}
+
+
+
+
 	/**
 	 * Cria diretórios organizados pelo id do Post
 	 */
@@ -785,6 +820,11 @@ public class PostController {
             result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
         }
         
+    }
+
+	public boolean isProd() {
+        log.info("ambiente: " + env.getActiveProfiles()[0]);
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 
 }

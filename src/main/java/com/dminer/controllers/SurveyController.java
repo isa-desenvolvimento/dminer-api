@@ -251,7 +251,7 @@ public class SurveyController {
     }
 
 
-    @DeleteMapping(value = "/{login}/delete/{id}")
+    @DeleteMapping(value = "/{login}/{id}")
     public ResponseEntity<Response<Boolean>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
         
         Response<Boolean> response = new Response<>();

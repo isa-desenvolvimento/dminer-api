@@ -41,6 +41,9 @@ public class GenericRepositoryPostgres {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
 
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
 
@@ -509,6 +512,8 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
+
+
 
 
     public List<Notification> getNotificationsByFullCalendarEvents(Integer idUser) {

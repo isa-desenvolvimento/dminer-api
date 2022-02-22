@@ -17,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dminer.dto.PostExternalApiDTO;
 import com.dminer.entities.Post;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PostRepository;
 import com.dminer.services.interfaces.IPostService;
 
@@ -26,7 +28,13 @@ public class PostService implements IPostService {
 	@Autowired
 	private PostRepository postRepository;	
 
-	
+	@Autowired
+	private GenericRepositoryPostgres genericRepositoryPostgres;	
+
+	@Autowired
+	private GenericRepositorySqlServer genericRepositorySqlServer;
+
+
 	private static final Logger log = LoggerFactory.getLogger(PostService.class);
 	
 	
@@ -60,6 +68,18 @@ public class PostService implements IPostService {
 		log.info("Buscando todas as publicações de {}", login);
 		List<Post> p = postRepository.findAllByLoginOrderByCreateDateDesc(login);
 		return p;
+	}
+
+	public List<Post> search(String keyword, boolean isProd) {
+		log.info("Search em posts {}", keyword);
+		if (keyword == null) {
+			return findAll();
+		}
+
+		if (isProd) {
+			return genericRepositorySqlServer.searchPost(keyword);
+		}		
+		return genericRepositoryPostgres.searchPost(keyword);
 	}
 
 	public HttpStatus salvarApiExterna(Post entity) {
