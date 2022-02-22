@@ -59,7 +59,7 @@ public class ReminderController {
     
     
 
-    @PostMapping
+    @PostMapping("/{login}")
     public ResponseEntity<Response<ReminderDTO>> create(@Valid @RequestBody ReminderRequestDTO reminderRequest, BindingResult result) {
     
         log.info("Salvando um novo lembrete {}", reminderRequest);
@@ -79,7 +79,7 @@ public class ReminderController {
     }
 
 
-    @PutMapping
+    @PutMapping("/{login}")
     public ResponseEntity<Response<ReminderDTO>> update(@Valid @RequestBody ReminderDTO reminderRequest, BindingResult result) {
     
         log.info(MessagesConst.ALTERANDO_REGISTRO, reminderRequest);
@@ -118,7 +118,7 @@ public class ReminderController {
     }
 
 
-    @DeleteMapping(value = "/{id}")
+    @DeleteMapping(value = "/{login}/delete/{id}")
     public ResponseEntity<Response<ReminderDTO>> delete(@PathVariable("id") Integer id) {
         log.info("Buscando lembrete {}", id);
         
