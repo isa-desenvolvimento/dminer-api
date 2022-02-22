@@ -97,9 +97,9 @@ public class ReminderController {
     }
     
     
-    @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<ReminderDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando lembrete {}", id);
+    @GetMapping(value = "/{login}/find/{id}")
+    public ResponseEntity<Response<ReminderDTO>> get(@PathVariable("login") String login, @PathVariable("id") Integer id) {
+        log.info("Buscando lembrete {} {}", login, id);
         
         Response<ReminderDTO> response = new Response<>();
         if (id == null) {
@@ -146,7 +146,7 @@ public class ReminderController {
 
 
     
-    @GetMapping("/{login}/all")
+    @GetMapping("/{login}")
     public ResponseEntity<Response<List<ReminderDTO>>> getAll(@PathVariable("login") String login) {
         
         Response<List<ReminderDTO>> response = new Response<>();
