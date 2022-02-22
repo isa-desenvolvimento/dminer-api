@@ -118,7 +118,7 @@ public class ReminderController {
     }
 
 
-    @DeleteMapping(value = "/{login}/delete/{id}")
+    @DeleteMapping(value = "/{login}/{id}")
     public ResponseEntity<Response<ReminderDTO>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
         log.info("Buscando lembrete {}", id);
         
