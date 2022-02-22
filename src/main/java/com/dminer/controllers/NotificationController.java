@@ -178,8 +178,14 @@ public class NotificationController {
             return ResponseEntity.ok().body(response);
         }
 
+        List<Notification> nts = user.get();
+
+        if (nts.size() > 100) {
+            nts = nts.subList(0, 100);
+        }
+
         List<NotificationDTO> eventos = new ArrayList<>();
-        user.get().forEach(u -> {
+        nts.forEach(u -> {
             eventos.add(notificationConverter.entityToDto(u));
         });
         response.setData(eventos);
