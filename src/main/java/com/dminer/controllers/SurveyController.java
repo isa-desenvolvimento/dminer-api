@@ -261,7 +261,7 @@ public class SurveyController {
     }
 
 
-    @GetMapping(value = "/all/{login}")
+    @GetMapping(value = "/{login}/all")
     public ResponseEntity<Response<List<SurveyDTO>>> getAll(@PathVariable("login") String login) {
         
         Response<List<SurveyDTO>> response = new Response<>();
@@ -273,11 +273,7 @@ public class SurveyController {
         }
 
         List<Survey> surveys = surveysOpt.get();
-        surveys = surveys.stream()
-		.sorted(Comparator.comparing(Survey::getDate).reversed())
-		.collect(Collectors.toList());
-
-
+        
         List<SurveyDTO> surveysDto = new ArrayList<>();
         surveys.forEach(u -> {
             SurveyDTO dto = surveyConverter.entityToDTO(u);

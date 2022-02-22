@@ -46,7 +46,7 @@ public class SurveyService implements ISurveyService {
 
     @Override
     public Optional<List<Survey>> findAll() {
-		return Optional.ofNullable(surveyRepository.findAll());
+		return Optional.ofNullable(surveyRepository.findAllByOrderByDateDesc());
     }
 
     @Override
