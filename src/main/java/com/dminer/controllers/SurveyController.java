@@ -71,57 +71,11 @@ public class SurveyController {
 
 
 
-    private void validateRequestDto(SurveyRequestDTO surveyRequestDto, BindingResult result) {        
-        if (surveyRequestDto.getQuestion() == null || surveyRequestDto.getQuestion().isEmpty()) {
-            result.addError(new ObjectError("SurveyRequestDTO", "Questão precisa estar preenchida."));
-        } 
-
-        if (surveyRequestDto.getOptionA() == null || surveyRequestDto.getOptionA().isEmpty()) {
-            result.addError(new ObjectError("SurveyRequestDTO", "Opção A precisa estar preenchido."));			
-        }
-
-        if (surveyRequestDto.getOptionB() == null || surveyRequestDto.getOptionB().isEmpty()) {
-            result.addError(new ObjectError("SurveyRequestDTO", "Opção B precisa estar preenchido."));
-        } else {
-            try {
-                Timestamp.valueOf(surveyRequestDto.getDate());
-            } catch (IllegalArgumentException e) {
-                result.addError(new ObjectError("SurveyRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
-            }
-        }
-    }
+ 
 
 
-    private Response<String> validateAnswerQuestion( Integer id, String loginUser, String option) {
-        Response<String> response = new Response<>();
-        if (id == null) {
-            log.info("Informe o id do questionário");
-            response.getErrors().add("Informe o id do questionário");
-        } else {
-            Optional<Survey> findById = surveyService.findById(id);
-            if (!findById.isPresent()) {
-                log.info("Questionário não encontrado");
-                response.getErrors().add("Questionário não encontrado");
-            }
-        }
-        
-        if (loginUser == null) {
-            log.info("Informe o login do usuário que está respondendo o questionário");
-            response.getErrors().add("Informe o login do usuário que está respondendo o questionário");
-        } 
-        
-        if (option == null || option.isEmpty() || (!option.equalsIgnoreCase("A") && !option.equalsIgnoreCase("B"))) {
-            log.info("Informe uma opção válida para a resposta = {}", option);
-            response.getErrors().add("Informe uma opção válida para a resposta");
-        }
-
-        return response;
-    }
-
-
-
-    @PostMapping()
-    public ResponseEntity<Response<SurveyDTO>> create( @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
+    @PostMapping("/{login}")
+    public ResponseEntity<Response<SurveyDTO>> create(@PathVariable("login") String login, @Valid @RequestBody SurveyRequestDTO surveyRequestDto, BindingResult result) {
 
         Response<SurveyDTO> response = new Response<>();
 
@@ -216,8 +170,8 @@ public class SurveyController {
     }
 
 
-    @PutMapping()
-    public ResponseEntity<Response<SurveyDTO>> put( @RequestBody SurveyDTO surveyDto, BindingResult result ) {
+    @PutMapping("/{login}")
+    public ResponseEntity<Response<SurveyDTO>> put(@PathVariable("login") String login, @RequestBody SurveyDTO surveyDto, BindingResult result ) {
 
         log.info("Alterando um questionário {}", surveyDto);
 
@@ -241,8 +195,8 @@ public class SurveyController {
     }
 
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<SurveyDTO>> get(@PathVariable("id") Integer id) {
+    @GetMapping(value = "/{login}/find/{id}")
+    public ResponseEntity<Response<SurveyDTO>> get(@PathVariable("login") String login, @PathVariable("id") Integer id) {
         
         Response<SurveyDTO> response = new Response<>();
         if (id == null) {
@@ -297,9 +251,8 @@ public class SurveyController {
     }
 
 
-
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<Boolean>> delete(@PathVariable("id") Integer id) {
+    @DeleteMapping(value = "/{login}/delete/{id}")
+    public ResponseEntity<Response<Boolean>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
         
         Response<Boolean> response = new Response<>();
         if (id == null) {
@@ -320,6 +273,56 @@ public class SurveyController {
         response.setData(true);
         return ResponseEntity.ok().body(response);
     }
+
+
+    private void validateRequestDto(SurveyRequestDTO surveyRequestDto, BindingResult result) {        
+        if (surveyRequestDto.getQuestion() == null || surveyRequestDto.getQuestion().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Questão precisa estar preenchida."));
+        } 
+
+        if (surveyRequestDto.getOptionA() == null || surveyRequestDto.getOptionA().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Opção A precisa estar preenchido."));			
+        }
+
+        if (surveyRequestDto.getOptionB() == null || surveyRequestDto.getOptionB().isEmpty()) {
+            result.addError(new ObjectError("SurveyRequestDTO", "Opção B precisa estar preenchido."));
+        } else {
+            try {
+                Timestamp.valueOf(surveyRequestDto.getDate());
+            } catch (IllegalArgumentException e) {
+                result.addError(new ObjectError("SurveyRequestDTO", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
+            }
+        }
+    }
+
+
+    private Response<String> validateAnswerQuestion( Integer id, String loginUser, String option) {
+        Response<String> response = new Response<>();
+        if (id == null) {
+            log.info("Informe o id do questionário");
+            response.getErrors().add("Informe o id do questionário");
+        } else {
+            Optional<Survey> findById = surveyService.findById(id);
+            if (!findById.isPresent()) {
+                log.info("Questionário não encontrado");
+                response.getErrors().add("Questionário não encontrado");
+            }
+        }
+        
+        if (loginUser == null) {
+            log.info("Informe o login do usuário que está respondendo o questionário");
+            response.getErrors().add("Informe o login do usuário que está respondendo o questionário");
+        } 
+        
+        if (option == null || option.isEmpty() || (!option.equalsIgnoreCase("A") && !option.equalsIgnoreCase("B"))) {
+            log.info("Informe uma opção válida para a resposta = {}", option);
+            response.getErrors().add("Informe uma opção válida para a resposta");
+        }
+
+        return response;
+    }
+
+
 
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);

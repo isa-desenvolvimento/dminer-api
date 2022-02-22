@@ -60,7 +60,7 @@ public class ReminderController {
     
 
     @PostMapping("/{login}")
-    public ResponseEntity<Response<ReminderDTO>> create(@Valid @RequestBody ReminderRequestDTO reminderRequest, BindingResult result) {
+    public ResponseEntity<Response<ReminderDTO>> create(@PathVariable("login") String login, @Valid @RequestBody ReminderRequestDTO reminderRequest, BindingResult result) {
     
         log.info("Salvando um novo lembrete {}", reminderRequest);
 

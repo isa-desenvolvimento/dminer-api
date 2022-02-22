@@ -135,7 +135,7 @@ public class CategoryController {
     }
 
 
-    @GetMapping(value = "/dropdown")
+    @PostMapping(value = "/dropdown")
     public ResponseEntity<Response<List<CategoryDTO>>> dropdown() {
         
         Response<List<CategoryDTO>> response = new Response<>();
