@@ -48,7 +48,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReminderController {
     
-    private static final Logger log = LoggerFactory.getLogger(NotificationController.class);
+    private static final Logger log = LoggerFactory.getLogger(ReminderController.class);
 
     @Autowired
     private ReminderService reminderService;

@@ -1,6 +1,7 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import com.dminer.services.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,6 +51,10 @@ public class NotificationController {
 
     @Autowired
     private ServerSendEvents sendEvents;
+
+    @Autowired
+    private Environment env;
+
 
     private void validateRequestDto(NotificationRequestDTO notificationRequestDTO, BindingResult result) {
         if (notificationRequestDTO.getIdUser() == null) {
@@ -192,22 +199,24 @@ public class NotificationController {
         return ResponseEntity.ok().body(response);
     }
 
-    // @GetMapping(value = "/search/{login}/{keyword}")
-    // @Transactional(timeout = 90000)
-    // public ResponseEntity<Response<List<NoticeDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+    @GetMapping(value = "/search/{login}/{keyword}")
+    public ResponseEntity<Response<List<NotificationDTO>>> search(@RequestHeader("x-access-token") String token, @PathVariable String login, @PathVariable String keyword) {
         
-    //     Response<List<NoticeDTO>> response = new Response<>();
+        Response<List<NotificationDTO>> response = new Response<>();
 
-    //     List<Notice> search = noticeService.search(keyword, isProd());
-    //     search.forEach(notice -> {
-    //         NoticeDTO dto = noticeConverter.entityToDTO(notice);
-    //         response.getData().add(dto); 
-    //     });
+        log.info("Search notification");
+        List<Notification> search = notificationService.search(keyword, login, isProd());
+        log.info("Search notification {}", search.size());
         
-    //     return ResponseEntity.ok().body(response);
-    // }
+        search.forEach(notification -> {
+            NotificationDTO dto = notificationConverter.entityToDto(notification);
+            response.getData().add(dto); 
+        });
+        
+        return ResponseEntity.ok().body(response);
+    }
 
-    // public boolean isProd() {
-    //     return Arrays.asList(env.getActiveProfiles()).contains("prod");
-    // }
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
+    }
 }
