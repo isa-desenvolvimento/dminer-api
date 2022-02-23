@@ -3,6 +3,7 @@ package com.dminer.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.dminer.entities.Notification;
 import com.dminer.entities.User;
@@ -70,9 +71,10 @@ public class NotificationService implements INotificationService {
             Optional<User> user = userService.findByLogin(login);
             if (user.isPresent()) {
                 result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
-                
+                result = result.stream().filter(not -> 
+                    not.getNotification().toLowerCase().contains(keyword)    
+                ).collect(Collectors.toList());
                 System.out.println("Notificações: " + result.size());
-
             }
         }
         return result;

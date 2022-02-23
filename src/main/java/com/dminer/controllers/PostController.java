@@ -7,25 +7,14 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.validation.Valid;
-
-
-import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,15 +35,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dminer.components.TokenService;
 import com.dminer.constantes.Constantes;
 import com.dminer.converters.CommentConverter;
-import com.dminer.dto.CommentDTO;
-import com.dminer.dto.LikesDTO;
 import com.dminer.dto.PostDTO;
 import com.dminer.dto.PostRequestDTO;
-import com.dminer.dto.ReactDTO;
-import com.dminer.dto.SurveyRequestDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
@@ -67,7 +51,6 @@ import com.dminer.entities.Post;
 import com.dminer.entities.React;
 import com.dminer.entities.User;
 import com.dminer.enums.PostType;
-import com.dminer.repository.CommentRepository;
 import com.dminer.repository.FavoritesRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.ReactRepository;
@@ -81,7 +64,6 @@ import com.dminer.services.NotificationService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
-import com.dminer.utils.UtilNumbers;
 import com.google.gson.Gson;
 
 import lombok.RequiredArgsConstructor;
@@ -111,9 +93,6 @@ public class PostController {
 	@Autowired
 	private CommentService commentService;
 	
-	@Autowired
-	private CommentRepository commentRepository;
-
 	@Autowired
 	private ReactRepository reactRepository;
 
