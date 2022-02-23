@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -230,20 +232,27 @@ public class TutorialsController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<TutorialsDTO>>> getAll() {
+    public ResponseEntity<Response<List<TutorialsDTO>>> getAll(@RequestHeader("x-access-adminUser") String perfil) {
         
         Response<List<TutorialsDTO>> response = new Response<>();
 
-        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();   
+        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();
+
         if (doc.isEmpty()) {
             response.getErrors().add("Tutorials não encontrados");
             return ResponseEntity.ok().body(response);
         }
 
         List<TutorialsDTO> eventos = new ArrayList<>();
+
+        if (! perfil.equalsIgnoreCase("admin")) {
+            doc = doc.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
+        }
+
         doc.forEach(u -> {
             eventos.add(tutorialsConverter.entityToDTO(u));
         });
+
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
