@@ -181,7 +181,7 @@ public class DocumentController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<DocumentDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
+    public ResponseEntity<Response<List<DocumentDTO>>> getAll() {
         
         Response<List<DocumentDTO>> response = new Response<>();
 
