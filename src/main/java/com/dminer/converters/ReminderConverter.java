@@ -52,7 +52,7 @@ public class ReminderConverter {
         reminderDTO.setReminder(reminder.getReminderDescrible());
         reminderDTO.setDate(UtilDataHora.timestampToStringOrNow(reminder.getDate()));
         reminderDTO.setActive(reminder.getActive());
-        reminderDTO.setChecked(reminder.getChecked());
+        reminderDTO.setChecked(reminder.getChecked() == null ? false : reminder.getChecked());
         return reminderDTO;
     }
 
