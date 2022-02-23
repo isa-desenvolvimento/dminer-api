@@ -114,7 +114,7 @@ public class FeedService {
                 result = genericRepositoryPostgres.searchPost(keyword);
             }
         } else {
-            result = postService.findAll();
+            result = postService.findAllByLogin(login);
         }
                 
         List<PostReductDTO> reduct = new ArrayList<>();
