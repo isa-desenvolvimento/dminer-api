@@ -17,6 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -271,6 +273,24 @@ public class SurveyController {
             surveyResponseRepository.deleteById(findByIdSurvey.getId());
         }
         response.setData(true);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/search/{login}/{keyword}")
+    @Transactional(timeout = 90000)
+    public ResponseEntity<Response<List<SurveyDTO>>> search(@RequestHeader("x-access-token") String token, @PathVariable String login, @PathVariable String keyword) {
+        
+        Response<List<SurveyDTO>> response = new Response<>();
+
+        log.info("Search survey -> token: {}", token);
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
+        List<SurveyDTO> search = surveyService.search(keyword, login, isProd());
+        log.info("{} resultados encontrados", search.size());
+        search.forEach(survey -> {
+            response.getData().add(survey); 
+        });
+        
         return ResponseEntity.ok().body(response);
     }
 
