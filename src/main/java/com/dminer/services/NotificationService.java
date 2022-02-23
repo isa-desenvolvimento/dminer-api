@@ -71,9 +71,6 @@ public class NotificationService implements INotificationService {
             Optional<User> user = userService.findByLogin(login);
             if (user.isPresent()) {
                 result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
-                result = result.stream().filter(not -> 
-                    not.getNotification().toLowerCase().contains(keyword)    
-                ).collect(Collectors.toList());
                 System.out.println("Notificações: " + result.size());
             }
         }
