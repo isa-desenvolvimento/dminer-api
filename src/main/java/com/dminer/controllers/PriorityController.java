@@ -135,7 +135,7 @@ public class PriorityController {
     }
 
 
-    @GetMapping(value = "/dropdown")
+    @PostMapping(value = "/dropdown")
     public ResponseEntity<Response<List<PriorityDTO>>> dropdown() {
         
         Response<List<PriorityDTO>> response = new Response<>();
