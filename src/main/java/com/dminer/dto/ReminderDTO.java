@@ -22,4 +22,6 @@ public class ReminderDTO {
     private String date;
 
     private Boolean active;
+
+    private Boolean checked;
 }

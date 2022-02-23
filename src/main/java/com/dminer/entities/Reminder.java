@@ -52,6 +52,9 @@ public class Reminder {
     @Column
     private Boolean active = true;
 
+    @Column
+    private Boolean checked = false;
+    
 
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
