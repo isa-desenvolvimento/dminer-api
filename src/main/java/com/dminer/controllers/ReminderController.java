@@ -180,6 +180,7 @@ public class ReminderController {
         Response<List<ReminderDTO>> response = new Response<>();
 
         log.info("Search reminder -> token: {}", token);
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
         List<Reminder> search = reminderService.search(keyword, login, isProd());
         log.info("{} resultados encontrados", search.size());
         search.forEach(reminder -> {

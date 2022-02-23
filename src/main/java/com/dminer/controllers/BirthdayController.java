@@ -69,7 +69,7 @@ public class BirthdayController {
     		ResponseEntity.ok().body(response);
         }
 
-        
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
     	UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
 
         if (userRestModel == null) {

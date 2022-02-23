@@ -233,7 +233,7 @@ public class UserService implements IUserService {
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			try {
-				System.out.println(response.toString());
+				// System.out.println(response.toString());
 				userRestModel = gson.fromJson(response, UserRestModel.class);
 				return userRestModel;
 			} catch (IllegalStateException e) {
@@ -349,7 +349,7 @@ public class UserService implements IUserService {
     		byte[] image = UtilFilesStorage.loadImage(pathFile);
     		if (image != null) {
     			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(image));
-    			log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
+    			// log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
     			return base64AsString;
     		}
     	} catch (IOException e) {}
@@ -375,7 +375,7 @@ public class UserService implements IUserService {
 		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login);
 		
 		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-			System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
+			// System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
 			return imagemRedimensionadaPath;
 		}		
 		return gravarAvatarDiretorio(login);
@@ -406,7 +406,7 @@ public class UserService implements IUserService {
 				ImageIO.write(image, "png", baos);
 				byte[] bytes = baos.toByteArray();
     			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(bytes));
-    			log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
+    			// log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
     			return base64AsString;
     		}
     	} catch (IOException e) {}

@@ -206,7 +206,7 @@ public class NotificationController {
 
         log.info("Search notification");
         List<Notification> search = notificationService.search(keyword, login, isProd());
-        log.info("Search notification {}", search.size());
+        log.info("Search notification {} resultados", search.size());
         
         search.forEach(notification -> {
             NotificationDTO dto = notificationConverter.entityToDto(notification);

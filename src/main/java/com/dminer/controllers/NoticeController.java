@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import com.dminer.converters.NoticeConverter;
 import com.dminer.dto.NoticeDTO;
 import com.dminer.dto.NoticeRequestDTO;
+import com.dminer.dto.Token;
 import com.dminer.entities.Notice;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
@@ -212,7 +213,7 @@ public class NoticeController {
     public ResponseEntity<Response<List<NoticeDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<List<NoticeDTO>> response = new Response<>();
-
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
         List<Notice> search = noticeService.search(keyword, isProd());
         search.forEach(notice -> {
             NoticeDTO dto = noticeConverter.entityToDTO(notice);
