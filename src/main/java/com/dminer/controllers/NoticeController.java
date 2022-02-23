@@ -1,6 +1,7 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +21,10 @@ import com.dminer.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,6 +57,8 @@ public class NoticeController {
     @Autowired
     private NoticeService noticeService;
     
+    @Autowired
+    private Environment env;
 
 
     @PostMapping
@@ -201,6 +207,22 @@ public class NoticeController {
     }
 
 
+    @GetMapping(value = "/search/{login}/{keyword}")
+    @Transactional(timeout = 90000)
+    public ResponseEntity<Response<List<NoticeDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+        
+        Response<List<NoticeDTO>> response = new Response<>();
+
+        List<Notice> search = noticeService.search(keyword, isProd());
+        search.forEach(notice -> {
+            NoticeDTO dto = noticeConverter.entityToDTO(notice);
+            response.getData().add(dto); 
+        });
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+
     
     private void validateRequestDto(NoticeRequestDTO avisosRequestDTO, BindingResult result) {
         if (avisosRequestDTO.getUsers() == null) {
@@ -255,6 +277,11 @@ public class NoticeController {
         if (dto.getId() == null) {
             result.addError(new ObjectError("NoticeRequestDTO", "Id precisa estar preenchido."));
 		}
+    }
+
+
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
     
 
