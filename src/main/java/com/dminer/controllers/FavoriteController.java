@@ -228,7 +228,7 @@ public class FavoriteController {
         Optional<User> user = userService.findByLogin(login);
         if (!user.isPresent()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<Favorites> favos = favoritesRepository.findAllByUser(user.get());

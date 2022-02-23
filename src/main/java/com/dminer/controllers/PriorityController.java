@@ -103,7 +103,7 @@ public class PriorityController {
         if (! optProfile.isPresent()) {
             log.info("Prioridade não encontrado: {}", dto);
             response.getErrors().add("Prioridade não encontrado");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         optProfile.get().setName(dto.getName());
@@ -121,13 +121,13 @@ public class PriorityController {
         Response<PriorityDTO> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         Optional<Priority> priority = priorityRepository.findById(id);
         if (!priority.isPresent()) {
             response.getErrors().add("Prioridade não encontrado");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(priorityConverter.entityToDTO(priority.get()));
@@ -143,7 +143,7 @@ public class PriorityController {
         List<Priority> priority = priorityRepository.findAll();
         if (priority == null || priority.isEmpty()) {
             response.getErrors().add("Prioridades não encontradas");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<PriorityDTO> ps = new ArrayList<>();
@@ -161,13 +161,13 @@ public class PriorityController {
         Response<Boolean> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {priorityRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Prioridade não encontrada");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(true);
