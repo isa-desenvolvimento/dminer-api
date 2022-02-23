@@ -3,6 +3,8 @@ package com.dminer.controllers;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ public class FeedController {
     @Autowired
     private Environment env;
 
+    private static final Logger log = LoggerFactory.getLogger(FeedController.class);
 
     @GetMapping(value = "/{login}/{keyword}")
     @Transactional(timeout = 90000)
@@ -41,6 +44,8 @@ public class FeedController {
         Response<List<PostReductDTO>> response = new Response<>();
 
         List<PostReductDTO> search = feedService.search(keyword, login, isProd());
+        log.info("Search do feed... {} resultados ", search.size());
+
         response.setData(search); 
         return ResponseEntity.ok().body(response);
     }
