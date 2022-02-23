@@ -175,11 +175,13 @@ public class ReminderController {
 
     @GetMapping(value = "/search/{login}/{keyword}")
     @Transactional(timeout = 90000)
-    public ResponseEntity<Response<List<ReminderDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+    public ResponseEntity<Response<List<ReminderDTO>>> search(@RequestHeader("x-access-token") String token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<List<ReminderDTO>> response = new Response<>();
-        
+
+        log.info("Search reminder -> token: {}", token);
         List<Reminder> search = reminderService.search(keyword, login, isProd());
+        log.info("{} resultados encontrados", search.size());
         search.forEach(reminder -> {
             ReminderDTO dto = reminderConverter.entityToDto(reminder);
             response.getData().add(dto); 
