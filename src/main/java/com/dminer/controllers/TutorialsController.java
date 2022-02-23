@@ -245,7 +245,7 @@ public class TutorialsController {
 
         List<TutorialsDTO> eventos = new ArrayList<>();
 
-        if (! perfil.equalsIgnoreCase("admin")) {
+        if (! perfil.equalsIgnoreCase("1")) {
             doc = doc.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
         }
 

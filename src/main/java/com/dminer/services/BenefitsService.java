@@ -37,7 +37,7 @@ public class BenefitsService {
     public List<Benefits> getAllByPermission(String perfil) {
         List<Benefits> entities = benefitsRepository.findAll();
         
-        if (perfil.equalsIgnoreCase("admin")) {
+        if (perfil.equalsIgnoreCase("1")) {
             return entities;
         }
 
