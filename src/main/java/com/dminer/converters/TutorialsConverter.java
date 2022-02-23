@@ -25,7 +25,7 @@ public class TutorialsConverter {
         dto.setId(entity.getId());
         dto.setContent(entity.getContent() != null ? entity.getContent() : "");
         dto.setTitle(entity.getTitle() != null ? entity.getTitle() : "");
-        dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToString(entity.getDate()) : null);        
+        dto.setDate(entity.getDate() != null ? UtilDataHora.timestampToStringOrNow(entity.getDate()) : null);        
         dto.setImage(entity.getImage());
         dto.setPermission(entity.getPermission());
         if (entity.getCategory() != null)

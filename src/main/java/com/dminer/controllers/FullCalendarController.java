@@ -64,7 +64,7 @@ public class FullCalendarController {
 		}
 
         if (fullCalendarRequestDTO.getCreator() == null || fullCalendarRequestDTO.getCreator().isBlank()) {
-            result.addError(new ObjectError("fullCalendarRequestDTO", "Data de fim precisa estar preenchido."));
+            result.addError(new ObjectError("fullCalendarRequestDTO", "Usuário que está criando precisa estar preenchido."));
 		}
 
         if (fullCalendarRequestDTO.getAllDay() == null) {

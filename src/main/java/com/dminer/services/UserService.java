@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
@@ -185,6 +186,15 @@ public class UserService implements IUserService {
 		}
 	}
 
+	public void inserirDadosNoBancoComApiExterna() {
+		String token = TokenService.getToken();
+		UserRestModel usuarios = carregarUsuariosApi(token);
+		for (Usuario usuario : usuarios.getUsers()) {
+			User u = usuario.toUser();
+			u = persist(u);			
+		}
+	}
+
 
 	public Optional<User> findByLoginApi(String login, List<Usuario> users) {
 		
@@ -238,7 +248,7 @@ public class UserService implements IUserService {
 			try {
 				System.out.println(response.toString());
 				userRestModel = gson.fromJson(response, UserRestModel.class);
-				return userRestModel;				
+				return userRestModel;
 			} catch (IllegalStateException e) {
 				return null;
 			}
