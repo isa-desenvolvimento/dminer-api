@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -145,11 +146,11 @@ public class BenefitsController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<BenefitsDTO>>> getAll() {
+    public ResponseEntity<Response<List<BenefitsDTO>>> getAll(@RequestHeader("x-access-adminUser") String perfil) {
         
         Response<List<BenefitsDTO>> response = new Response<>();
 
-        List<Benefits> doc = benefitsRepository.findAll();
+        List<Benefits> doc = benefitsService.getAllByPermission(perfil);
         if (doc.isEmpty()) {
             response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
             return ResponseEntity.ok().body(response);
