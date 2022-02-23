@@ -191,4 +191,23 @@ public class NotificationController {
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }
+
+    @GetMapping(value = "/search/{login}/{keyword}")
+    @Transactional(timeout = 90000)
+    public ResponseEntity<Response<List<NoticeDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+        
+        Response<List<NoticeDTO>> response = new Response<>();
+
+        List<Notice> search = noticeService.search(keyword, isProd());
+        search.forEach(notice -> {
+            NoticeDTO dto = noticeConverter.entityToDTO(notice);
+            response.getData().add(dto); 
+        });
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
+    }
 }
