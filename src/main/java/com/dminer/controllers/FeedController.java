@@ -37,7 +37,7 @@ public class FeedController {
 
     private static final Logger log = LoggerFactory.getLogger(FeedController.class);
 
-    @GetMapping(value = "/{login}/{keyword}")
+    @GetMapping(value = "/search/{login}/{keyword}")
     @Transactional(timeout = 90000)
     public ResponseEntity<Response<List<PostReductDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
