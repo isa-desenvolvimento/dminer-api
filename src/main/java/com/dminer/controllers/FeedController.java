@@ -43,6 +43,8 @@ public class FeedController {
         
         Response<List<PostReductDTO>> response = new Response<>();
 
+        log.info("Search do feed -> token: {}", token);
+
         List<PostReductDTO> search = feedService.search(keyword, login, isProd());
         log.info("Search do feed... {} resultados ", search.size());
 
