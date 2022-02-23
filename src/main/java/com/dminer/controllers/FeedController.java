@@ -39,7 +39,7 @@ public class FeedController {
 
     @GetMapping(value = "/search/{login}/{keyword}")
     @Transactional(timeout = 90000)
-    public ResponseEntity<Response<List<PostReductDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login, @PathVariable("keyword") String keyword) {
+    public ResponseEntity<Response<List<PostReductDTO>>> search(@RequestHeader("x-access-token") String token, @PathVariable("login") String login, @PathVariable("keyword") String keyword) {
         
         Response<List<PostReductDTO>> response = new Response<>();
 
