@@ -1,10 +1,8 @@
 package com.dminer.repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
-import com.dminer.dto.LikesDTO;
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
-import com.dminer.entities.ReactUser;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Permission;
@@ -29,7 +25,6 @@ import com.dminer.entities.Tutorials;
 import com.dminer.entities.User;
 import com.dminer.enums.EventsTime;
 import com.dminer.enums.PostType;
-import com.dminer.utils.UtilDataHora;
 
 @Repository
 public class GenericRepositoryPostgres {
@@ -38,32 +33,16 @@ public class GenericRepositoryPostgres {
     private JdbcOperations jdbcOperations;
 
     @Autowired
-    private JdbcOperations jdbcSubOperations;
-
-    @Autowired
     private UserRepository userRepository;
-    
-    //@Autowired
-    //private UserService userService;
-    
-    @Autowired
-    private ProfileRepository profileRepository;
     
     @Autowired
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private ReactUserRepository likesRepository;
-
-
-
-
+    private CommentRepository commentRepository;
 
 
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
@@ -231,10 +210,6 @@ public class GenericRepositoryPostgres {
 
     }
 
-
-    private String token = null;
-
-
     public List<Benefits> searchBenefits(String keyword) {
         String query =
         "SELECT * " +
@@ -326,7 +301,8 @@ public class GenericRepositoryPostgres {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
-           " LIKE LOWER('%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%') " +
+           "order by date desc ";
 
         log.info("search = {}", query);
 
@@ -350,15 +326,15 @@ public class GenericRepositoryPostgres {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
-           "e.title, ' '))" +
-           " LIKE LOWER('%" + keyword + "%')";
+           "e.title, ' ')) " +
+           "LIKE LOWER('%" + keyword + "%') " + 
+           "ORDER BY create_date desc" ;
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
@@ -383,14 +359,15 @@ public class GenericRepositoryPostgres {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'";
+    					"   and user1_.login='" + login + "' or notificati0_.all_users is true" ;
     					
-    	if (keyword != null) {
-    		query += "and ( " ;
-    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
-    	}
-    	
-    	log.info("search = {}", query);
+        if (keyword != null) {
+            query += "and ( " ;
+            query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')) ";
+        }
+        query += "   order by notificati0_.create_date desc ";
+                        
+    	log.info("searchNotification = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Notification e = new Notification();
@@ -422,6 +399,7 @@ public class GenericRepositoryPostgres {
 					") ";
         }
         query += "    and user1_.login = '" + login + "' " ;
+        query += " order by reminder_1.date desc  ";
         
         log.info("search = {}", query);
 
@@ -447,8 +425,7 @@ public class GenericRepositoryPostgres {
         "WHERE LOWER(CONCAT( " +
            "e.content_link, ' ', " +
            "e.title, ' ', " +
-           "e.category_id, ' ', " +           
-           "e.permission_id, ' '))" +
+           "e.category_id, ' ')) " +           
            " LIKE LOWER('%" + keyword + "%')";
         log.info("search = {}", query);
 
@@ -469,29 +446,6 @@ public class GenericRepositoryPostgres {
         });
     }
     
-    
-    // public List<Comment> searchCommentsByDate(String date) {
-    //     String query = 
-    //     "SELECT * " +
-    //     "FROM comment e " +
-    //     "WHERE e.timestamp='" + date + "'";
-    //     log.info("search = {}", query);
-
-    //     return jdbcOperations.query(query, (rs, rowNum) -> { 
-    //     	Comment e = new Comment();
-    //         e.setId(rs.getInt("ID"));
-    //         e.setContent(rs.getString("CONTENT"));
-    //         e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
-    //         Post p = new Post();
-    //         p.setId(rs.getInt("POST_ID"));
-    //         e.setPost(p);
-    //         Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
-    //         if (findById.isPresent())
-    //             e.setUser(findById.get());
-    //         return e;
-    //     });
-    // }
-            
 
     public List<Comment> searchCommentsByPostIdAndDateAndUser(Post post, String date, Optional<User> user) {
         String query = 
@@ -559,6 +513,29 @@ public class GenericRepositoryPostgres {
         });
     }
 
+
+
+
+    public List<Notification> getNotificationsByFullCalendarEvents(Integer idUser) {
+        String query = 
+        "select users_id as user_id, fc.title as notification , fc.start_date as create_date, u.login as login " + 
+        "from full_calendar fc " + 
+        "inner join full_calendar_users fcu on fcu.full_calendar_id = fc.id " +
+        "inner join users u on u.id = fcu.users_id " + 
+        "WHERE "+ 
+            "users_id = " + idUser + " " + 
+            "and current_timestamp between start_date and end_date";
+
+        log.info("getNotificationsByFullCalendarEvents = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+            Notification e = new Notification();            
+            e.setNotification(rs.getString("notification"));
+            e.setCreateDate(rs.getTimestamp("create_date"));
+            e.setUser(new User(rs.getInt("user_id"), rs.getString("login")));
+            return e;
+        });
+    }
 
     
 }    

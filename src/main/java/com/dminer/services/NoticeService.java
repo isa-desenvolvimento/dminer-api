@@ -40,7 +40,7 @@ public class NoticeService implements INoticeService {
 
     @Override
     public Optional<List<Notice>> findAll() {
-        return Optional.ofNullable(noticeRepository.findAll());
+        return Optional.ofNullable(noticeRepository.findAllByOrderByDateDesc());
     }
 
     @Override
@@ -53,17 +53,17 @@ public class NoticeService implements INoticeService {
         List<Notice> notices = new ArrayList<>();
         if (keyword != null) {
             if (prod) {
-                notices = genericRepositoryPostgres.searchNotice(keyword);
-            } else {
                 notices = genericRepositorySqlServer.searchNotice(keyword);
+            } else {
+                notices = genericRepositoryPostgres.searchNotice(keyword);
             }
             
         } else {
-            notices = noticeRepository.findAll();
+            notices = noticeRepository.findAllByOrderByDateDesc();
         }
-        notices = notices.stream()
-        .sorted(Comparator.comparing(Notice::getDate).reversed())
-        .collect(Collectors.toList());
+        // notices = notices.stream()
+        // .sorted(Comparator.comparing(Notice::getDate).reversed())
+        // .collect(Collectors.toList());
         return notices;
     }
     

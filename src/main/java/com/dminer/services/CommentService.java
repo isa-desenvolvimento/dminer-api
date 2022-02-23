@@ -37,7 +37,7 @@ public class CommentService implements ICommentService {
     @Override
     public Optional<List<Comment>> findByPost(Post post) {
         log.info("Buscando um comentário pelo Post {} - {}", post.getId(), post.getTitle());
-        return commentRepository.findByPost(post);
+        return commentRepository.findAllByPostOrderByTimestamp(post);
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.dminer.constantes.MessagesConst;
 import com.dminer.converters.ReminderConverter;
 import com.dminer.dto.ReminderDTO;
 import com.dminer.dto.ReminderRequestDTO;
@@ -55,6 +56,118 @@ public class ReminderController {
     private UserService userService;
 
     
+    
+    
+
+    @PostMapping("/{login}")
+    public ResponseEntity<Response<ReminderDTO>> create(@PathVariable("login") String login, @Valid @RequestBody ReminderRequestDTO reminderRequest, BindingResult result) {
+    
+        log.info("Salvando um novo lembrete {}", reminderRequest);
+
+		Response<ReminderDTO> response = new Response<>();
+
+        validateRequestDto(reminderRequest, result);
+        if (result.hasErrors()) {
+            response.addErrors(result);
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Reminder reminder = reminderService.persist(reminderConverter.requestDtoToEntity(reminderRequest));
+        response.setData(reminderConverter.entityToDto(reminder));
+
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping("/{login}")
+    public ResponseEntity<Response<ReminderDTO>> update(@PathVariable("login") String login, @Valid @RequestBody ReminderDTO reminderRequest, BindingResult result) {
+    
+        log.info(MessagesConst.ALTERANDO_REGISTRO, reminderRequest);
+
+		Response<ReminderDTO> response = new Response<>();
+		validateDto(reminderRequest, result);
+        if (result.hasErrors()) {
+            response.addErrors(result);
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Reminder reminder = reminderService.persist(reminderConverter.dtoToEntity(reminderRequest));
+        response.setData(reminderConverter.entityToDto(reminder));
+        return ResponseEntity.ok().body(response);
+    }
+    
+    
+    @GetMapping(value = "/{login}/find/{id}")
+    public ResponseEntity<Response<ReminderDTO>> get(@PathVariable("login") String login, @PathVariable("id") Integer id) {
+        log.info("Buscando lembrete {} {}", login, id);
+        
+        Response<ReminderDTO> response = new Response<>();
+        if (id == null) {
+            response.addError(MessagesConst.INFORME_ID);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Reminder> remi = reminderService.findById(id);
+        if (!remi.isPresent()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(reminderConverter.entityToDto(remi.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @DeleteMapping(value = "/{login}/{id}")
+    public ResponseEntity<Response<ReminderDTO>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
+        log.info("Buscando lembrete {}", id);
+        
+        Response<ReminderDTO> response = new Response<>();
+        if (id == null) {
+            response.addError(MessagesConst.INFORME_ID);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Reminder> not = reminderService.findById(id);
+        if (!not.isPresent()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
+            return ResponseEntity.ok().body(response);
+        }
+
+        try {reminderService.delete(id);}
+        catch (EmptyResultDataAccessException e) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(reminderConverter.entityToDto(not.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    
+    @GetMapping("/{login}/all")
+    public ResponseEntity<Response<List<ReminderDTO>>> getAll(@PathVariable("login") String login) {
+        
+        Response<List<ReminderDTO>> response = new Response<>();
+
+        Optional<List<Reminder>> remi = reminderService.findAll();
+        if (remi.get().isEmpty()) {
+            response.addError(MessagesConst.NENHUM_REGISTRO_ENCONTRADO);
+            return ResponseEntity.ok().body(response);
+        }
+        List<Reminder> reminder = remi.get();
+                
+        List<ReminderDTO> eventos = new ArrayList<>();
+        reminder.forEach(u -> {
+            if (u.getUser().getLogin().equals(login))
+                eventos.add(reminderConverter.entityToDto(u));
+        });
+        response.setData(eventos);
+        return ResponseEntity.ok().body(response);
+    }
+
+
     private void validateRequestDto(ReminderRequestDTO reminderRequestDTO, BindingResult result) {
         if (reminderRequestDTO.getLogin() == null) {
             result.addError(new ObjectError("ReminderRequestDTO", "Id do usuário precisa estar preenchido."));
@@ -114,119 +227,5 @@ public class ReminderController {
                 result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss."));
             }
         }        
-    }
-    
-
-    @PostMapping
-    public ResponseEntity<Response<ReminderDTO>> create(@Valid @RequestBody ReminderRequestDTO notificationRequest, BindingResult result) {
-    
-        log.info("Salvando uma nova notificação {}", notificationRequest);
-
-		Response<ReminderDTO> response = new Response<>();
-        validateRequestDto(notificationRequest, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando notificationRequest: {}", notificationRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        Reminder reminder = reminderService.persist(reminderConverter.requestDtoToEntity(notificationRequest));
-        response.setData(reminderConverter.entityToDto(reminder));
-
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @PutMapping
-    public ResponseEntity<Response<ReminderDTO>> update(@Valid @RequestBody ReminderDTO reminderRequest, BindingResult result) {
-    
-        log.info("Salvando uma nova reminder {}", reminderRequest);
-
-		Response<ReminderDTO> response = new Response<>();
-		validateDto(reminderRequest, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando dto: {}", reminderRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        Reminder reminder = reminderService.persist(reminderConverter.dtoToEntity(reminderRequest));
-        response.setData(reminderConverter.entityToDto(reminder));
-        return ResponseEntity.ok().body(response);
-    }
-    
-    
-    @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<ReminderDTO>> get(@PathVariable("id") Integer id) {
-        log.info("Buscando notificação {}", id);
-        
-        Response<ReminderDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Reminder> remi = reminderService.findById(id);
-        if (!remi.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        response.setData(reminderConverter.entityToDto(remi.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseEntity<Response<ReminderDTO>> delete(@PathVariable("id") Integer id) {
-        log.info("Buscando notificação {}", id);
-        
-        Response<ReminderDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<Reminder> not = reminderService.findById(id);
-        if (!not.isPresent()) {
-            response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        try {reminderService.delete(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrado");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        response.setData(reminderConverter.entityToDto(not.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    
-    @GetMapping("/all/{login}")
-    public ResponseEntity<Response<List<ReminderDTO>>> getAll(@PathVariable("login") String login) {
-        
-        Response<List<ReminderDTO>> response = new Response<>();
-
-        Optional<List<Reminder>> remi = reminderService.findAll();
-        if (remi.get().isEmpty()) {
-            response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
-        }
-        List<Reminder> reminder = remi.get();
-        
-        reminder = reminder.stream()
-		.sorted(Comparator.comparing(Reminder::getDate).reversed())
-		.collect(Collectors.toList());
-        
-        List<ReminderDTO> eventos = new ArrayList<>();
-        reminder.forEach(u -> {
-            if (u.getUser().getLogin().equals(login))
-                eventos.add(reminderConverter.entityToDto(u));
-        });
-        response.setData(eventos);
-        return ResponseEntity.ok().body(response);
     }
 }

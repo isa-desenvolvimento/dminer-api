@@ -8,37 +8,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
-import com.dminer.images.ImageResizer;
-import com.dminer.repository.GenericRepositoryPostgres;
-import com.dminer.repository.GenericRepositorySqlServer;
-import com.dminer.repository.PermissionRepository;
 import com.dminer.repository.UserRepository;
-import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.interfaces.IUserService;
@@ -158,17 +145,17 @@ public class UserService implements IUserService {
 
     
     public boolean existsByLogin(String login) {
-        log.info("Verificando se usuário existe pelo login, {}", login);
+        log.info("Verificando se usuário existe pelo login no repositório, {}", login);
         return userRepository.findByLogin(login) != null;
     }
 
     public boolean existsByLoginAndUserName(String login, String userName) {
-        log.info("Verificando se usuário existe pelo login, {} e {}", login, userName);
+        log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
         return userRepository.findByLoginAndUserName(login, userName) != null;
     }
     
     public Optional<User> findByLogin(String login) {
-        log.info("Recuperando usuário pelo login, {}", login);
+        log.info("Recuperando usuário pelo login no repositório, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
@@ -340,7 +327,11 @@ public class UserService implements IUserService {
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
         }
-        
+		return buscarUsuarioApiReduct(userRestModel, login);
+    }
+
+
+	public UserReductDTO buscarUsuarioApiReduct(UserRestModel userRestModel, String login) {
 		UserReductDTO dto = new UserReductDTO();
 		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
 			if (login.equals(u.getLogin())) {
@@ -350,10 +341,8 @@ public class UserService implements IUserService {
 				return dto;
 			}			
 		}
-		return dto;
-    }
-
-
+		return null;
+	}
 
 	public String getAvatarBase64(String pathFile) {
     	try {

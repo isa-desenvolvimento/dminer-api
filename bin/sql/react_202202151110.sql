@@ -1,0 +1,6 @@
+INSERT INTO react (id,react) VALUES
+(1,'D-TERMINADO'),
+(2,'D-MAIS'),
+(3,'D-SLUMBRADO'),
+(4,'D-SACREDITADO'),
+(5,'D-IVERTIDO');

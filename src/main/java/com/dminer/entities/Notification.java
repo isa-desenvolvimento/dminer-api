@@ -48,6 +48,9 @@ public class Notification {
 	@Column
     private Boolean active = true;
 
+    @Column
+    private Boolean allUsers = false;
+
     private Timestamp createDate = Timestamp.from(Instant.now()); 
 
 	public String toJson() {
@@ -61,14 +64,5 @@ public class Notification {
         }
         return null;
     }
-
 	
-	@Transient
-    @Autowired
-    private NotificationService notificationService;
-    
-    public void desactivate() {
-        this.active = false;
-        notificationService.persist(this);
-    }
 }

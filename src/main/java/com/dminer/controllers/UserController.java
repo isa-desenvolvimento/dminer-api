@@ -189,15 +189,21 @@ public class UserController {
         }
     
         // List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
-        UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
+        // UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
 
-        if (restModel.isEmptyUsers()) {
-            response.addError("Nenhum usuario encontrado");             
-            return ResponseEntity.badRequest().body(response);
-        }
+        // if (restModel.isEmptyUsers()) {
+        //     response.addError("Nenhum usuario encontrado");             
+        //     return ResponseEntity.badRequest().body(response);
+        // }
         
-        response.setData(restModel.toUserReductDtoList()); 
+        // response.setData(restModel.toUserReductDtoList()); 
     
+        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), true);
+        if (carregarUsuariosApiReduct.isEmpty()) {
+            response.addError("Nenhum usuario encontrado");             
+            return ResponseEntity.ok().body(response);
+        }
+        response.setData(carregarUsuariosApiReduct); 
         return ResponseEntity.ok().body(response);
     }
     

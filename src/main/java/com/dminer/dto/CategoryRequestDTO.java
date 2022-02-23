@@ -17,6 +17,6 @@ import lombok.ToString;
 @ToString
 public class CategoryRequestDTO {
 
-	@NotBlank(message = "Titulo precisa estar preenchido") 
-	private String title;
+	@NotBlank(message = "Nome precisa estar preenchido") 
+	private String name;
 }

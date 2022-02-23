@@ -29,7 +29,7 @@ public class TutorialsConverter {
         dto.setImage(entity.getImage());
         dto.setPermission(entity.getPermission());
         if (entity.getCategory() != null)
-            dto.setCategory(entity.getCategory().getTitle());        
+            dto.setCategory(entity.getCategory().getName());        
         return dto;
     }
 
@@ -41,7 +41,7 @@ public class TutorialsConverter {
         c.setDate(dto.getDate() != null ? UtilDataHora.toTimestamp(dto.getDate()) : null);
         c.setPermission(dto.getPermission());
         if (dto.getCategory() != null) {
-            Optional<Category> category = categoryRepository.findByTitle(dto.getCategory());
+            Optional<Category> category = categoryRepository.findByName(dto.getCategory());
             if (category.isPresent())
                 c.setCategory(category.get());
         }

@@ -171,8 +171,10 @@ public class UtilDataHora {
     }
 
     public static String timestampToStringOrNull(Timestamp date) {        
-        if (date != null)
-            return date.toString().substring(0, date.toString().length() -2);
+        if (date != null) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");            
+            return df.format(date);
+        }
         return null;
     }
 
@@ -223,7 +225,7 @@ public class UtilDataHora {
     }
 
     public static Date stringToHour(String hora) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");        
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         try {
             return sdf.parse(hora);
         } catch (ParseException e) {

@@ -1,5 +1,7 @@
 package com.dminer.controllers;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,8 +13,12 @@ import com.dminer.converters.FullCalendarConverter;
 import com.dminer.dto.FullCalendarDTO;
 import com.dminer.dto.FullCalendarRequestDTO;
 import com.dminer.entities.FullCalendar;
+import com.dminer.entities.Notification;
+import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.FullCalendarService;
+import com.dminer.services.NotificationService;
+import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +55,144 @@ public class FullCalendarController {
     @Autowired 
     private ServerSendEvents sendEvents;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private UserService userService;
+
+    
+
+    @PostMapping
+    public ResponseEntity<Response<FullCalendarDTO>> create(@Valid @RequestBody FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
+    
+		Response<FullCalendarDTO> response = new Response<>();
+        validateRequestDto(fullCalendarRequestDTO, result);
+        if (result.hasErrors()) {
+            log.info("Erro validando fullCalendarRequestDTO: {}", fullCalendarRequestDTO);
+            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        FullCalendar events = fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(fullCalendarRequestDTO));
+        FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
+        response.setData(dto);
+
+        // notification.setUser();
+        dto.getUsers().forEach(user -> {
+            log.info("Criando notificação para o usuário: " + user + " a partir de um evento calendário: {}", events);
+            Notification notification = new Notification();
+            notification.setCreateDate(Timestamp.from(Instant.now()));
+            notification.setNotification("Novo evento calendário foi criado: " + dto.getTitle());
+            Optional<User> userTemp = userService.findByLogin(user);
+            if (userTemp.isPresent()) {
+                notification.setUser(userTemp.get());
+                notificationService.persist(notification);
+            } else {
+                log.info("Usuário {} não encontrado na base de dados local", user);
+            }
+        });
+        log.info("Disparando evento de calendário");
+        sendEvents.setEventCalendar(dto);
+        sendEvents.streamSseCalendar();
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping(value = "/find/{id}")
+    public ResponseEntity<Response<FullCalendarDTO>> get(@PathVariable("id") Integer id) {
+        
+        Response<FullCalendarDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<FullCalendar> calendar = fullCalendarService.findById(id);
+        if (!calendar.isPresent()) {
+            response.getErrors().add("Calendário não encontrado");
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(fullCalendarConverter.entityToDto(calendar.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Response<FullCalendarDTO>> delete(@PathVariable("id") Integer id) {
+        
+        Response<FullCalendarDTO> response = new Response<>();
+        if (id == null) {
+            response.getErrors().add("Informe um id");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<FullCalendar> calendar = fullCalendarService.findById(id);
+        if (!calendar.isPresent()) {
+            response.getErrors().add("Calendário não encontrado");
+            return ResponseEntity.ok().body(response);
+        }
+
+        try {fullCalendarService.delete(id);}
+        catch (EmptyResultDataAccessException e) {
+            response.getErrors().add("Calendário não encontrado");
+            return ResponseEntity.ok().body(response);
+        }
+
+        response.setData(fullCalendarConverter.entityToDto(calendar.get()));
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping("/all")
+    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll() {
+        
+        Response<List<FullCalendarDTO>> response = new Response<>();
+
+        Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
+        if (calendar.get().isEmpty()) {
+            response.getErrors().add("Calendários não encontrados");
+            return ResponseEntity.ok().body(response);
+        }
+
+        List<FullCalendarDTO> calendarios = new ArrayList<>();
+        calendar.get().forEach(u -> {
+            calendarios.add(fullCalendarConverter.entityToDto(u));
+        });
+        response.setData(calendarios);
+        return ResponseEntity.ok().body(response);
+    }
+
+
+    @GetMapping("/all/{login}")
+    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll(@PathVariable("login") String login) {
+        
+        Response<List<FullCalendarDTO>> response = new Response<>();
+
+        Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
+        if (calendar.get().isEmpty()) {
+            response.getErrors().add("Calendários não encontrados");
+            return ResponseEntity.ok().body(response);
+        }
+
+        List<FullCalendar> calendarios = calendar.get();
+        calendarios = calendarios.stream()
+        .filter(cal -> cal.getCreator().equals(login))
+        .collect(Collectors.toList());
+
+        List<FullCalendarDTO> calendariosDto = new ArrayList<>();
+        
+        calendarios.forEach(u -> {
+            calendariosDto.add(fullCalendarConverter.entityToDto(u));
+        });
+        
+        response.setData(calendariosDto);
+        return ResponseEntity.ok().body(response);
+    }
+
+
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
         if (fullCalendarRequestDTO.getTitle() == null || fullCalendarRequestDTO.getTitle().isBlank()) {
@@ -72,121 +216,4 @@ public class FullCalendarController {
 		}
 
     }
-    
-
-    @PostMapping
-    public ResponseEntity<Response<FullCalendarDTO>> create(@Valid @RequestBody FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
-    
-		Response<FullCalendarDTO> response = new Response<>();
-        validateRequestDto(fullCalendarRequestDTO, result);
-        if (result.hasErrors()) {
-            log.info("Erro validando fullCalendarRequestDTO: {}", fullCalendarRequestDTO);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        FullCalendar events = fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(fullCalendarRequestDTO));
-        FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
-        response.setData(dto);
-
-        log.info("Disparando evento de calendário");
-        sendEvents.setEventCalendar(dto);
-        sendEvents.streamSseCalendar();
-        
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<FullCalendarDTO>> get(@PathVariable("id") Integer id) {
-        
-        Response<FullCalendarDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<FullCalendar> calendar = fullCalendarService.findById(id);
-        if (!calendar.isPresent()) {
-            response.getErrors().add("Calendário não encontrado");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        response.setData(fullCalendarConverter.entityToDto(calendar.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<FullCalendarDTO>> delete(@PathVariable("id") Integer id) {
-        
-        Response<FullCalendarDTO> response = new Response<>();
-        if (id == null) {
-            response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<FullCalendar> calendar = fullCalendarService.findById(id);
-        if (!calendar.isPresent()) {
-            response.getErrors().add("Calendário não encontrado");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        try {fullCalendarService.delete(id);}
-        catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Calendário não encontrado");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        response.setData(fullCalendarConverter.entityToDto(calendar.get()));
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping("/all")
-    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll() {
-        
-        Response<List<FullCalendarDTO>> response = new Response<>();
-
-        Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
-        if (calendar.get().isEmpty()) {
-            response.getErrors().add("Calendários não encontrados");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        List<FullCalendarDTO> calendarios = new ArrayList<>();
-        calendar.get().forEach(u -> {
-            calendarios.add(fullCalendarConverter.entityToDto(u));
-        });
-        response.setData(calendarios);
-        return ResponseEntity.ok().body(response);
-    }
-
-
-    @GetMapping("/all/{login}")
-    public ResponseEntity<Response<List<FullCalendarDTO>>> getAll(@PathVariable("login") String login) {
-        
-        Response<List<FullCalendarDTO>> response = new Response<>();
-
-        Optional<List<FullCalendar>> calendar = fullCalendarService.findAll();
-        if (calendar.get().isEmpty()) {
-            response.getErrors().add("Calendários não encontrados");
-            return ResponseEntity.status(404).body(response);
-        }
-
-        List<FullCalendar> calendarios = calendar.get();
-        calendarios = calendarios.stream()
-        .filter(cal -> cal.getCreator().equals(login))
-        .collect(Collectors.toList());
-
-        List<FullCalendarDTO> calendariosDto = new ArrayList<>();
-        
-        calendarios.forEach(u -> {
-            calendariosDto.add(fullCalendarConverter.entityToDto(u));
-        });
-        
-        response.setData(calendariosDto);
-        return ResponseEntity.ok().body(response);
-    }
-
 }

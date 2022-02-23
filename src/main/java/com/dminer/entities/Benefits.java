@@ -50,6 +50,6 @@ public class Benefits {
     @Column
     private Timestamp date;
 
-    @Column
+    @Column(length = 9999999)
     private String image;
 }

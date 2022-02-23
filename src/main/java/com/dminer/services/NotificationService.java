@@ -1,12 +1,11 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.dminer.entities.Notification;
+import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.NotificationRepository;
@@ -24,6 +23,9 @@ public class NotificationService implements INotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private GenericRepositoryPostgres genericRepositoryPostgres;
@@ -60,16 +62,19 @@ public class NotificationService implements INotificationService {
         List<Notification> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {
-                result = genericRepositoryPostgres.searchNotification(keyword, login);
-            } else {
                 result = genericRepositorySqlServer.searchNotification(keyword, login);
+            } else {
+                result = genericRepositoryPostgres.searchNotification(keyword, login);
             }          
         } else {
-            result = notificationRepository.findAll();
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
+                result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
+                
+                System.out.println("Notificações: " + result.size());
+
+            }
         }
-        result = result.stream()
-            .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-            .collect(Collectors.toList());
         return result;
     }
 }

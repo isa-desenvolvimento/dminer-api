@@ -29,10 +29,10 @@ public class BenefitsService {
     
     public List<Benefits> search(String keyword) {
         List<Benefits> entities = new ArrayList<>();
-        if (isTest()) {
-        	entities = genericRepositoryPostgres.searchBenefits(keyword);
+        if (isProd()) {
+            entities = genericRepositorySqlServer.searchBenefits(keyword);
         } else {
-        	entities = genericRepositorySqlServer.searchBenefits(keyword);
+        	entities = genericRepositoryPostgres.searchBenefits(keyword);
         }
 
         entities = entities.stream()
@@ -42,7 +42,7 @@ public class BenefitsService {
         return entities;
     }
 
-    public boolean isTest() {
-        return Arrays.asList(env.getActiveProfiles()).contains("test");
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 }

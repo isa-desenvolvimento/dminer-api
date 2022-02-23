@@ -22,5 +22,5 @@ public class CategoryDTO {
     private Integer id;
     
     @NotBlank
-	private String title;
+	private String name;
 }

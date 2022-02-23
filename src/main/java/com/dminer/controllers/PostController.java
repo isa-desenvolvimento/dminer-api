@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -25,8 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -58,6 +61,7 @@ import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Favorites;
 import com.dminer.entities.FileInfo;
+import com.dminer.entities.Notification;
 import com.dminer.entities.ReactUser;
 import com.dminer.entities.Post;
 import com.dminer.entities.React;
@@ -73,6 +77,7 @@ import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.services.CommentService;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
+import com.dminer.services.NotificationService;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
@@ -124,39 +129,17 @@ public class PostController {
 	@Autowired
 	private FavoritesRepository favoritesRepository;
 
+	@Autowired
+	private NotificationService notificationService;
 
+	@Autowired
+    private Environment env;
 
 	private Gson gson = new Gson();
 	
-	private String token;
-
-	//private UserRestModel userRestModel;
-
-
-	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
-        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
-            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
-        } 
-        
-        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
-            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
-        } 
-
-        if (dto.getContent() == null || dto.getContent().isBlank()) {
-            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
-        }
-        
-        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
-            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
-        }
-        
-    }
-
-
-	
 
 	@PostMapping()
-	public ResponseEntity<Response<PostDTO>> create(@RequestBody PostRequestDTO dto, BindingResult result) {
+	public ResponseEntity<Response<PostDTO>> create(@RequestHeader("x-access-token") Token token, @RequestBody PostRequestDTO dto, BindingResult result) {
 	
 		Response<PostDTO> response = new Response<>();
 		validateRequestDto(dto, result);
@@ -182,7 +165,14 @@ public class PostController {
 		post = postService.persist(post);
 		PostDTO dtoPost = postToDto(post, null, null);
 		UserReductDTO userReduct = new UserReductDTO();
-		userReduct.setLogin(dto.getLogin());		
+
+		UserDTO userDto = userService.buscarUsuarioApi(post.getLogin(), token.getToken());
+		userReduct.setLogin(userDto.getLogin());
+		userReduct.setUserName(userDto.getUserName());
+		userReduct.setAvatar(userDto.getAvatar());
+
+		dtoPost.setUser(userReduct);
+		dtoPost.setReacts(getReacts(post));
 		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
@@ -191,10 +181,39 @@ public class PostController {
 			if (code.value() != 201) {
 				return ResponseEntity.internalServerError().body(null);
 			}
-		}		
+		}
+
+		// salvarNotificacoes(token, dto);
+
+		Notification notification = new Notification();
+		notification.setCreateDate(Timestamp.from(Instant.now()));
+		notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
+		notification.setAllUsers(true);
+		notificationService.persist(notification);
+
 		return ResponseEntity.ok().body(response);
 	}
 	
+	@Async
+	private void salvarNotificacoes(Token token, PostRequestDTO dto) {
+		log.info("Salvando notificações de forma assíncrona ");
+		List<UserReductDTO> usuariosApi = userService.carregarUsuariosApiReduct(token.getToken(), false);
+		if (!usuariosApi.isEmpty()) {
+			usuariosApi.forEach(usuario -> {
+				Notification notification = new Notification();
+				notification.setCreateDate(Timestamp.from(Instant.now()));
+	            notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
+            	Optional<User> userTemp = userService.findByLogin(usuario.getLogin());
+				if (userTemp.isPresent()) {
+					notification.setUser(userTemp.get());
+					notificationService.persist(notification);
+				} else {
+					log.info("Usuário {} não encontrado na base de dados local", usuario);
+				}
+			});
+		}
+		log.info("Fim salvando notificações de forma assíncrona ");
+	}
 	
 	/**
 	 * Método para futura melhorias
@@ -353,13 +372,42 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get(), token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+
+		PostDTO dto = postToDto(post.get(), comment.get(), usersRestModel);
 		dto.setReacts(getReacts(post.get()));
 
 		response.setData(dto);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+
+	// @GetMapping(value = "/{id}")
+	// public ResponseEntity<Response<PostDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("id") int id) {
+		
+	// 	Response<PostDTO> response = new Response<>();
+	// 	log.info("Recuperando Post {}", id);
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+	// 	Optional<Post> post = postService.findById(id);
+	// 	if (!post.isPresent()) {
+	// 		response.addError("Post não encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	Optional<List<Comment>> comment = commentService.findByPost(post.get());
+	// 	UserReductDTO userReductDTO = userService.findByLogin(post.get().getLogin()).get().convertReductDto();
+
+	// 	PostDTO dto = postToDto2(post.get(), comment.get(), userReductDTO);
+	// 	dto.setReacts(getReacts(post.get()));
+
+	// 	response.setData(dto);
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
 
 
 	private void rollback(Post post, List<FileInfo> anexos, List<Comment> comments) {
@@ -387,7 +435,10 @@ public class PostController {
 
 
 
-	private PostDTO postToDto(Post post, List<Comment> comments, String token) {
+	/**
+	 * todo -> Refatorar
+	 */
+	private PostDTO postToDto(Post post, List<Comment> comments, UserRestModel userRestModel) {
 		PostDTO dto = new PostDTO();
 		
 		dto.setType(post.getType().toString());
@@ -402,15 +453,11 @@ public class PostController {
 			dto.getFavorites().add(f.getUser().getLogin());
 		});
 
-		if (token != null) {
-			UserReductDTO user = userService.buscarUsuarioApiReduct(post.getLogin(), token);      	
+		if (userRestModel != null) {
+			UserReductDTO user = userService.buscarUsuarioApiReduct(userRestModel, post.getLogin());
 			dto.setUser(user);
 			
 			if (comments != null && !comments.isEmpty()) {
-				comments = comments.stream()
-				.sorted(Comparator.comparing(Comment::getTimestamp).reversed())
-				.collect(Collectors.toList());
-	
 				comments.forEach(comment -> {
 					dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
 				});			
@@ -419,6 +466,32 @@ public class PostController {
 		return dto;
 	}
 	
+
+	// private PostDTO postToDto2(Post post, List<Comment> comments, UserReductDTO user) {
+	// 	PostDTO dto = new PostDTO();
+		
+	// 	dto.setType(post.getType().toString());
+	// 	dto.setId(post.getId());
+	// 	dto.setContent(post.getContent());
+	// 	dto.setTitle(post.getTitle());
+	// 	dto.setAnexo(post.getAnexo());
+	// 	dto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+		
+	// 	List<Favorites> favorites = favoritesRepository.findAllByPost(post);
+	// 	favorites.forEach(f -> {
+	// 		dto.getFavorites().add(f.getUser().getLogin());
+	// 	});
+
+	// 	dto.setUser(user);
+			
+	// 	if (comments != null && !comments.isEmpty()) {
+	// 		comments.forEach(comment -> {
+	// 			dto.getComments().add(commentConverter.entityToDto(post.getId(), user, comment));
+	// 		});			
+	// 	}
+	// 	return dto;
+	// }
+
 	
 	@GetMapping("/all/{login}")
 	public ResponseEntity<Response<List<PostDTO>>> getAllByUser(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
@@ -438,13 +511,11 @@ public class PostController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 		
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
 
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), token.getToken());
+			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -470,13 +541,11 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), token.getToken());
+			PostDTO dto = postToDto(post, comment.get(), usersRestModel);
 			dto.setReacts(getReacts(post));
 			response.getData().add(dto);
 		}
@@ -484,6 +553,34 @@ public class PostController {
 	}
 
 
+	// @GetMapping()
+	// public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
+		
+	// 	Response<List<PostDTO>> response = new Response<>();
+	// 	response.setData(new ArrayList<PostDTO>());
+	// 	log.info("Recuperando todos os Post");
+
+	// 	List<Post> posts = postService.findAll();
+	// 	if (posts == null || posts.isEmpty()) {
+	// 		response.addError("Nenhum post encontrado na base de dados");
+	// 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	// 	}
+
+	// 	if (token.naoPreenchido()) { 
+    //         response.addError("Token precisa ser informado");    		
+    // 		return ResponseEntity.badRequest().body(response);
+    //     }
+
+		
+	// 	for (Post post : posts) {
+	// 		UserReductDTO userReductDTO = userService.findByLogin(post.getLogin()).get().convertReductDto();
+	// 		Optional<List<Comment>> comment = commentService.findByPost(post);
+	// 		PostDTO dto = postToDto2(post, comment.get(), userReductDTO);
+	// 		dto.setReacts(getReacts(post));
+	// 		response.getData().add(dto);
+	// 	}
+	// 	return ResponseEntity.status(HttpStatus.OK).body(response);
+	// }
 	
 
 
@@ -535,7 +632,8 @@ public class PostController {
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 
-        PostDTO dto = postToDto(optPost.get(), comments, token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+        PostDTO dto = postToDto(optPost.get(), comments, usersRestModel);
         
 		dto.setReacts(getReacts(optPost.get()));
 
@@ -602,15 +700,10 @@ public class PostController {
         
         List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
 
-		// ordenar do mais novo pro mais antigo
-		posts = posts.stream()
-		.sorted(Comparator.comparing(Post::getCreateDate).reversed())
-		.collect(Collectors.toList());
-
 		List<PostDTO> postsDto = new ArrayList<>();
         
 		for (Post p : posts) {
-			PostDTO dto = postToDto(p, null, token.getToken());
+			PostDTO dto = postToDto(p, null, null);
 			dto.setReacts(getReacts(p));
 			postsDto.add(dto);
 		}
@@ -659,12 +752,45 @@ public class PostController {
 
 		//post.getReacts().add(like);
 		post = postService.persist(post);
-		PostDTO dto = postToDto(post, null, token.getToken());
+		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
+		PostDTO dto = postToDto(post, null, usersRestModel);
 		dto.setReacts(getReacts(post));
 		response.setData(dto);
 
 		return ResponseEntity.ok().body(response);
 	}
+
+
+	@GetMapping(value = "/search/{keyword}")
+    @Transactional(timeout = 50000)
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @RequestParam(name = "keyword", required = false) String keyword) {
+        
+        Response<List<PostDTO>> response = new Response<>();
+        
+		if (token.naoPreenchido()) { 
+            response.addError("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+		List<Post> posts = postService.search(keyword, isProd());
+		List<PostDTO> postsDto = new ArrayList<>();
+        
+		UserRestModel userRestModel = userService.carregarUsuariosApi(token.getToken());
+
+		for (Post p : posts) {
+			Optional<List<Comment>> comment = commentService.findByPost(p);
+			PostDTO dto = postToDto(p, comment.get(), userRestModel);
+			dto.setReacts(getReacts(p));
+			postsDto.add(dto);
+		}
+
+
+        response.setData(postsDto);
+        return ResponseEntity.ok().body(response);
+	}
+
+
+
 
 	/**
 	 * Cria diretórios organizados pelo id do Post
@@ -677,5 +803,28 @@ public class PostController {
 	}
 
 	
+	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
+        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
+            result.addError(new ObjectError("dto", "Login precisa estar preenchido."));
+        } 
+        
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            result.addError(new ObjectError("dto", "Titulo precisa estar preenchido."));
+        } 
+
+        if (dto.getContent() == null || dto.getContent().isBlank()) {
+            result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
+        }
+        
+        if (dto.getType() == null || dto.getType() < 1 || dto.getType() > 2) {
+            result.addError(new ObjectError("dto", "Tipo informado precisa ser 1 para Interno ou 2 para Externo"));
+        }
+        
+    }
+
+	public boolean isProd() {
+        log.info("ambiente: " + env.getActiveProfiles()[0]);
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
+    }
 
 }

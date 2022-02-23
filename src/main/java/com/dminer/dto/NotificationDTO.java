@@ -16,5 +16,6 @@ public class NotificationDTO {
     private Integer id;
     private String login;
 	private String notification;
+    private String createDate;
     private Boolean active;
 }
