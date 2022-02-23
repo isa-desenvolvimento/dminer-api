@@ -91,6 +91,11 @@ public class BirthdayController {
             }            
         }
         
+        aniversariantes.forEach(a -> {
+            String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
+            a.setAvatar(avatar);
+        });
+        
         if (keyword != null) {
             aniversariantes = userService.search(keyword, aniversariantes);
             if (aniversariantes.isEmpty()) {
