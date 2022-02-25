@@ -31,35 +31,35 @@ Antes de começar, você vai precisar ter instalado em sua máquina as seguintes
 ```
 git git@github.com:isa-desenvolvimento/dminer-api.git
 ```
-<h3>
-# Abra o projeto no vscode
 
-# Execute o maven update, clicando com o botão direito do mouse no arquivo pom.xml e selecionando a opção "Update Project"
-# Abra o item [MAVEN] no painel esquerdo e clique com o botão direito sobre o projeto [dminer] e selecione a opção "install"
+## Abra o projeto no vscode
+### Execute o maven update, clicando com o botão direito do mouse no arquivo pom.xml e selecionando a opção "Update Project"
+### Abra o item [MAVEN] no painel esquerdo e clique com o botão direito sobre o projeto [dminer] e selecione a opção "install"
 ![alt text](/resources-readme/maven.jpg) .
 
-### Configurando o application.properties
+## Configurando o application.properties
 
-# configure o caminho da variável [diretorio-uploads] com a pasta onde será salvo os arquivos de uploads pertinentes ao projeto
+### configure o caminho da variável [diretorio-uploads] com a pasta onde será salvo os arquivos de uploads pertinentes ao projeto
 ![alt text](/resources-readme/diretorio.jpg)
 
-# configure a conexão com o banco de dados conforme sua necessidade e perfil de projeto (prod, test, default)
-# na imagem a seguir um exemplo de conexão com o banco sql server
+### configure a conexão com o banco de dados conforme sua necessidade e perfil de projeto (prod, test, default)
+### na imagem a seguir um exemplo de conexão com o banco sql server
 ![alt text](/resources-readme/diretorio.jpg)
 
 
-### Iniciando o projeto
+## Iniciando o projeto
 
-# Inicie o projeto na aba [SPRING BOOT DASHBOARD]
+## Inicie o projeto na aba [SPRING BOOT DASHBOARD]
 ![alt text](/resources-readme/spring-start.jpg)
 
-# O servidor inciará na porta:8081 - acesse <http://localhost:8081/api/swagger-ui.html>
-</h3>
+## O servidor inciará na porta:8081 - acesse <http://localhost:8081/api/swagger-ui.html>
+
 
 ### 🛠 Tecnologias
 
-As seguintes ferramentas foram usadas na construção do projeto:
+## As seguintes ferramentas foram usadas na construção do projeto:
 
 - [Java](https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html)
 - [Maven](https://maven.apache.org/docs/3.6.3/release-notes.html) 
+- [Docker](https://www.docker.com/products/docker-desktop)
 - [Spring Boot](https://spring.io/projects/spring-boot)
