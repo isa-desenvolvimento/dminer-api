@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -40,7 +41,9 @@ public class User {
 	@Column()
 	private String userName;
 
-	@Column(length = 9999999)
+	@Lob
+    @Column()
+    // @Column(length = 9999999)
 	private String banner; 
 
 	@Transient

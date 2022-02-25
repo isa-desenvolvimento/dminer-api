@@ -15,6 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -59,7 +60,9 @@ public class Post {
 	@Column
 	private String content; 
 
-    @Column(length = 9999999)
+    @Lob
+    @Column()
+    // @Column(length = 9999999)
     private String anexo;
     
 	@Column

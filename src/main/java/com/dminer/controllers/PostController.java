@@ -166,7 +166,7 @@ public class PostController {
 
 		Notification notification = new Notification();
 		notification.setCreateDate(Timestamp.from(Instant.now()));
-		notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
+		notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post! - " + post.getTitle() + ":" + post.getContent());
 		notification.setAllUsers(true);
 		notificationService.persist(notification);
 
@@ -347,7 +347,7 @@ public class PostController {
 		Optional<Post> post = postService.findById(id);
 		if (!post.isPresent()) {
 			response.addError("Post não encontrado na base de dados");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok().body(response);
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
@@ -487,7 +487,7 @@ public class PostController {
 		List<Post> posts = postService.findAllByLogin(login);
 		if (posts == null || posts.isEmpty()) {
 			response.addError("Nenhum post encontrado na base de dados");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok().body(response);
 		}
 		
 		UserRestModel usersRestModel = userService.carregarUsuariosApi(token.getToken());
@@ -512,7 +512,7 @@ public class PostController {
 		List<Post> posts = postService.findAll();
 		if (posts == null || posts.isEmpty()) {
 			response.addError("Nenhum post encontrado na base de dados");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+			return ResponseEntity.ok().body(response);
 		}
 
 		if (token.naoPreenchido()) { 

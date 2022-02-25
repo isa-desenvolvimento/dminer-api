@@ -1,4 +1,4 @@
-INSERT INTO priority (id,title) VALUES
+INSERT INTO priority (id,"name") VALUES
 (1,'Alta'),
 (2,'Média'),
-(1,'Baixa');
+(3,'Baixa');

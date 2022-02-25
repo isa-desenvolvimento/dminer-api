@@ -4,10 +4,10 @@
 docker pull mcr.microsoft.com/mssql/server:2019-latest
 
 #Passo 2 - Configurar user/password do banco de dados
-docker run -d --name dminer-db -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Dm!ner@2022" -p 1433:1433 mcr.microsoft.com/mssql/server:2019-latest
+docker run --name "dminer-db" -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong@Password" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 
 #Passo 3 - Subir o container
-docker exec -it dminer-db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Dm!ner@2022
+docker exec -it dminer-db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P yourStrong@Password
 
 
 
@@ -16,7 +16,7 @@ docker exec -it dminer-db /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Dm!n
 sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
 
 #Passo 2 - Configurar user/password do banco de dados e subir o container
-sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Dm!ner@2022" \
+sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=1234" \
    -p 1433:1433 --name dminer-db -h dminer-db \
    -d mcr.microsoft.com/mssql/server:2019-latest
 
