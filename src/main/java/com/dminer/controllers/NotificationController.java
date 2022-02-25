@@ -1,6 +1,7 @@
 package com.dminer.controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import com.dminer.services.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,6 +51,10 @@ public class NotificationController {
 
     @Autowired
     private ServerSendEvents sendEvents;
+
+    @Autowired
+    private Environment env;
+
 
     private void validateRequestDto(NotificationRequestDTO notificationRequestDTO, BindingResult result) {
         if (notificationRequestDTO.getIdUser() == null) {
@@ -132,7 +139,7 @@ public class NotificationController {
         Optional<Notification> user = notificationService.findById(id);
         if (!user.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(notificationConverter.entityToDto(user.get()));
@@ -153,13 +160,13 @@ public class NotificationController {
         Optional<Notification> not = notificationService.findById(id);
         if (!not.isPresent()) {
             response.getErrors().add("Notificação não encontrada");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {notificationService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Notificação não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(notificationConverter.entityToDto(not.get()));
@@ -175,14 +182,41 @@ public class NotificationController {
         Optional<List<Notification>> user = notificationService.findAll();
         if (user.get().isEmpty()) {
             response.getErrors().add("Eventos não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
+        }
+
+        List<Notification> nts = user.get();
+
+        if (nts.size() > 100) {
+            nts = nts.subList(0, 100);
         }
 
         List<NotificationDTO> eventos = new ArrayList<>();
-        user.get().forEach(u -> {
+        nts.forEach(u -> {
             eventos.add(notificationConverter.entityToDto(u));
         });
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping(value = "/search/{login}/{keyword}")
+    public ResponseEntity<Response<List<NotificationDTO>>> search(@RequestHeader("x-access-token") String token, @PathVariable String login, @PathVariable String keyword) {
+        
+        Response<List<NotificationDTO>> response = new Response<>();
+
+        log.info("Search notification");
+        List<Notification> search = notificationService.search(keyword, login, isProd());
+        log.info("Search notification {} resultados", search.size());
+        
+        search.forEach(notification -> {
+            NotificationDTO dto = notificationConverter.entityToDto(notification);
+            response.getData().add(dto); 
+        });
+        
+        return ResponseEntity.ok().body(response);
+    }
+
+    public boolean isProd() {
+        return Arrays.asList(env.getActiveProfiles()).contains("prod");
     }
 }

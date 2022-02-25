@@ -47,7 +47,7 @@ public class ReminderService implements IReminderService {
     @Override
     public Optional<List<Reminder>> findAll() {
         log.info("Buscando todas as lembretes");
-		return Optional.ofNullable(reminderRepository.findAll());
+		return Optional.ofNullable(reminderRepository.findAllByOrderByDateDesc());
     }
 
     @Override
@@ -65,11 +65,8 @@ public class ReminderService implements IReminderService {
                 result = genericRepositoryPostgres.searchReminder(keyword, login);
             }            
         } else {
-            result = reminderRepository.findAll();
-        }
-        result = result.stream()
-        .sorted(Comparator.comparing(Reminder::getDate).reversed())
-        .collect(Collectors.toList());
+            result = reminderRepository.findAllByOrderByDateDesc();
+        }        
         return result;
     }
     

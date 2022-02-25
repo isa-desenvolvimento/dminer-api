@@ -117,8 +117,6 @@ public class FavoriteController {
         Favorites favorite = new Favorites();
         favorite.setPost(new Post(dtoReq.getIdPost()));
         favorite.setUser(user.get());
-        // if (post.getFavorites() == null) post.setFavorites(new ArrayList<>());
-        // post.getFavorites().add(favorite);
         favorite = favoritesRepository.save(favorite);
 
         FavoriteDTO dto = new FavoriteDTO();
@@ -127,6 +125,7 @@ public class FavoriteController {
         dto.setLogin(dtoReq.getLogin());
         List<Favorites> favs = favoritesRepository.findAllByPost(post);
         if (favs != null) {
+            dto.getPostDto().setFavorites(new ArrayList<>());
             favs.forEach(fav -> {
                 dto.getPostDto().getFavorites().add(fav.getUser().getLogin());
             });
@@ -229,13 +228,13 @@ public class FavoriteController {
         Optional<User> user = userService.findByLogin(login);
         if (!user.isPresent()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<Favorites> favos = favoritesRepository.findAllByUser(user.get());
         if (favos.isEmpty()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<FavoriteDTO> favosDto = new ArrayList<>();
@@ -296,7 +295,7 @@ public class FavoriteController {
         List<Favorites> favos = favoritesRepository.findAllByPost(new Post(idPost));
         if (favos.isEmpty()) {
             response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<FavoriteDTO> favosDto = new ArrayList<>();

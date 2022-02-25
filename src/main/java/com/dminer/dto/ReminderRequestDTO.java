@@ -18,4 +18,6 @@ public class ReminderRequestDTO {
 	private String reminder; 
 
     private String date;
+
+    private Boolean checked;
 }

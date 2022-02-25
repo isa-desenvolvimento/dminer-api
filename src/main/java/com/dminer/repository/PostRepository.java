@@ -11,8 +11,14 @@ import com.dminer.entities.Post;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-    //login
-    List<Post> findAllByLogin(String login);
+    /**
+     * Busca todos os posts ordenados por data de criação e filtrados por usuário
+     * @param login
+     * @return
+     */
+    List<Post> findAllByLoginOrderByCreateDateDesc(String login);
 
     List<Post> findAllByCreateDate(Timestamp date);
+
+    List<Post> findAllByOrderByCreateDateDesc();
 }

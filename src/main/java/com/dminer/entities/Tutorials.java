@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -52,6 +53,8 @@ public class Tutorials {
     @Column
     private Timestamp date;
 
-    @Column(length = 8000)
+    @Lob
+    @Column()
+    // @Column(length = 9999999)
     private String image;
 }

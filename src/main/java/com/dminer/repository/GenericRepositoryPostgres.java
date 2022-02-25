@@ -41,6 +41,9 @@ public class GenericRepositoryPostgres {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
 
     private static final Logger log = LoggerFactory.getLogger(GenericRepositoryPostgres.class);
 
@@ -298,7 +301,8 @@ public class GenericRepositoryPostgres {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "to_char(e.date, 'yyyy-mm-dd hh:mm:ss'), ' ')) " +
-           " LIKE LOWER('%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%') " +
+           "order by date desc ";
 
         log.info("search = {}", query);
 
@@ -322,15 +326,15 @@ public class GenericRepositoryPostgres {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
-           "e.title, ' '))" +
-           " LIKE LOWER('%" + keyword + "%')";
+           "e.title, ' ')) " +
+           "LIKE LOWER('%" + keyword + "%') " + 
+           "ORDER BY create_date desc" ;
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             e.setCreateDate(rs.getTimestamp("CREATE_DATE"));
@@ -355,14 +359,15 @@ public class GenericRepositoryPostgres {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'";
+    					"   and (user1_.login='" + login + "' or notificati0_.all_users is true) " ;
     					
-    	if (keyword != null) {
-    		query += "and ( " ;
-    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
-    	}
-    	
-    	log.info("search = {}", query);
+        if (keyword != null) {
+            query += "and ( " ;
+            query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')) ";
+        }
+        query += "   order by notificati0_.create_date desc ";
+                        
+    	log.info("searchNotification = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Notification e = new Notification();
@@ -394,6 +399,7 @@ public class GenericRepositoryPostgres {
 					") ";
         }
         query += "    and user1_.login = '" + login + "' " ;
+        query += " order by reminder_1.date desc  ";
         
         log.info("search = {}", query);
 
@@ -506,6 +512,8 @@ public class GenericRepositoryPostgres {
             return e;
         });
     }
+
+
 
 
     public List<Notification> getNotificationsByFullCalendarEvents(Integer idUser) {

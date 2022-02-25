@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -112,7 +114,7 @@ public class TutorialsController {
         if (dto.getCategory() == null) {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
 		} else {
-            if(!categoryRepository.existsByTitle(dto.getCategory())) {
+            if(!categoryRepository.existsByName(dto.getCategory())) {
                 result.addError(new ObjectError("dto", "Categoria não é válida."));
             }
         }
@@ -168,7 +170,7 @@ public class TutorialsController {
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(tutorialsConverter.entityToDTO(doc.get()));
@@ -194,7 +196,7 @@ public class TutorialsController {
 
         if (search2.isEmpty()) {
             response.getErrors().add("Nenhum dado encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
         
         search2.forEach(s -> {
@@ -215,13 +217,13 @@ public class TutorialsController {
         Optional<Tutorials> doc = tutorialsRepository.findById(id);
         if (!doc.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         try {tutorialsRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Tutorial não encontrado");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(tutorialsConverter.entityToDTO(doc.get()));
@@ -230,20 +232,27 @@ public class TutorialsController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Response<List<TutorialsDTO>>> getAll() {
+    public ResponseEntity<Response<List<TutorialsDTO>>> getAll(@RequestHeader("x-access-adminUser") String perfil) {
         
         Response<List<TutorialsDTO>> response = new Response<>();
 
-        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();   
+        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();
+
         if (doc.isEmpty()) {
             response.getErrors().add("Tutorials não encontrados");
-            return ResponseEntity.status(404).body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<TutorialsDTO> eventos = new ArrayList<>();
+
+        if (! perfil.equalsIgnoreCase("1")) {
+            doc = doc.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
+        }
+
         doc.forEach(u -> {
             eventos.add(tutorialsConverter.entityToDTO(u));
         });
+
         response.setData(eventos);
         return ResponseEntity.ok().body(response);
     }

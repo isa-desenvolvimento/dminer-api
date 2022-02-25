@@ -49,7 +49,7 @@ public class CategoryController {
 
 
     private void validateRequestDto(CategoryRequestDTO dto, BindingResult result) {
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
+        if (dto.getName() == null || dto.getName().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -59,7 +59,7 @@ public class CategoryController {
             result.addError(new ObjectError("dto", "Id precisa estar preenchido."));			
 		}
 
-        if (dto.getTitle() == null || dto.getTitle().isEmpty())  {
+        if (dto.getName() == null || dto.getName().isEmpty())  {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));			
 		}
     }
@@ -67,7 +67,7 @@ public class CategoryController {
     @PostMapping()
     public ResponseEntity<Response<CategoryDTO>> create(@Valid @RequestBody CategoryRequestDTO dto, BindingResult result) {        
 
-		log.info("Salvando uma nova categoria {}", dto.getTitle());
+		log.info("Salvando uma nova categoria {}", dto.getName());
 
         Response<CategoryDTO> response = new Response<>();
 
@@ -103,10 +103,10 @@ public class CategoryController {
         if (! optProfile.isPresent()) {
             log.info("Categoria não encontrado: {}", dto);
             response.getErrors().add("Categoria não encontrado");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
-        optProfile.get().setTitle(dto.getTitle());
+        optProfile.get().setName(dto.getName());
 
        Category category = categoryRepository.save(optProfile.get());
         response.setData(categoryConverter.entityToDTO(category));
@@ -121,13 +121,13 @@ public class CategoryController {
         Response<CategoryDTO> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         Optional<Category> category = categoryRepository.findById(id);
         if (!category.isPresent()) {
             response.getErrors().add("Categoria não encontrado");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(categoryConverter.entityToDTO(category.get()));
@@ -135,15 +135,15 @@ public class CategoryController {
     }
 
 
-    @GetMapping(value = "/all")
-    public ResponseEntity<Response<List<CategoryDTO>>> getAll() {
+    @PostMapping(value = "/dropdown")
+    public ResponseEntity<Response<List<CategoryDTO>>> dropdown() {
         
         Response<List<CategoryDTO>> response = new Response<>();
 
         List<Category> category = categoryRepository.findAll();
         if (category == null || category.isEmpty()) {
             response.getErrors().add("Categorias não encontradas");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<CategoryDTO> ps = new ArrayList<>();
@@ -167,7 +167,7 @@ public class CategoryController {
         try {categoryRepository.deleteById(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Categoria não encontrada");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         response.setData(true);

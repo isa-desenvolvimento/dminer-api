@@ -300,7 +300,8 @@ public class GenericRepositorySqlServer {
            "e.creator, ' ', " +
            "e.warning, ' ', " +
            "convert(varchar(100), e.date, 120))) " +
-           "LIKE LOWER('%" +keyword+ "%')";
+           "LIKE LOWER('%" +keyword+ "%') " +
+           "order by date desc ";
 
         log.info("search = {}", query);
 
@@ -324,15 +325,15 @@ public class GenericRepositorySqlServer {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
-           "e.title, ' '))" +
-           "LIKE LOWER('%" + keyword + "%')";
+           "e.title, ' ')) " +
+           "LIKE LOWER('%" + keyword + "%') " +
+           "ORDER BY create_date desc" ;
         log.info("search = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
             e.setId(rs.getInt("ID"));
             e.setContent(rs.getString("CONTENT"));
-            //e.setLikes(rs.getInt("LIKES"));
             e.setLogin(rs.getString("LOGIN"));
             e.setTitle(rs.getString("TITLE"));
             PostType type = PostType.valueOf(rs.getString("TYPE"));
@@ -384,14 +385,16 @@ public class GenericRepositorySqlServer {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and user1_.login='" + login + "'";
+    					"   and (user1_.login='" + login + "' or notificati0_.all_users = 1) " ;
+                        
     					
     	if (keyword != null) {
     		query += "and ( " ;
-    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')); ";
+    		query += "    lower(notificati0_.notification) like lower('%" + keyword + "%')) ";
     	}
-    	
-    	log.info("search = {}", query);
+    	query += "   order by notificati0_.create_date desc ";
+
+    	log.info("searchNotification = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Notification e = new Notification();
@@ -423,6 +426,7 @@ public class GenericRepositorySqlServer {
 					") ";
         }
         query += "    and user1_.login = '" + login + "' " ;
+        query += " order by reminder_1.date desc  ";
         
         log.info("search = {}", query);
 

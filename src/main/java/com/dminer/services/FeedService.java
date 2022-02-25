@@ -1,9 +1,7 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +37,7 @@ public class FeedService {
         }
         posts.forEach(u -> {
         	response.add(postToDto(u));
-        });
+        });        
         return response;
     }
 
@@ -91,7 +89,6 @@ public class FeedService {
     private PostDTO postToDto(Post post) {
     	PostDTO dto = new PostDTO();
 		dto.setUser(new UserReductDTO(post.getLogin()));
-		//dto.setLikes(post.getLikes());
 		if (post.getType() != null)
 			dto.setType(post.getType().name());
 		dto.setId(post.getId());		
@@ -108,7 +105,6 @@ public class FeedService {
 		return dto;
 	}
 
-
     public List<PostReductDTO> search(String keyword, String login, boolean isProd) {
         List<Post> result = new ArrayList<>();
         if (keyword != null) {
@@ -116,14 +112,11 @@ public class FeedService {
                 result = genericRepositorySqlServer.searchPost(keyword);
             } else {
                 result = genericRepositoryPostgres.searchPost(keyword);
-            }          
+            }
         } else {
             result = postService.findAll();
         }
-        result = result.stream()
-            .sorted(Comparator.comparing(Post::getCreateDate).reversed())
-            .collect(Collectors.toList());
-        
+                
         List<PostReductDTO> reduct = new ArrayList<>();
         for (Post post : result) {
             reduct.add(postToReductDto(post));

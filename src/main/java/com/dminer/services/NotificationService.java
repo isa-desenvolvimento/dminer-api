@@ -1,7 +1,6 @@
 package com.dminer.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -69,28 +68,12 @@ public class NotificationService implements INotificationService {
                 result = genericRepositoryPostgres.searchNotification(keyword, login);
             }          
         } else {
-            result = notificationRepository.findAll();
-        }
-
-        log.info("Buscando as notificações relacionadas ao calendário... Usuário: {}", login);
-        Optional<User> user = userService.findByLogin(login);
-
-        if (user.isPresent()) {
-            List<Notification> resultCalendar = new ArrayList<>();
-            if (isProd) {
-                resultCalendar = genericRepositorySqlServer.getNotificationsByFullCalendarEvents(user.get().getId());
-            } else {
-                resultCalendar = genericRepositoryPostgres.getNotificationsByFullCalendarEvents(user.get().getId());
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
+                result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
+                System.out.println("Notificações: " + result.size());
             }
-            if (!resultCalendar.isEmpty()) {
-                log.info("Encontrados {} notificações criadas pelo calendário", resultCalendar.size());
-                result.addAll(resultCalendar);
-            } 
         }
-
-        result = result.stream()
-            .sorted(Comparator.comparing(Notification::getCreateDate).reversed())
-            .collect(Collectors.toList());
         return result;
     }
 }

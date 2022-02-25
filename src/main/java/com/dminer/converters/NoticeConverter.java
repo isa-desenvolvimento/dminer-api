@@ -58,7 +58,7 @@ public class NoticeConverter {
                 c.getUsers().add(user.get());
         });
         c.setWarning(avisoDto.getWarning());
-        c.setCreator(avisoDto.getCreator());        
+        c.setCreator(avisoDto.getCreator());
         c.setPriority(avisoDto.getPriority());
         c.setActive(true);
         return c;

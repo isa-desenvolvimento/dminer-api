@@ -123,7 +123,7 @@ public class UserController {
     }
 
 
-    @PostMapping(value = "/all")
+    @GetMapping(value = "/all")
     @Transactional(timeout = 999999)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
@@ -189,15 +189,21 @@ public class UserController {
         }
     
         // List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
-        UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
+        // UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
 
-        if (restModel.isEmptyUsers()) {
-            response.addError("Nenhum usuario encontrado");             
-            return ResponseEntity.badRequest().body(response);
-        }
+        // if (restModel.isEmptyUsers()) {
+        //     response.addError("Nenhum usuario encontrado");             
+        //     return ResponseEntity.badRequest().body(response);
+        // }
         
-        response.setData(restModel.toUserReductDtoList()); 
+        // response.setData(restModel.toUserReductDtoList()); 
     
+        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
+        if (carregarUsuariosApiReduct.isEmpty()) {
+            response.addError("Nenhum usuario encontrado");             
+            return ResponseEntity.ok().body(response);
+        }
+        response.setData(carregarUsuariosApiReduct); 
         return ResponseEntity.ok().body(response);
     }
     
@@ -330,7 +336,7 @@ public class UserController {
         return ResponseEntity.ok().body(response);        
     }
     
-
+    // perguntar se ainda vai usar este endpoint
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
     public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String keyword) {
@@ -358,6 +364,36 @@ public class UserController {
         response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
+
+
+    @GetMapping(value = "/search/{login}/{keyword}")
+    @Transactional(timeout = 90000)
+    public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
+        
+        Response<List<UserDTO>> response = new Response<>();
+        if (keyword == null || keyword.isBlank()) {
+            response.addError("Informe um termo");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        if (token.naoPreenchido()) { 
+            response.addError("Token precisa ser informado");    		
+    		return ResponseEntity.badRequest().body(response);
+        }
+
+        List<UserDTO> userList = userService.search(keyword, token.getToken());
+        userList.forEach(u -> {
+        	String avatarPath = userService.getAvatarDir(u.getLogin());            
+            if (avatarPath != null) {
+            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
+            	u.setAvatar(avatarBase64);
+            }            
+        });       
+        
+        response.setData(userList);
+        return ResponseEntity.ok().body(response);
+    }
+
 
     @GetMapping("/inserirDadosNoBancoComApiExterna")
     public ResponseEntity<Boolean> inserirDadosNoBancoComApiExterna() {        

@@ -17,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dminer.dto.PostExternalApiDTO;
 import com.dminer.entities.Post;
+import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.PostRepository;
 import com.dminer.services.interfaces.IPostService;
 
@@ -26,10 +28,13 @@ public class PostService implements IPostService {
 	@Autowired
 	private PostRepository postRepository;	
 
-	// @Autowired
-	// private FavoritesRepository favoritesRepository;
+	@Autowired
+	private GenericRepositoryPostgres genericRepositoryPostgres;	
 
-	
+	@Autowired
+	private GenericRepositorySqlServer genericRepositorySqlServer;
+
+
 	private static final Logger log = LoggerFactory.getLogger(PostService.class);
 	
 	
@@ -43,10 +48,6 @@ public class PostService implements IPostService {
 	public Optional<Post> findById(int id) {
 		log.info("Buscando uma publicação pelo id {}", id);
 		Optional<Post> p = postRepository.findById(id);
-		// if (p.isPresent()) {
-		// 	List<Favorites> favs = carregarFavoritos(p.get());
-		// 	p.get().setFavorites(favs);
-		// }
 		return p;
 	}
 
@@ -58,35 +59,28 @@ public class PostService implements IPostService {
 
 	public List<Post> findAll() {
 		log.info("Buscando todas as publicações ");
-		List<Post> p = postRepository.findAll();
-		// if (p != null && !p.isEmpty()) {
-		// 	p.forEach(post -> {
-		// 		List<Favorites> favs = carregarFavoritos(post);
-		// 		post.setFavorites(favs);
-		// 	});
-		// }
+		List<Post> p = postRepository.findAllByOrderByCreateDateDesc();
+		log.info("{} publicações encontradas", p.size());
 		return p;
 	}
 	
 	public List<Post> findAllByLogin(String login) {
 		log.info("Buscando todas as publicações de {}", login);
-		List<Post> p = postRepository.findAllByLogin(login);
-		// if (p != null && !p.isEmpty()) {
-		// 	p.forEach(post -> {
-		// 		List<Favorites> favs = carregarFavoritos(post);
-		// 		post.setFavorites(favs);
-		// 	});
-		// }
+		List<Post> p = postRepository.findAllByLoginOrderByCreateDateDesc(login);
 		return p;
 	}
 
-	// public List<Favorites> carregarFavoritos(Post post) {
-	// 	List<Favorites> favs = favoritesRepository.findAllByPost(post);
-	// 	if (favs.isEmpty()) {
-	// 		return new ArrayList<>();
-	// 	}
-	// 	return favs;
-	// }
+	public List<Post> search(String keyword, boolean isProd) {
+		log.info("Search em posts {}", keyword);
+		if (keyword == null) {
+			return findAll();
+		}
+
+		if (isProd) {
+			return genericRepositorySqlServer.searchPost(keyword);
+		}		
+		return genericRepositoryPostgres.searchPost(keyword);
+	}
 
 	public HttpStatus salvarApiExterna(Post entity) {
 		String url = "https://www.dminer.com.br/blog/wp-json/wp/v2/posts";
@@ -105,18 +99,4 @@ public class PostService implements IPostService {
 		return out.getStatusCode();
 	}
 
-	// public String getToken() {
-    // 	String uri = "https://www.dminerweb.com.br:8553/api/auth/login";
-    // 	RestTemplate restTemplate = new RestTemplate();
-    // 	HttpHeaders headers = new HttpHeaders();    	
-    // 	headers.setContentType(MediaType.APPLICATION_JSON);
-    // 	JSONObject personJsonObject = new JSONObject();
-    //     personJsonObject.put("userName", "matheus.ribeiro1");
-    //     personJsonObject.put("userPassword", "#Matheus97");
-    //     HttpEntity<String> request = new HttpEntity<String>(personJsonObject.toString(), headers);
-        
-    //     String personResultAsJsonStr = restTemplate.postForObject(uri, request, String.class);
-    //     JSONObject retorno = new JSONObject(personResultAsJsonStr);
-    //     return (String) retorno.get("baererAuthentication");
-    // }
 }
