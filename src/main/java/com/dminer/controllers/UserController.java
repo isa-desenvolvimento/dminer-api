@@ -82,8 +82,13 @@ public class UserController {
         return null;
     }
 
-    private String getBannerString(String login) {
-        return userService.getBannerString(login);        
+    private User criarNovoUser(String login) {
+        User user = new User();
+        user.setLogin(login);
+        if (userService.existsByLogin(login) == false) {
+            return userService.persist(user);
+        }
+        return user;
     }
 
     @GetMapping(value = "/{login}")
@@ -103,6 +108,8 @@ public class UserController {
 
         UserDTO userDto;
 
+        criarNovoUser(login);
+
         Optional<User> opt = userService.findByLogin(login);
         if (opt.isPresent()) {
             String avatar = userService.getAvatarBase64ByLogin(login);
@@ -110,7 +117,7 @@ public class UserController {
             userDto.setAvatar(avatar);
             response.setData(userDto);
             return ResponseEntity.ok().body(response);
-        }
+        } 
 
         userDto = userService.buscarUsuarioApi(login, token.getToken());
         
@@ -141,7 +148,6 @@ public class UserController {
         }
         
         if (users.hasError()) {
-            System.out.println("\n\nDeu pau 1 \n");
         	users.getOutput().getMessages().forEach(e -> {
         		response.addError(e);
         	});
@@ -149,12 +155,10 @@ public class UserController {
         }
         
         if (users.getOutput().getResult().getUsuarios().isEmpty()) {
-            System.out.println("\n\nDeu pau 2 \n");
             response.addError("Usuários não encontrados");
         }
         
         if (response.containErrors()) {
-            System.out.println("\n\nDeu pau 3 \n");
         	return ResponseEntity.badRequest().body(response);        	
         }
         
@@ -203,6 +207,11 @@ public class UserController {
             response.addError("Nenhum usuario encontrado");             
             return ResponseEntity.ok().body(response);
         }
+
+        carregarUsuariosApiReduct.forEach(user -> {
+            criarNovoUser(user.getLogin());
+        });
+
         response.setData(carregarUsuariosApiReduct); 
         return ResponseEntity.ok().body(response);
     }
