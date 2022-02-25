@@ -47,12 +47,12 @@ public class ReminderService implements IReminderService {
     @Override
     public Optional<List<Reminder>> findAll() {
         log.info("Buscando todos os lembretes");
-		return Optional.ofNullable(reminderRepository.findAllByUserOrderByDateDesc());
+		return Optional.ofNullable(reminderRepository.findAllByOrderByDateDesc());
     }
 
     @Override
     public void delete(int id) {
-        log.info("Excluindo um lembrete pelo id {}", id);
+        log.info("Excluindo uma lembrete pelo id {}", id);
 		reminderRepository.deleteById(id);        
     }
 
@@ -65,7 +65,10 @@ public class ReminderService implements IReminderService {
                 result = genericRepositoryPostgres.searchReminder(keyword, login);
             }            
         } else {
-            result = reminderRepository.findAllByUserOrderByDateDesc();
+            result = reminderRepository.findAllByOrderByDateDesc();
+            result = result.stream().filter(f -> 
+                f.getUser().getLogin().equalsIgnoreCase(login)
+            ).collect(Collectors.toList());
         }        
         return result;
     }
