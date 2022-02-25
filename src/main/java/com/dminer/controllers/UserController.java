@@ -313,6 +313,35 @@ public class UserController {
     }
 
 
+    @PutMapping("/persist")
+    public ResponseEntity<Response<UserDTO>> persist( @RequestBody UserRequestDTO dto,  BindingResult result ) {
+
+        log.info("Alterando/salvando um usuário {}", dto);
+
+        Response<UserDTO> response = new Response<>();
+
+        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
+            response.addError("Login precisa ser informado");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        User user = null;
+        Optional<User> optUser = userService.findByLogin(dto.getLogin());
+        if (!optUser.isPresent()) {
+            user = new User();
+            user.setLogin(dto.getLogin());
+        } else {
+            user = optUser.get();
+        }
+
+        log.info("Alterando/salvando um usuário {}", dto);
+
+        user = userService.persist(user);
+        response.setData(userConverter.entityToDto(user));
+        return ResponseEntity.ok().body(response);        
+    }
+
+
     @PutMapping("/atualizar-avatar/{login}")
     public ResponseEntity<Response<String>> atualizarAvatar( @PathVariable String login ) {
 
