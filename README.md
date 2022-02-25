@@ -13,7 +13,6 @@ Antes de começar, você vai precisar ter instalado em sua máquina as seguintes
 [Git](https://git-scm.com/), 
 [Maven 3.6.3](http://charlesmms.azurewebsites.net/2017/09/04/instalando-maven-no-windows-10/), 
 [Java 15](https://mauriciogeneroso.medium.com/configurando-java-4-como-configurar-as-vari%C3%A1veis-java-home-path-e-classpath-no-windows-46040950638f),
-[Docker](https://www.docker.com/products/docker-desktop),
 [VSCode](https://code.visualstudio.com/) .
 
 ### Instale as seguintes extensões do vscode
@@ -61,5 +60,4 @@ git git@github.com:isa-desenvolvimento/dminer-api.git
 
 - [Java](https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html)
 - [Maven](https://maven.apache.org/docs/3.6.3/release-notes.html) 
-- [Docker](https://www.docker.com/products/docker-desktop)
 - [Spring Boot](https://spring.io/projects/spring-boot)
