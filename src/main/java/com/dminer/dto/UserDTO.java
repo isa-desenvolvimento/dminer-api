@@ -32,6 +32,14 @@ public class UserDTO {
     private String permission;
     
     
+    public UserReductDTO toReductDto() {
+        return UserReductDTO.builder()
+        .login(login)
+        .userName(userName)
+        .avatar(avatar)
+        .build();
+    }
+
     public String toJson() {
         ObjectMapper mapper = new ObjectMapper();
         try {

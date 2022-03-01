@@ -26,12 +26,14 @@ import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.UserRepository;
+import com.dminer.rest.model.users.UserAvatar;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.interfaces.IUserService;
-import com.dminer.utils.UtilFilesStorage;
+import com.dminer.utils.UtilDataHora;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 @Service
 public class UserService implements IUserService {
@@ -65,24 +67,84 @@ public class UserService implements IUserService {
         log.info("Excluindo um usuário pelo id {}", id);
 		userRepository.deleteById(id);
     }
-    
+    	
 
-	public List<UserDTO> search(String termo, String token) {
+	public List<UserDTO> getAllUsersDto(UserRestModel<Usuario> usuarios, String token, boolean avatar, boolean banner) {
+
+		log.info("get all users dto, {} registros", usuarios.getUsers().size());
+
+		if (usuarios == null || usuarios.hasError()) {
+			log.info("Erro ao buscar usuários da api externa");
+			return null;
+		}
+        
+        List<UserDTO> userList = new ArrayList<>();
+        usuarios.getUsers().parallelStream().forEach(usuario -> {
+            UserDTO userDto = usuario.toUserDTO();
+        	userList.add(userDto);
+        });
+
+		// se avatar == true, busca os avatares enquanto trata dos banners
+		UserRestModel<UserAvatar> usuariosAvatar = null;
+		if (avatar) {			
+			usuariosAvatar = getAllAvatarCustomer(token);
+			log.info("Buscando avatares: {} registros encontrados", usuariosAvatar.getUsers().size());
+		}
+
+		if (banner) {
+			userList.parallelStream().forEach(usuario -> {
+				String bannerTemp = getBannerByLogin(usuario.getLogin());
+				usuario.setBanner(bannerTemp);
+			});
+		}
+
+		if (avatar && usuariosAvatar != null) {
+			UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
+			usuariosAvatar = null;			
+			userList.parallelStream().forEach(usuario -> {
+				usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
+			});
+		}
+		return userList;
+	}
+
+
+	public List<UserDTO> getAllUsersDto(String token, boolean avatar, boolean banner) {		
+		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+		return getAllUsersDto(usuarios, token, avatar, banner);
+	}
+	
+
+	public List<UserDTO> search(String termo, String token, boolean avatar) {
 
 		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
 
-		UserRestModel userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 
 		// se vier null ou conter erros, retorna lista vazia
 		if (userRestModel == null || userRestModel.hasError()) {
 			return pesquisa;
 		}
 
+		// se avatar == true, busca os avatares enquanto trata dos banners
+		UserRestModel<UserAvatar> usuariosAvatar = null;
+		if (avatar) {
+			usuariosAvatar = getAllAvatarCustomer(token);
+		}
+
 		// se pesquisa for por null, retorna todos os usuário
 		if (termo == null) {
-			userRestModel.getUsers().forEach(m -> {
-				pesquisa.add(m.toUserDTO());
+			userRestModel.getUsers().forEach(user -> {
+				pesquisa.add(user.toUserDTO());
 			});
+
+			if (avatar && usuariosAvatar != null) {
+				UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
+				usuariosAvatar = null;			
+				pesquisa.parallelStream().forEach(usuario -> {
+					usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
+				});
+			}
 			return pesquisa;
 		}
 
@@ -101,35 +163,44 @@ public class UserService implements IUserService {
 		}
 
 		// se não encontrar nada na pesquisa, retorna todos os usuários
-		if (pesquisa.isEmpty()) {
-			userRestModel.getOutput().getResult().getUsuarios().forEach(m -> {
-				pesquisa.add(m.toUserDTO());
+		if (! pesquisa.isEmpty()) {
+			userRestModel.getOutput().getResult().getUsuarios().forEach(user -> {
+				pesquisa.add(user.toUserDTO());
 			});
-			return pesquisa;
+
+			if (avatar && usuariosAvatar != null) {
+				UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
+				usuariosAvatar = null;			
+				pesquisa.parallelStream().forEach(usuario -> {
+					usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
+				});
+			}
 		}
 
 		return pesquisa;
 	}
 
 
-	public List<UserDTO> search(String termo, List<UserDTO> users) {
+	/**
+	 * Método usado a principio na api search de aniversariantes
+	 * @param usuarios
+	 * @param termo
+	 * @param token
+	 * @return
+	 */
+	public List<UserDTO> search(List<UserDTO> usuarios, String termo) {
 
 		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
 
-		// se vier null ou conter erros, retorna lista vazia
-		if (users == null || users.isEmpty()) {
-			return pesquisa;
-		}
-
 		// se pesquisa for por null, retorna todos os usuário
-		if (termo == null) {			
-			return users;
+		if (termo == null || usuarios == null) {			
+			return pesquisa;
 		}
 
 		// passa o termo de busca pra lowercase e sai procurando alguma
 		// ocorrencia em algum dos atributos do objeto
 		termo = termo.toLowerCase();
-		for (UserDTO u : users) {
+		for (UserDTO u : usuarios) {
 			String concat = (
 				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
 				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
@@ -139,69 +210,58 @@ public class UserService implements IUserService {
 				pesquisa.add(u);
 			}
 		}
-
 		return pesquisa;
 	}
 
-    
+	
     public boolean existsByLogin(String login) {
         log.info("Verificando se usuário existe pelo login no repositório, {}", login);
+		if (login == null) return false;
         return userRepository.findByLogin(login) != null;
     }
 
+
     public boolean existsByLoginAndUserName(String login, String userName) {
         log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
+		if (login == null || userName == null) return false;
         return userRepository.findByLoginAndUserName(login, userName) != null;
     }
-    
+
+    /**
+	 * Busca um usuário pelo login no banco de dados
+	 * @param login
+	 * @return
+	 */
     public Optional<User> findByLogin(String login) {
         log.info("Recuperando usuário pelo login no repositório, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
-	public void atualizarDadosNoBancoComApiExterna(UserRestModel usuarios) {				
-		for (Usuario usuario : usuarios.getUsers()) {
-			User u = new User();
-			if (!existsByLoginAndUserName(usuario.getLogin(), usuario.getUserName())) {
-				if (existsByLogin(usuario.getLogin())) {
-					u = findByLogin(usuario.getLogin()).get();					
-				}
-				u.setUserName(usuario.getUserName());
-				u.setLogin(usuario.getLogin());
-				persist(u);
-			}
-		}
-	}
 
-	public void inserirDadosNoBancoComApiExterna() {
-		String token = TokenService.getToken();
-		UserRestModel usuarios = carregarUsuariosApi(token);
-		for (Usuario usuario : usuarios.getUsers()) {
-			User u = usuario.toUser();
-			u = persist(u);			
-		}
-	}
-
-
-	public Optional<User> findByLoginApi(String login, List<Usuario> users) {
+	/**
+	 * Busca um usuário pelo login na api dminer
+	 * @param login
+	 * @param users
+	 * @return
+	 */
+	public Optional<User> findByLoginApi(String token, String login) {
 		
 		log.info("Recuperando usuário pelo login da api, {}", login);
 		
-		if (existsByLogin(login)) {
-			return findByLogin(login);
+		UserRestModel<Usuario> users = carregarUsuariosApi(token);
+		if (users == null || users.hasError()) {
+			return Optional.empty();
 		}
 
-        for (Usuario u : users) {
-        	if (u.getLogin().equals(login)) {
-				User user = persist(new User(u.getLogin(), u.getUserName()));
-				return Optional.ofNullable(user);
-        	}			
-		}
+		Optional<Usuario> findFirst = users.getUsers().parallelStream().filter(user -> 
+			user.getLogin().equals(login)
+		).findFirst();
+		
+		if (findFirst.isPresent()) return Optional.of(findFirst.get().toUser());
         return Optional.empty();
 	}
 
-    
-    public UserRestModel carregarUsuariosApi(String token) {
+    public UserRestModel<Usuario> carregarUsuariosApi(String token) {
     	
 		if (token == null) {
 			return null;
@@ -225,7 +285,7 @@ public class UserService implements IUserService {
 			}
 			scanner.close();
 			
-			UserRestModel userRestModel = new UserRestModel();
+			UserRestModel<Usuario> userRestModel = new UserRestModel<Usuario>();
 			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
 				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
 				return userRestModel;
@@ -233,9 +293,7 @@ public class UserService implements IUserService {
 			
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			try {
-				// System.out.println(response.toString());
-				userRestModel = gson.fromJson(response, UserRestModel.class);
-				return userRestModel;
+				return gson.fromJson(response, new TypeToken<UserRestModel<Usuario>>(){}.getType());
 			} catch (IllegalStateException e) {
 				return null;
 			}
@@ -249,17 +307,17 @@ public class UserService implements IUserService {
     }
     
 
-    public List<UserReductDTO> carregarUsuariosApiReduct(String token, boolean carregarAvatar) {
+    public List<UserReductDTO> carregarUsuariosApiReductDto(String token, boolean avatar) {
         log.info("Recuperando todos os usuários reduzidos na api externa");
         
 		if (token == null) {
 			return null;
 		}
 
-		UserRestModel userRestModel = carregarUsuariosApi(token);
+		
+		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
-        // UserRestModel model = carregarUsuariosApi(token);
 
         if (userRestModel == null || userRestModel.hasError()) {
 			log.info("Nenhum usuário carregado da api");
@@ -275,21 +333,36 @@ public class UserService implements IUserService {
         	return usuarios;
         }
         
-        userRestModel.getUsers().forEach(u -> {
-        	UserReductDTO dto = u.toUserReductDTO();
-			if (carregarAvatar) {
-				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
-			}
-        	usuarios.add(dto);
-        });
+		UserRestModel<UserAvatar> usuariosAvatar = null;
+		if (avatar) {
+			usuariosAvatar = getAllAvatarCustomer(token);
+		}
+
+		if (usuariosAvatar != null) {
+			UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
+			usuariosAvatar = null;
+
+			userRestModel.getUsers().parallelStream().forEach(user -> {
+				UserReductDTO dto = user.toUserReductDTO();
+				dto.setAvatar(getAvatarByUsername(usuariosAvatarTemp, user.getUserName()));
+				usuarios.add(dto);
+			});
+		}
 
     	return usuarios;
     }
     
+
+	/**
+	 * Busca o usuário na api, incluindo o avatar
+	 * @param login
+	 * @param token
+	 * @return
+	 */
     public UserDTO buscarUsuarioApi(String login, String token) {
         log.info("Recuperando todos os usuário na api externa");
         
-        UserRestModel userRestModel = carregarUsuariosApi(token);
+        UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 		
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
@@ -300,9 +373,9 @@ public class UserService implements IUserService {
 			if (login.equals(u.getLogin())) {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());
-				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+				dto.setAvatar(getAvatarEndpoint(u.getLogin()));
 				dto.setArea(u.getArea());
-				dto.setBanner(getBannerString(login));
+				dto.setBanner(getBannerByLogin(login));
 				dto.setBirthDate(u.getBirthDate());
 				dto.setEmail(u.getEmail());
 				dto.setLinkedinUrl(u.getLinkedinUrl());				
@@ -311,14 +384,11 @@ public class UserService implements IUserService {
 		return dto;
     }
 
-	// public UserReductDTO buscarUsuarioApiReduct(String login) {
-	// 	return buscarUsuarioApiReduct(login, TokenService.getToken());
-	// }
 
 	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
-		UserRestModel userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 		if (userRestModel == null) {
 			log.info("Carregando usuário diretamente da API");
 			userRestModel = carregarUsuariosApi(token);
@@ -331,115 +401,191 @@ public class UserService implements IUserService {
     }
 
 
-	public UserReductDTO buscarUsuarioApiReduct(UserRestModel userRestModel, String login) {
+	public UserReductDTO buscarUsuarioApiReduct(UserRestModel<Usuario> userRestModel, String login) {
 		UserReductDTO dto = new UserReductDTO();
 		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
 			if (login.equals(u.getLogin())) {
 				dto.setLogin(u.getLogin());
 				dto.setUserName(u.getUserName());
-				dto.setAvatar(getAvatarBase64ByLogin(u.getLogin()));
+				dto.setAvatar(getAvatarEndpoint(u.getLogin()));
 				return dto;
 			}			
 		}
 		return null;
 	}
 
-	public String getAvatarBase64(String pathFile) {
-    	try {
-    		byte[] image = UtilFilesStorage.loadImage(pathFile);
-    		if (image != null) {
-    			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(image));
-    			// log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
-    			return base64AsString;
-    		}
-    	} catch (IOException e) {}
-    	return null;
-    }
-    
-    
-	private String montarCaminhoAvatarDiretorio(String login) {
-		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
-		String name = login.replace('.', '-') + "-resized.png";
-		return root + UtilFilesStorage.separator + name;
-	}
-
-
-    /**
-     * Verifica se o avatar existe no diretório "avatares", caso não existe, recupera na api
-     * https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=?
-     * salva no diretório e retorna uma string contendo a url do arquivo
-     * @param login
-     * @return String
-     */
-    public String getAvatarDir(String login) {
-		String imagemRedimensionadaPath = montarCaminhoAvatarDiretorio(login);
-		
-		if (UtilFilesStorage.fileExists(imagemRedimensionadaPath)) {
-			// System.out.println("Arquivo já existe!! -> " + imagemRedimensionadaPath);
-			return imagemRedimensionadaPath;
-		}		
-		return gravarAvatarDiretorio(login);
-    }
-    
-
-	public String gravarAvatarDiretorio(String login) {
-		try {
-    		String root = UtilFilesStorage.getProjectPath() + UtilFilesStorage.separator + "avatares";
-			String caminho = montarCaminhoAvatarDiretorio(login);
-
-    		UtilFilesStorage.createDirectory(root);
-    		BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
-    		if (image != null) {
-    			UtilFilesStorage.saveImage(caminho, image);
-    			//ImageResizer.resize(caminho, caminho, 0.5);
-				return caminho;
-    		}
-    	} catch (IOException e) {}
-		return null;
-	}
-
-    public String getAvatarEndpointEGravaDiretorio(String login) {
+       
+	/**
+	 * Recupera o avatar de um único usuário no endpoint dminer
+	 * @param login
+	 * @return string contendo avatar em base 64
+	 */
+    public String getAvatarEndpoint(String login) {
 		try {
 			BufferedImage image = ImageIO.read(new URL("https://www.dminerweb.com.br:8553/api/auth/avatar/?login_user=" + login));
     		if (image != null) {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ImageIO.write(image, "png", baos);
 				byte[] bytes = baos.toByteArray();
-    			String base64AsString = "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(bytes));
-    			// log.info("Imagem Base64: {}", base64AsString.substring(0, 80) + "..." + base64AsString.substring(base64AsString.length()-20, base64AsString.length()));
-    			return base64AsString;
+    			return "data:image/png;base64," + new String(org.bouncycastle.util.encoders.Base64.encode(bytes));
     		}
     	} catch (IOException e) {}
     	return null;
 	}
 
 
-    public String getAvatarBase64ByLogin(String login) {
-		String dir = this.getAvatarDir(login);
-		if (dir != null) {
-			return this.getAvatarBase64(dir);
-		}
-    	return null;
-    }
-    
-    
-     
-    /**
-     * Recupera o banner do usuário no banco de dados
-     * @param login
-     * @return byte[]
-     */
-    public byte[] getBanner(String login) {
-		User user = userRepository.findByLogin(login);
-		if (user == null || user.getBanner() == null) 
-			return null;
-		return user.getBanner().getBytes();
-    }
-
-	public String getBannerString(String login) {
+	private String getBannerByLogin(String login) {
 		User user = userRepository.findByLogin(login);
 		if (user == null || user.getBanner() == null) 
 			return null;
 		return user.getBanner();
     }
+
+
+	public UserRestModel<UserAvatar> getAllAvatarCustomer(String token) {
+
+		if (token == null) {
+			return null;
+		}
+
+		log.info("Recuperando todos os avatares na api externa");
+		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
+
+    	String uri = "https://www.dminerweb.com.br:8553/api/auth/all_avatar_customer";		
+		try {
+			URL url = new URL(uri);
+			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+			connection.setRequestProperty("BAERER_AUTHENTICATION", token);
+			InputStream stream = connection.getInputStream();
+			Scanner scanner = new Scanner(stream);
+			
+			String response = "";
+			while (scanner.hasNext()) {
+				response += scanner.next();
+			}
+			scanner.close();
+			
+			UserRestModel<UserAvatar> userRestModel = new UserRestModel<UserAvatar>();
+			if (retornoTokenInvalidoApi(response)) {
+				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
+				return userRestModel;
+			}
+			
+			if (retornoInvalidoApi(response)) {
+				userRestModel.getOutput().setMessages(Arrays.asList("Verifique se você tem autorização adequada", "Entre em contato com o suporte", token));
+				return userRestModel;
+			}
+
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			try {
+				userRestModel = gson.fromJson(response, new TypeToken<UserRestModel<UserAvatar>>(){}.getType());
+				return userRestModel;
+			} catch (IllegalStateException e) {
+				return null;
+			}
+			
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+        return null;
+	}
+
+	/**
+	 * Busca o avatar de um usuário pelo username
+	 * @param usuarios
+	 * @return avatar em base 64
+	 */
+	private String getAvatarByUsername(UserRestModel<UserAvatar> usuarios, String userName) {
+		UserAvatar userAvatar = usuarios.getUsers().stream().filter(usuario -> 
+			usuario.getUserName().equals(userName)
+		).findFirst().orElse(null);
+		if (userAvatar == null || userAvatar.isCommonAvatar()) {
+			return "data:image/png;base64," + usuarios.getOutput().getResult().getCommonAvatar();
+		}
+		return "data:image/png;base64," + userAvatar.getAvatar();
+	}
+
+	public List<UserDTO> getAniversariantes(String token, boolean buscarAvatar) {		
+		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+
+        if (usuarios == null || usuarios.hasError()) {
+			log.info("Erro ao buscar aniversariantes");
+			return null;
+		}
+        
+        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
+        usuarios.getOutput().getResult().getUsuarios().forEach(usuario -> {        	
+        	if (usuario.getBirthDate() != null && UtilDataHora.isAniversariante(usuario.getBirthDate())) {
+        		aniversariantes.add(usuario.toUserDTO());
+        	}
+        });
+        
+		if (buscarAvatar) {
+			log.info("Recuperando os avatares de cada aniversariante");
+			UserRestModel<UserAvatar> usuariosAvatar = getAllAvatarCustomer(token);
+			if (usuariosAvatar != null) {
+				aniversariantes.forEach(aniversariante -> {
+					String avatar = getAvatarByUsername(usuariosAvatar, aniversariante.getUserName());
+					aniversariante.setAvatar(avatar);
+				});
+			}
+		}
+		return aniversariantes;
+	}
+
+	public void atualizarDadosNoBancoComApiExterna(UserRestModel<Usuario> usuarios) {				
+		for (Usuario usuario : usuarios.getUsers()) {
+			User u = new User();
+			if (!existsByLoginAndUserName(usuario.getLogin(), usuario.getUserName())) {
+				if (existsByLogin(usuario.getLogin())) {
+					u = findByLogin(usuario.getLogin()).get();					
+				}
+				u.setUserName(usuario.getUserName());
+				u.setLogin(usuario.getLogin());
+				persist(u);
+			}
+		}
+	}
+
+	public void inserirDadosNoBancoComApiExterna() {
+		String token = TokenService.getToken();
+		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+		for (Usuario usuario : usuarios.getUsers()) {
+			User u = usuario.toUser();
+			u = persist(u);			
+		}
+	}
+
+	private boolean retornoInvalidoApi(String response) {
+
+		response = response.toLowerCase();
+		return (
+			response.contains("expirou") || 
+			response.contains("não fez login") || 
+			response.contains("fezologinnosistema") || 
+			response.contains("hum...") ||
+			response.contains("usuário inativo") ||
+			response.contains("não autorizada") || 
+			response.contains("ocorreu um problema") ||
+			response.contains("não conseguiu acesso") ||
+			response.contains("permissão de uso nesse dia") ||
+			response.contains("acessar o sistema nesse horário") ||
+			response.contains("não pude encontrar esse usuário") ||
+			response.contains("não é um usuário interno da dminer")
+		);		
+	}
+
+	private boolean retornoTokenInvalidoApi(String response) {
+
+		response = response.toLowerCase();
+		return (
+			response.contains("expirou") || 
+			response.contains("não fez login") || 
+			response.contains("fezologinnosistema") || 
+			response.contains("hum...")
+		);		
+	}
+
 }

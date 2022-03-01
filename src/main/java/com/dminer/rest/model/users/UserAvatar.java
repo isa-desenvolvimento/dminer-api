@@ -1,9 +1,7 @@
 package com.dminer.rest.model.users;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,9 +11,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
-public class Output<T> {
-	private List<String> messages = new ArrayList<>();
-	
-	private Result<T> result = new Result<T>();
+public class UserAvatar {
+    private String userName;
+    private String avatar;
+    private boolean commonAvatar;
 }

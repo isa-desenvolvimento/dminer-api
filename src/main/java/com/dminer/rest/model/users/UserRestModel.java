@@ -17,8 +17,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class UserRestModel {
-    private Output output = new Output();
+public class UserRestModel<T> {
+    private Output<T> output = new Output<T>();
     
     public boolean hasError() {
     	if (output == null)
@@ -30,14 +30,14 @@ public class UserRestModel {
         return output.getResult().getUsuarios() == null && output.getResult().getUsuarios().isEmpty();
     }
 
-    public List<Usuario> getUsers() {
+    public List<T> getUsers() {
         if (isEmptyUsers()) return new ArrayList<>();
         return output.getResult().getUsuarios();
     }
 
     public List<UserReductDTO> toUserReductDtoList() {
         List<UserReductDTO> reducts = new ArrayList<>();
-        List<Usuario> users = getUsers();
+        List<Usuario> users = (List<Usuario>) getUsers();
         for (Usuario user : users) {
             reducts.add(user.toUserReductDTO());
         }

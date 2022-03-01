@@ -14,6 +14,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Result {
-	private List<Usuario> usuarios = new ArrayList<>();
+public class Result<T> {
+	private String commonAvatar;
+	private List<T> usuarios = new ArrayList<>();
 }

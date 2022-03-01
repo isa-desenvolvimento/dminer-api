@@ -177,7 +177,7 @@ public class FavoriteController {
             }
             dtoPost.setComments(comments);
 
-            String avatar = userService.getAvatarBase64ByLogin(dtoPost.getUser().getLogin());
+            String avatar = userService.getAvatarEndpoint(dtoPost.getUser().getLogin());
             dtoPost.getUser().setAvatar(avatar);
             dtoPost.setReacts(getReacts(new Post(dtoPost.getId())));
 
@@ -211,67 +211,6 @@ public class FavoriteController {
 		}
 		return dto;
 	} 
-    
-
-    // @GetMapping("/all-by-user/{login}")
-    public ResponseEntity<Response<List<FavoriteDTO>>> allByUser2(@PathVariable String login) {
-        
-        log.info("Buscando todos por usuário {}", login);
-
-        Response<List<FavoriteDTO>> response = new Response<>();
-
-        if (login == null || login.isBlank()) {
-            response.setErrors(Arrays.asList("Informe o login do usuário"));
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<User> user = userService.findByLogin(login);
-        if (!user.isPresent()) {
-            response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.ok().body(response);
-        }
-
-        List<Favorites> favos = favoritesRepository.findAllByUser(user.get());
-        if (favos.isEmpty()) {
-            response.setErrors(Arrays.asList("Nenhum favorito encontrado"));
-            return ResponseEntity.ok().body(response);
-        }
-
-        List<FavoriteDTO> favosDto = new ArrayList<>();
-        favos.forEach(f -> {
-            FavoriteDTO dto = new FavoriteDTO();
-            dto.setId(f.getId());
-            PostDTO postDto = f.getPost().convertDto();
-
-            String avatar = userService.getAvatarBase64ByLogin(postDto.getUser().getLogin());
-            postDto.getUser().setAvatar(avatar);
-            
-            Optional<List<Comment>> comments = commentService.findByPost(f.getPost());
-			if (comments.isPresent() && !comments.get().isEmpty()) {
-				comments.get().forEach(comment -> {
-                    CommentDTO commDto = comment.convertDto();
-                    String avatarComm = userService.getAvatarBase64ByLogin(commDto.getUser().getLogin());
-                    commDto.getUser().setAvatar(avatarComm);
-                    postDto.getComments().add(commDto);
-			 	});
-			}
-
-            dto.setPostDto(postDto);
-            dto.setLogin(f.getUser().getLogin());
-
-            List<Favorites> favosPost = favoritesRepository.findAllByPost(f.getPost());
-            if (!favosPost.isEmpty()) {
-                favosPost.forEach(favpost -> {
-                    if (dto.getPostDto().getFavorites() == null) dto.getPostDto().setFavorites(new ArrayList<>());
-                    dto.getPostDto().getFavorites().add(favpost.getUser().getLogin());
-                });
-            }
-            favosDto.add(dto);
-        });
-
-        response.setData(favosDto);
-        return ResponseEntity.ok(response);
-    }
 
 
     @GetMapping("/all-by-post/{idPost}")

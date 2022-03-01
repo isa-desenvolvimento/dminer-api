@@ -1,17 +1,8 @@
 package com.dminer.controllers;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +11,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,23 +21,18 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.dminer.components.TokenService;
 import com.dminer.converters.UserConverter;
-import com.dminer.dto.DocumentDTO;
 import com.dminer.dto.PermissionUserDTO;
 import com.dminer.dto.Token;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.dto.UserRequestDTO;
-import com.dminer.entities.Document;
 import com.dminer.entities.User;
-import com.dminer.images.ImageResizer;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.UserService;
-import com.dminer.utils.UtilDataHora;
 
 import lombok.RequiredArgsConstructor;
 
@@ -73,23 +58,25 @@ public class UserController {
     private Environment env;
 
 
-    private String getBannerBase64(String login) {
-        byte[] banner = userService.getBanner(login);
-        if (banner != null) {
-
-        	return Base64.getEncoder().encodeToString(banner);        	
-        }
-        return null;
-    }
-
-    private User criarNovoUser(String login) {
+    private User criarNovoUser(String login, String userName) {
+        log.info("criando novo user {}, {}", login, userName);
+        
         User user = new User();
         user.setLogin(login);
-        if (userService.existsByLogin(login) == false) {
+        user.setUserName(userName);
+        if (userService.existsByLoginAndUserName(login, userName)) {
+            user.setLogin(login);
+            user.setUserName(userName);
+            return user;
+        } 
+        if (userService.existsByLogin(login)) {
+            user = userService.findByLogin(login).get();
+            user.setUserName(userName);
             return userService.persist(user);
-        }
+        }        
         return user;
     }
+
 
     @GetMapping(value = "/{login}")
     public ResponseEntity<Response<UserDTO>> get(@RequestHeader("x-access-token") Token token, @PathVariable("login") String login) {
@@ -106,26 +93,26 @@ public class UserController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-        UserDTO userDto;
-
-        criarNovoUser(login);
+        UserDTO userDto = userService.buscarUsuarioApi(login, token.getToken());
+        if (userDto == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        criarNovoUser(login, userDto.getUserName());
 
         Optional<User> opt = userService.findByLogin(login);
         if (opt.isPresent()) {
-            String avatar = userService.getAvatarBase64ByLogin(login);
+            String avatar = userService.getAvatarEndpoint(login);
             userDto = userConverter.entityToDto(opt.get());
             userDto.setAvatar(avatar);
             response.setData(userDto);
             return ResponseEntity.ok().body(response);
         } 
-
-        userDto = userService.buscarUsuarioApi(login, token.getToken());
-        
-        if (userDto == null) {
-        	return ResponseEntity.notFound().build();
-        }
                 
         response.setData(userDto);
+        User userTemp = userService.findByLogin(userDto.getLogin()).get();
+        userTemp.setUserName(userDto.getUserName());
+        userService.persist(userTemp);
         return ResponseEntity.ok().body(response);
     }
 
@@ -140,7 +127,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
                 
-        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
+        UserRestModel<Usuario> users = userService.carregarUsuariosApi(token.getToken());
 
         if (users == null) {
         	response.addError("Token inválido ou expirado!");
@@ -162,26 +149,18 @@ public class UserController {
         	return ResponseEntity.badRequest().body(response);        	
         }
         
-        System.out.println("\n\nRecuperou os usuarios!!! \n");
-        List<UserDTO> userList = new ArrayList<>();
-        users.getUsers().forEach(u -> {
-            UserDTO userDto = u.toUserDTO();
-            // String avatarBase64 = userService.getAvatarEndpointEGravaDiretorio(u.getLogin());        	
-            // if (avatarBase64 != null) {
-            //     userDto.setAvatar(avatarBase64);
-            // }
-            userDto.setAvatar(userService.getAvatarBase64ByLogin(u.getLogin()));
-            String banner = userService.getBannerString(u.getLogin());
-            userDto.setBanner(banner);
-            System.out.println(userDto.toJson());
-        	userList.add(userDto);
-        });
-        
-        response.setData(userList);
+        List<UserDTO> usersDto = userService.getAllUsersDto(users, token.getToken(), true, true);
+
+        response.setData(usersDto);
         return ResponseEntity.ok().body(response);
     }
     
     
+    /**
+     * Requisitar uma lista de usuários com os seguintes atributos: {login, username}
+     * @param token
+     * @return Lista de usuários sem o avatar
+     */
     @PostMapping(value = "/dropdown")
     @Transactional(timeout = 99999)
     public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
@@ -191,25 +170,15 @@ public class UserController {
         	response.addError("Token precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
-    
-        // List<UserReductDTO> usuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
-        // UserRestModel restModel = userService.carregarUsuariosApi(token.getToken());
 
-        // if (restModel.isEmptyUsers()) {
-        //     response.addError("Nenhum usuario encontrado");             
-        //     return ResponseEntity.badRequest().body(response);
-        // }
-        
-        // response.setData(restModel.toUserReductDtoList()); 
-    
-        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReduct(token.getToken(), false);
+        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReductDto(token.getToken(), false);
         if (carregarUsuariosApiReduct.isEmpty()) {
             response.addError("Nenhum usuario encontrado");             
             return ResponseEntity.ok().body(response);
         }
 
         carregarUsuariosApiReduct.forEach(user -> {
-            criarNovoUser(user.getLogin());
+            criarNovoUser(user.getLogin(), user.getUserName());
         });
 
         response.setData(carregarUsuariosApiReduct); 
@@ -259,38 +228,19 @@ public class UserController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-        UserRestModel users = userService.carregarUsuariosApi(token.getToken());
+        List<UserDTO> users = userService.getAniversariantes(token.getToken(), true);
 
         if (users == null) {
-    		response.addError("Nenhum usuario encontrado");    		
+    		response.addError("Não foi possível buscar os aniversariantes! Verifique se o token é válido.");
     		return ResponseEntity.badRequest().body(response);
     	}
         
-        if (users.hasError()) {
-        	users.getOutput().getMessages().forEach(u -> {
-    			response.addError(u);
-    		});
-    		return ResponseEntity.badRequest().body(response);
-        }
-        
-        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        users.getOutput().getResult().getUsuarios().forEach(u -> {        	
-        	if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
-        		aniversariantes.add(u.toUserDTO());
-        	}
-        });
-        
-        if (aniversariantes.isEmpty()) {
-            response.addError("Nenhum aniversariante encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
+        if (users.isEmpty()) {
+    		response.addError("Nenhum usuario encontrado");
+    		return ResponseEntity.ok().body(response);
+    	}
 
-        aniversariantes.forEach(a -> {
-            String avatar = userService.getAvatarBase64ByLogin(a.getLogin());
-            a.setAvatar(avatar);
-        });
-
-        response.setData(aniversariantes);
+        response.setData(users);
         return ResponseEntity.ok().body(response);
     }
 
@@ -322,58 +272,6 @@ public class UserController {
     }
 
 
-    @PutMapping("/persist")
-    public ResponseEntity<Response<UserDTO>> persist( @RequestBody UserRequestDTO dto,  BindingResult result ) {
-
-        log.info("Alterando/salvando um usuário {}", dto);
-
-        Response<UserDTO> response = new Response<>();
-
-        if (dto.getLogin() == null || dto.getLogin().isBlank()) {
-            response.addError("Login precisa ser informado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        User user = null;
-        Optional<User> optUser = userService.findByLogin(dto.getLogin());
-        if (!optUser.isPresent()) {
-            user = new User();
-            user.setLogin(dto.getLogin());
-        } else {
-            user = optUser.get();
-        }
-
-        log.info("Alterando/salvando um usuário {}", dto);
-
-        user = userService.persist(user);
-        response.setData(userConverter.entityToDto(user));
-        return ResponseEntity.ok().body(response);        
-    }
-
-
-    @PutMapping("/atualizar-avatar/{login}")
-    public ResponseEntity<Response<String>> atualizarAvatar( @PathVariable String login ) {
-
-        log.info("Alterando avatar do usuário {}", login);
-
-        Response<String> response = new Response<>();
-
-        if (login == null || login.isBlank()) {
-            response.addError("Login precisa ser informado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Optional<User> optUser = userService.findByLogin(login);
-        if (!optUser.isPresent()) {
-            response.addError("Nenhum usuário encontrado");
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        String caminhoArquivo = userService.gravarAvatarDiretorio(login);
-        response.setData(caminhoArquivo);
-        return ResponseEntity.ok().body(response);        
-    }
-    
     // perguntar se ainda vai usar este endpoint
     @GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 10000)
@@ -390,14 +288,7 @@ public class UserController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-        List<UserDTO> userList = userService.search(keyword, token.getToken());
-        userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());            
-            if (avatarPath != null) {
-            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
-            	u.setAvatar(avatarBase64);
-            }            
-        });       
+        List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
         
         response.setData(userList);
         return ResponseEntity.ok().body(response);
@@ -419,25 +310,12 @@ public class UserController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-        List<UserDTO> userList = userService.search(keyword, token.getToken());
-        userList.forEach(u -> {
-        	String avatarPath = userService.getAvatarDir(u.getLogin());            
-            if (avatarPath != null) {
-            	String avatarBase64 = userService.getAvatarBase64(avatarPath);
-            	u.setAvatar(avatarBase64);
-            }            
-        });       
+        List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
         
         response.setData(userList);
         return ResponseEntity.ok().body(response);
     }
 
-
-    @GetMapping("/inserirDadosNoBancoComApiExterna")
-    public ResponseEntity<Boolean> inserirDadosNoBancoComApiExterna() {        
-        userService.inserirDadosNoBancoComApiExterna();
-        return ResponseEntity.ok().build();
-    }
 
     public boolean isProd() {
         log.info("ambiente: " + env.getActiveProfiles()[0]);

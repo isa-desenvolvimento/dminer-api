@@ -7,8 +7,6 @@ import java.util.List;
 import com.dminer.converters.NoticeConverter;
 import com.dminer.converters.NotificationConverter;
 import com.dminer.converters.ReminderConverter;
-import com.dminer.converters.SurveyConverter;
-import com.dminer.converters.UserConverter;
 import com.dminer.dto.PostReductDTO;
 import com.dminer.dto.SearchDTO;
 import com.dminer.dto.SurveyDTO;
@@ -17,17 +15,8 @@ import com.dminer.dto.UserDTO;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
-import com.dminer.entities.Post;
 import com.dminer.entities.Reminder;
-import com.dminer.entities.Survey;
-import com.dminer.entities.SurveyResponses;
-import com.dminer.entities.User;
-import com.dminer.repository.GenericRepositoryPostgres;
-import com.dminer.repository.GenericRepositorySqlServer;
-import com.dminer.repository.SurveyResponseRepository;
 import com.dminer.response.Response;
-import com.dminer.rest.model.users.UserRestModel;
-import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.EventsService;
 import com.dminer.services.FeedService;
 import com.dminer.services.NoticeService;
@@ -50,8 +39,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/search")
 @CrossOrigin(origins = "*")
@@ -72,15 +59,6 @@ public class SearchController {
     private UserService userService;
     
     @Autowired
-    private GenericRepositoryPostgres genericRepositoryPostgres;
-
-    @Autowired
-    private GenericRepositorySqlServer genericRepositorySqlServer;
-
-    @Autowired
-    private UserConverter userConverter;
-
-    @Autowired
     private NotificationConverter notificationConverter;
     
     @Autowired
@@ -93,22 +71,11 @@ public class SearchController {
     private SurveyService surveyService;
 
     @Autowired
-    private SurveyConverter surveyConverter;
-
-    @Autowired
     private NoticeService noticeService;
 
     @Autowired
     private FeedService feedService;
 
-    @Autowired
-    private SurveyResponseRepository surveyResponseRepository;
-    
-	// private UserRestModel userRestModel;
-    
-    // @Autowired
-	// private TokenService tokenService;
-    
     @Autowired
     private Environment env;
 
@@ -134,30 +101,10 @@ public class SearchController {
     		return response;
         }
 
-        
-    	UserRestModel userRestModel = userService.carregarUsuariosApi(token);
-
-        if (userRestModel == null) {
-    		response.getErrors().add("Nenhum usuario encontrado");    		
-    		return response;
-    	}
-        
-        if (userRestModel.hasError()) {
-        	userRestModel.getOutput().getMessages().forEach(u -> {
-    			response.getErrors().add(u);
-    		});
-        	return response;
-        }
-
-        List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
-        for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
-            if (u.getBirthDate() != null && UtilDataHora.isAniversariante(u.getBirthDate())) {
-                aniversariantes.add(u.toUserDTO());
-            }            
-        }
+        List<UserDTO> aniversariantes = userService.getAniversariantes(token, true);
         
         if (keyword != null) {
-            aniversariantes = userService.search(keyword, aniversariantes);
+            aniversariantes = userService.search(aniversariantes, keyword);
             if (aniversariantes.isEmpty()) {
                 response.getErrors().add("Nenhum aniversariante encontrado");
                 return response;
@@ -185,10 +132,8 @@ public class SearchController {
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         // usuarios
-        List<UserDTO> searchUsers = userService.search(keyword, token.getToken());
+        List<UserDTO> searchUsers = userService.search(keyword, token.getToken(), true);
         searchUsers.parallelStream().forEach(u -> {        	
-        	String encodedString = userService.getAvatarBase64ByLogin(u.getLogin());
-        	u.setAvatar(encodedString);
             searchDTO.getUsersList().add(u);
         });
         
@@ -203,8 +148,6 @@ public class SearchController {
 
         if (aniversariantes.getData() != null && !aniversariantes.getData().isEmpty()) {
             aniversariantes.getData().parallelStream().forEach(ani -> {
-                String encodedString = userService.getAvatarBase64ByLogin(ani.getLogin());
-                ani.setAvatar(encodedString);
                 searchDTO.getBirthdayList().add(ani);
             });
         }
