@@ -278,15 +278,17 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
-        if (keyword == null || keyword.isBlank()) {
-            response.addError("Informe um termo");
-            return ResponseEntity.badRequest().body(response);
-        }
+        // if (keyword == null || keyword.isBlank()) {
+        //     response.addError("Informe um termo");
+        //     return ResponseEntity.badRequest().body(response);
+        // }
         
         if (token.naoPreenchido()) { 
             response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
+
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
         
@@ -300,16 +302,18 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
-        if (keyword == null || keyword.isBlank()) {
-            response.addError("Informe um termo");
-            return ResponseEntity.badRequest().body(response);
-        }
+        // if (keyword == null || keyword.isBlank()) {
+        //     response.addError("Informe um termo");
+        //     return ResponseEntity.badRequest().body(response);
+        // }
         
         if (token.naoPreenchido()) { 
             response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
         }
 
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
+        
         List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
         
         response.setData(userList);

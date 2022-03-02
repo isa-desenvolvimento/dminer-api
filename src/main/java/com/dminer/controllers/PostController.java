@@ -585,6 +585,8 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
+		if (keyword.equalsIgnoreCase("null")) keyword = null;
+		
 		List<Post> posts = postService.search(keyword, isProd());
 		List<PostDTO> postsDto = new ArrayList<>();
         

@@ -179,6 +179,8 @@ public class BenefitsController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
+        
         List<Benefits> entities = benefitsService.search(keyword);
 
         if (entities == null || entities.isEmpty()) {

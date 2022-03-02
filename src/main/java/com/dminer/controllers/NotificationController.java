@@ -205,6 +205,9 @@ public class NotificationController {
         Response<List<NotificationDTO>> response = new Response<>();
 
         log.info("Search notification");
+
+        if (keyword.equalsIgnoreCase("null")) keyword = null;
+        
         List<Notification> search = notificationService.search(keyword, login, isProd());
         log.info("Search notification {} resultados", search.size());
         

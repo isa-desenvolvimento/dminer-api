@@ -203,6 +203,8 @@ public class TutorialsController {
 
         List<Tutorials> search2 = new ArrayList<>();
 
+        if (search.equalsIgnoreCase("null")) search = null;
+
         if (isProd()) {
             search2 = tutorialsRepositoryPostgres.searchTutorial(search);            
         } else {
