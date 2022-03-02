@@ -136,7 +136,7 @@ public class PostController {
 		}
 
 		post = postService.persist(post);
-		PostDTO dtoPost = postToDto(post, null, true, false, null);
+		PostDTO dtoPost = postToDto(post, null, true, true, null);
 		
 		response.setData(dtoPost);	
 
