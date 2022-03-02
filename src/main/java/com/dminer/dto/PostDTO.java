@@ -32,7 +32,8 @@ public class PostDTO {
     private Integer id;
 
     @NotNull
-    private UserReductDTO user;
+    @Builder.Default 
+    private UserReductDTO user = new UserReductDTO();
 
     @Builder.Default 
     private Map<String, List<String>> reacts = new HashMap<>();

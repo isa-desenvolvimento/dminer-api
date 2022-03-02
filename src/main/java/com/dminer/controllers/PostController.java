@@ -123,12 +123,6 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 		
-		Optional<User> userOpt = userService.findByLogin(dto.getLogin());
-		UserDTO userDto = null;
-		if (! userOpt.isPresent()) {
-			userDto = userService.buscarUsuarioApi(dto.getLogin(), token.getToken());
-			userService.persist(new User(userDto.getLogin(), userDto.getUserName()));
-		} 
 
 		Post post = new Post();
 		post.setAnexo(dto.getAnexo());
@@ -142,12 +136,8 @@ public class PostController {
 		}
 
 		post = postService.persist(post);
-		PostDTO dtoPost = postToDto(post, null, false, false, null);
+		PostDTO dtoPost = postToDto(post, null, true, false, null);
 		
-		UserReductDTO userReduct = userDto.toReductDto();
-		
-		dtoPost.setUser(userReduct);
-		dtoPost.setReacts(getReacts(post));
 		response.setData(dtoPost);	
 
 		if (post.getType().equals(PostType.EXTERNAL)) {
@@ -299,7 +289,16 @@ public class PostController {
 
 
 	/**
-	 * todo -> Refatorar
+	 * Se usuário é true, trazer o usuário do post no formato UserReductDto.
+	 * Se a coleção de avatares vier preenchida, fazer a busca dos avatares tanto de post quanto de comentários, 
+	 * pela coleção já carregada, se não, buscar o avatar um a um consultando a api, tanto para o post quanto para os comentários
+	 * 
+	 * @param post
+	 * @param comments
+	 * @param usuario
+	 * @param reacts
+	 * @param allAvatarCustomer
+	 * @return
 	 */
 	private PostDTO postToDto(Post post, List<Comment> comments, boolean usuario, boolean reacts, UserRestModel<UserAvatar> allAvatarCustomer) {
 		PostDTO postDto = new PostDTO();
@@ -392,7 +391,8 @@ public class PostController {
 	}
 	
 	
-	@GetMapping("/all")
+	// @GetMapping("/all")
+	@GetMapping()
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
