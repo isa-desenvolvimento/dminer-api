@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.dminer.components.TokenService;
@@ -261,6 +262,7 @@ public class UserService implements IUserService {
         return Optional.empty();
 	}
 
+	@Async
     public UserRestModel<Usuario> carregarUsuariosApi(String token) {
     	
 		if (token == null) {
@@ -287,6 +289,7 @@ public class UserService implements IUserService {
 			
 			UserRestModel<Usuario> userRestModel = new UserRestModel<Usuario>();
 			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
+				log.info("Algo errado ao recuperar os usuários da api: {}", response);
 				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
 				return userRestModel;
 			}
@@ -313,14 +316,13 @@ public class UserService implements IUserService {
 		if (token == null) {
 			return null;
 		}
-
 		
 		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
 
         if (userRestModel == null || userRestModel.hasError()) {
-			log.info("Nenhum usuário carregado da api");
+			log.info("Nenhum usuário carregado da api em: carregarUsuariosApiReductDto");
 			if (userRestModel.hasError()) {
 				userRestModel.getOutput().getMessages().forEach(message -> {
 					log.info("Messagem: {}", message);
@@ -442,6 +444,7 @@ public class UserService implements IUserService {
     }
 
 
+	@Async
 	public UserRestModel<UserAvatar> getAllAvatarCustomer(String token) {
 
 		if (token == null) {
@@ -467,11 +470,13 @@ public class UserService implements IUserService {
 			
 			UserRestModel<UserAvatar> userRestModel = new UserRestModel<UserAvatar>();
 			if (retornoTokenInvalidoApi(response)) {
+				log.info("retornoTokenInvalidoApi: {}", response);
 				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
 				return userRestModel;
 			}
 			
 			if (retornoInvalidoApi(response)) {
+				log.info("retornoInvalidoApi: {}", response);
 				userRestModel.getOutput().setMessages(Arrays.asList("Verifique se você tem autorização adequada", "Entre em contato com o suporte", token));
 				return userRestModel;
 			}

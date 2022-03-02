@@ -74,7 +74,7 @@ public class UserController {
             user.setUserName(userName);
             return userService.persist(user);
         }        
-        return user;
+        return userService.persist(user);
     }
 
 
@@ -173,7 +173,7 @@ public class UserController {
 
         List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReductDto(token.getToken(), false);
         if (carregarUsuariosApiReduct.isEmpty()) {
-            response.addError("Nenhum usuario encontrado");             
+            response.addError("Nenhum usuario encontrado em getDropDown");             
             return ResponseEntity.ok().body(response);
         }
 
