@@ -340,13 +340,18 @@ public class UserService implements IUserService {
 			usuariosAvatar = getAllAvatarCustomer(token);
 		}
 
-		if (usuariosAvatar != null) {
+		if (usuariosAvatar != null && avatar) {
 			UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
 			usuariosAvatar = null;
 
 			userRestModel.getUsers().parallelStream().forEach(user -> {
 				UserReductDTO dto = user.toUserReductDTO();
 				dto.setAvatar(getAvatarByUsername(usuariosAvatarTemp, user.getUserName()));
+				usuarios.add(dto);
+			});
+		} else {
+			userRestModel.getUsers().parallelStream().forEach(user -> {
+				UserReductDTO dto = user.toUserReductDTO();
 				usuarios.add(dto);
 			});
 		}
