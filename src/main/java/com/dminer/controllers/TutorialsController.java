@@ -107,7 +107,7 @@ public class TutorialsController {
             result.addError(new ObjectError("dto", "Conteúdo precisa estar preenchido."));
         }
 
-        if (dto.getId() == null) {
+        if (dto.getPermission() == null) {
             dto.setPermission("");
         }
 
@@ -121,6 +121,11 @@ public class TutorialsController {
 
         if (dto.getDate() == null || dto.getTitle().isEmpty()) {
             result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss"));
+        }
+
+        Optional<Tutorials> tutorialTemp = tutorialsRepository.findById(dto.getId());
+        if (!tutorialTemp.isPresent()) {
+            result.addError(new ObjectError("dto", "Tutorial não encontrado na base de dados"));
         }
        
     }
@@ -146,14 +151,24 @@ public class TutorialsController {
     @PutMapping()
     public ResponseEntity<Response<TutorialsDTO>> put( @Valid @RequestBody TutorialsDTO dto, BindingResult result) {
 
-        log.info("Alterando um categoria {}", dto);
+        log.info("Alterando um tutorial {}", dto);
 
         Response<TutorialsDTO> response = new Response<>();
 
         validateDto(dto, result);
-        
-        Tutorials benefits = tutorialsRepository.save(tutorialsConverter.dtoToEntity(dto));
-        response.setData(tutorialsConverter.entityToDTO(benefits));
+        if (result.hasErrors()) {
+            log.info("Erro validando dto: {}", dto);
+            response.addErrors(result);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Optional<Tutorials> tutorialTemp = tutorialsRepository.findById(dto.getId());
+
+        // Tutorials tutorial = tutorialTemp.get();
+        Tutorials tutorial = tutorialsConverter.dtoToEntity(dto);
+
+        tutorial = tutorialsRepository.save(tutorial);
+        response.setData(dto);
         return ResponseEntity.ok().body(response);
     }
 
@@ -167,13 +182,13 @@ public class TutorialsController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Tutorials> doc = tutorialsRepository.findById(id);
-        if (!doc.isPresent()) {
+        Optional<Tutorials> tutorial = tutorialsRepository.findById(id);
+        if (!tutorial.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
             return ResponseEntity.ok().body(response);
         }
 
-        response.setData(tutorialsConverter.entityToDTO(doc.get()));
+        response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
         return ResponseEntity.ok().body(response);
     }
 
@@ -214,8 +229,8 @@ public class TutorialsController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        Optional<Tutorials> doc = tutorialsRepository.findById(id);
-        if (!doc.isPresent()) {
+        Optional<Tutorials> tutorial = tutorialsRepository.findById(id);
+        if (!tutorial.isPresent()) {
             response.getErrors().add("Tutorial não encontrado");
             return ResponseEntity.ok().body(response);
         }
@@ -226,7 +241,7 @@ public class TutorialsController {
             return ResponseEntity.ok().body(response);
         }
 
-        response.setData(tutorialsConverter.entityToDTO(doc.get()));
+        response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
         return ResponseEntity.ok().body(response);
     }
 
@@ -236,9 +251,9 @@ public class TutorialsController {
         
         Response<List<TutorialsDTO>> response = new Response<>();
 
-        List<Tutorials> doc = tutorialsRepository.findAllByOrderByDateDesc();
+        List<Tutorials> tutorials = tutorialsRepository.findAllByOrderByDateDesc();
 
-        if (doc.isEmpty()) {
+        if (tutorials.isEmpty()) {
             response.getErrors().add("Tutorials não encontrados");
             return ResponseEntity.ok().body(response);
         }
@@ -246,10 +261,10 @@ public class TutorialsController {
         List<TutorialsDTO> eventos = new ArrayList<>();
 
         if (! perfil.equalsIgnoreCase("1")) {
-            doc = doc.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
+            tutorials = tutorials.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
         }
 
-        doc.forEach(u -> {
+        tutorials.forEach(u -> {
             eventos.add(tutorialsConverter.entityToDTO(u));
         });
 

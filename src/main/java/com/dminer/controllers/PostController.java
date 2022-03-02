@@ -392,7 +392,7 @@ public class PostController {
 	}
 	
 	
-	@GetMapping()
+	@GetMapping("/all")
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
