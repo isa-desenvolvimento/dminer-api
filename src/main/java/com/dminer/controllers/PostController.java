@@ -53,8 +53,10 @@ import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.ReactRepository;
 import com.dminer.repository.ReactUserRepository;
 import com.dminer.response.Response;
+import com.dminer.rest.DminerWebService;
 import com.dminer.rest.model.users.UserAvatar;
 import com.dminer.rest.model.users.UserRestModel;
+import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.CommentService;
 import com.dminer.services.FileDatabaseService;
 import com.dminer.services.FileStorageService;
@@ -108,6 +110,9 @@ public class PostController {
 	@Autowired
 	private NotificationService notificationService;
 
+	// @Autowired
+	// private DminerWebService dminerWebService;
+
 	@Autowired
     private Environment env;
 
@@ -136,7 +141,7 @@ public class PostController {
 		}
 
 		post = postService.persist(post);
-		PostDTO dtoPost = postToDto(post, null, true, true, null);
+		PostDTO dtoPost = postToDto(post, null);
 		
 		response.setData(dtoPost);	
 
@@ -246,7 +251,7 @@ public class PostController {
 		}
 
 		Optional<List<Comment>> comment = commentService.findByPost(post.get());
-		PostDTO dto = postToDto(post.get(), comment.get(), true, true, null);
+		PostDTO dto = postToDto(post.get(), comment.get());
 		String avatarPost = getAvatarByPost(post.get());
 		dto.getUser().setAvatar(avatarPost);
 
@@ -289,10 +294,6 @@ public class PostController {
 
 
 	/**
-	 * Se usuário é true, trazer o usuário do post no formato UserReductDto.
-	 * Se a coleção de avatares vier preenchida, fazer a busca dos avatares tanto de post quanto de comentários, 
-	 * pela coleção já carregada, se não, buscar o avatar um a um consultando a api, tanto para o post quanto para os comentários
-	 * 
 	 * @param post
 	 * @param comments
 	 * @param usuario
@@ -300,7 +301,7 @@ public class PostController {
 	 * @param allAvatarCustomer
 	 * @return
 	 */
-	private PostDTO postToDto(Post post, List<Comment> comments, boolean usuario, boolean reacts, UserRestModel<UserAvatar> allAvatarCustomer) {
+	private PostDTO postToDto(Post post, List<Comment> comments) {
 		PostDTO postDto = new PostDTO();
 		
 		postDto.setType(post.getType().toString());
@@ -315,51 +316,44 @@ public class PostController {
 			postDto.getFavorites().add(f.getUser().getLogin());
 		});
 
-		Optional<User> user = userService.findByLogin(post.getLogin());
-
-		/**
-		 * Se usuário é true, trazer o usuário do post no formato UserReductDto
-		 */
-		if (usuario) {
-			if (user.isPresent()) {
-				postDto.setUser(user.get().convertReductDto());
-			}
-		}
-
-		/**
-		 * Se a coleção de avatares vier preenchida, fazer a busca dos avatares tanto de post quanto de comentários, pela coleção já carregada
-		 */
-		if (allAvatarCustomer != null) {
-			String avatarPost = getAvatarByUsername(allAvatarCustomer, user.get().getUserName());
-			postDto.getUser().setAvatar(avatarPost);
-
-			if (comments != null && !comments.isEmpty()) {
-				comments.forEach(comment -> {
-					postDto.getComments().add(commentConverter.entityToDto(comment, allAvatarCustomer));
-				});			
-			}
-
-		} else {
+		Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(post.getLogin());
+		if (usuario != null) {
 			
-			/**
-			 * Se não, buscar o avatar um a um, tanto para o post quanto para os comentários
-			 */
-			String avatarPost = getAvatarByPost(post);
-			postDto.getUser().setAvatar(avatarPost);
-
-			if (comments != null && !comments.isEmpty()) {
-				comments.forEach(comment -> {
-					postDto.getComments().add(commentConverter.entityToDto(comment));
-				});			
-			}			
+			postDto.setUser(usuario.toUserReductDTO(true));
 		}
-
-		if (reacts) {
-			postDto.setReacts(getReacts(post));
+		
+		if (comments != null && !comments.isEmpty()) {
+			comments.forEach(comment -> {
+				postDto.getComments().add(commentConverter.entityToDto(comment));
+			});			
 		}
+	
+		postDto.setReacts(getReacts(post));
+		
 		return postDto;
 	}
 	
+
+	/**
+	 * @param post
+	 * @param comments
+	 * @param usuario
+	 * @param reacts
+	 * @param allAvatarCustomer
+	 * @return
+	 */
+	private PostDTO postToDto(Post post) {
+		PostDTO postDto = new PostDTO();
+		
+		postDto.setType(post.getType().toString());
+		postDto.setId(post.getId());
+		postDto.setContent(post.getContent());
+		postDto.setTitle(post.getTitle());
+		postDto.setAnexo(post.getAnexo());
+		postDto.setDateCreated(UtilDataHora.dateToFullStringUTC(post.getCreateDate()));
+		
+		return postDto;
+	}
 
 	
 	@GetMapping("/all/{login}")
@@ -380,19 +374,17 @@ public class PostController {
 			return ResponseEntity.ok().body(response);
 		}
 		
-		UserRestModel<UserAvatar> allAvatarCustomer = userService.getAllAvatarCustomer(token.getToken());
-
 		for (Post post : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), true, true, allAvatarCustomer);
+			PostDTO dto = postToDto(post, comment.get());
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	
-	@GetMapping("/all")
-	// @GetMapping()
+	// @GetMapping("/all")
+	@GetMapping()
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();
@@ -410,11 +402,11 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-		UserRestModel<UserAvatar> allAvatarCustomer = userService.getAllAvatarCustomer(token.getToken());
+		// UserRestModel<UserAvatar> allAvatarCustomer = userService.getAllAvatarCustomer(token.getToken());
 
 		for (Post post : posts) {			
 			Optional<List<Comment>> comment = commentService.findByPost(post);
-			PostDTO dto = postToDto(post, comment.get(), true, true, allAvatarCustomer);
+			PostDTO dto = postToDto(post, comment.get());
 			response.getData().add(dto);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -459,7 +451,7 @@ public class PostController {
         
         List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 		
-        PostDTO dto = postToDto(optPost.get(), comments, true, true, null);
+        PostDTO dto = postToDto(optPost.get(), comments);
 		dto.setReacts(getReacts(optPost.get()));
 
 		
@@ -517,10 +509,8 @@ public class PostController {
         List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
 		List<PostDTO> postsDto = new ArrayList<>();
         
-		UserRestModel<UserAvatar> allAvatarCustomer = userService.getAllAvatarCustomer(token.getToken());
-
 		for (Post p : posts) {
-			PostDTO dto = postToDto(p, null, false, true, allAvatarCustomer);
+			PostDTO dto = postToDto(p, null);
 			postsDto.add(dto);
 		}
 
@@ -567,7 +557,7 @@ public class PostController {
 
 		//post.getReacts().add(like);
 		post = postService.persist(post);
-		PostDTO dto = postToDto(post, null, true, true, null);
+		PostDTO dto = postToDto(post, null);
 		response.setData(dto);
 
 		return ResponseEntity.ok().body(response);
@@ -586,15 +576,13 @@ public class PostController {
         }
 
 		if (keyword.equalsIgnoreCase("null")) keyword = null;
-		
+
 		List<Post> posts = postService.search(keyword, isProd());
 		List<PostDTO> postsDto = new ArrayList<>();
         
-		UserRestModel<UserAvatar> allAvatarCustomer = userService.getAllAvatarCustomer(token.getToken());
-
 		for (Post p : posts) {
 			Optional<List<Comment>> comment = commentService.findByPost(p);
-			PostDTO dto = postToDto(p, comment.get(), true, true, allAvatarCustomer);
+			PostDTO dto = postToDto(p, comment.get());
 			postsDto.add(dto);
 		}
 
@@ -602,17 +590,6 @@ public class PostController {
         return ResponseEntity.ok().body(response);
 	}
 
-
-	private String getAvatarByUsername(UserRestModel<UserAvatar> usuarios, String userName) {
-		UserAvatar userAvatar = usuarios.getUsers().stream().filter(usuario -> 
-			usuario.getUserName().equals(userName)
-		).findFirst().orElse(null);
-		if (userAvatar == null || userAvatar.isCommonAvatar()) {
-			return "data:image/png;base64," + usuarios.getOutput().getResult().getCommonAvatar();
-		}
-		return "data:image/png;base64," + userAvatar.getAvatar();
-	}
-	
 	
 	private void validateRequestDto(PostRequestDTO dto, BindingResult result) {        
         if (dto.getLogin() == null || dto.getLogin().isBlank()) {

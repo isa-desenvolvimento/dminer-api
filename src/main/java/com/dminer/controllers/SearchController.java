@@ -132,7 +132,7 @@ public class SearchController {
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
         // usuarios
-        List<UserDTO> searchUsers = userService.search(keyword, token.getToken(), true);
+        List<UserDTO> searchUsers = userService.search(keyword, token.getToken());
         searchUsers.parallelStream().forEach(u -> {        	
             searchDTO.getUsersList().add(u);
         });

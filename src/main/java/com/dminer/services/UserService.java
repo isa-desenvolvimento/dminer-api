@@ -27,6 +27,7 @@ import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.UserRepository;
+import com.dminer.rest.DminerWebService;
 import com.dminer.rest.model.users.UserAvatar;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
@@ -42,6 +43,10 @@ public class UserService implements IUserService {
     @Autowired
 	private UserRepository userRepository;
     
+	// @Autowired
+	// private DminerWebService dminerWebService;
+
+
 	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 
@@ -70,111 +75,81 @@ public class UserService implements IUserService {
     }
     	
 
-	public List<UserDTO> getAllUsersDto(UserRestModel<Usuario> usuarios, String token, boolean avatar, boolean banner) {
+	// public List<UserDTO> getAllUsersDto(UserRestModel<Usuario> usuarios, String token, boolean avatar, boolean banner) {
 
-		log.info("get all users dto, {} registros", usuarios.getUsers().size());
-
-		if (usuarios == null || usuarios.hasError()) {
-			log.info("Erro ao buscar usuários da api externa");
-			return null;
-		}
+	// 	if (usuarios == null || usuarios.hasError()) {
+	// 		log.info("Erro ao buscar usuários da api externa");
+	// 		return null;
+	// 	}
         
-        List<UserDTO> userList = new ArrayList<>();
-        usuarios.getUsers().parallelStream().forEach(usuario -> {
-            UserDTO userDto = usuario.toUserDTO();
-        	userList.add(userDto);
-        });
+    //     List<UserDTO> userList = new ArrayList<>();
+    //     usuarios.getUsers().parallelStream().forEach(usuario -> {
+    //         UserDTO userDto = usuario.toUserDTO();
+    //     	userList.add(userDto);
+    //     });
 
-		// se avatar == true, busca os avatares enquanto trata dos banners
-		UserRestModel<UserAvatar> usuariosAvatar = null;
-		if (avatar) {			
-			usuariosAvatar = getAllAvatarCustomer(token);
-			log.info("Buscando avatares: {} registros encontrados", usuariosAvatar.getUsers().size());
-		}
+	// 	// se avatar == true, busca os avatares enquanto trata dos banners
+	// 	UserRestModel<UserAvatar> usuariosAvatar = null;
+	// 	if (avatar) {			
+	// 		usuariosAvatar = getAllAvatarCustomer(token);
+	// 		log.info("Buscando avatares: {} registros encontrados", usuariosAvatar.getUsers().size());
+	// 	}
 
-		if (banner) {
-			userList.parallelStream().forEach(usuario -> {
-				String bannerTemp = getBannerByLogin(usuario.getLogin());
-				usuario.setBanner(bannerTemp);
-			});
-		}
+	// 	if (banner) {
+	// 		userList.parallelStream().forEach(usuario -> {
+	// 			String bannerTemp = getBannerByLogin(usuario.getLogin());
+	// 			usuario.setBanner(bannerTemp);
+	// 		});
+	// 	}
 
-		if (avatar && usuariosAvatar != null) {
-			UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
-			usuariosAvatar = null;			
-			userList.parallelStream().forEach(usuario -> {
-				usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
-			});
-		}
-		return userList;
-	}
+	// 	if (avatar && usuariosAvatar != null) {
+	// 		UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
+	// 		usuariosAvatar = null;			
+	// 		userList.parallelStream().forEach(usuario -> {
+	// 			usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
+	// 		});
+	// 	}
+	// 	return userList;
+	// }
 
 
-	public List<UserDTO> getAllUsersDto(String token, boolean avatar, boolean banner) {		
-		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
-		return getAllUsersDto(usuarios, token, avatar, banner);
-	}
+	// public List<UserDTO> getAllUsersDto(String token, boolean avatar, boolean banner) {		
+	// 	UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+	// 	return getAllUsersDto(usuarios, token, avatar, banner);
+	// }
 	
 
-	public List<UserDTO> search(String termo, String token, boolean avatar) {
+	public List<UserDTO> search(String termo, String token) {
 
 		List<UserDTO> pesquisa = new ArrayList<UserDTO>();
 
-		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		// UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
 
 		// se vier null ou conter erros, retorna lista vazia
 		if (userRestModel == null || userRestModel.hasError()) {
 			return pesquisa;
 		}
 
-		// se avatar == true, busca os avatares enquanto trata dos banners
-		UserRestModel<UserAvatar> usuariosAvatar = null;
-		if (avatar) {
-			usuariosAvatar = getAllAvatarCustomer(token);
-		}
-
 		// se pesquisa for por null, retorna todos os usuário
 		if (termo == null) {
-			userRestModel.getUsers().forEach(user -> {
-				pesquisa.add(user.toUserDTO());
+			userRestModel.getUsuarios().forEach(user -> {
+				pesquisa.add(user.toUserDTO(true));
 			});
-
-			if (avatar && usuariosAvatar != null) {
-				UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
-				usuariosAvatar = null;			
-				pesquisa.parallelStream().forEach(usuario -> {
-					usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
-				});
-			}
 			return pesquisa;
 		}
 
 		// passa o termo de busca pra lowercase e sai procurando alguma
 		// ocorrencia em algum dos atributos do objeto
 		termo = termo.toLowerCase();
-		for (Usuario u : userRestModel.getUsers()) {
+		for (Usuario u : userRestModel.getUsuarios()) {
 			String concat = (
 				u.getArea() + " " + u.getBirthDate() + " " + u.getEmail() + " " +
 				u.getLinkedinUrl() + " " + u.getLogin() + " " + u.getUserName() + " "
 			).toLowerCase();
 
 			if (concat.contains(termo)) {
-				pesquisa.add(u.toUserDTO());
-			}
-		}
-
-		// se não encontrar nada na pesquisa, retorna todos os usuários
-		if (! pesquisa.isEmpty()) {
-			userRestModel.getOutput().getResult().getUsuarios().forEach(user -> {
-				pesquisa.add(user.toUserDTO());
-			});
-
-			if (avatar && usuariosAvatar != null) {
-				UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
-				usuariosAvatar = null;			
-				pesquisa.parallelStream().forEach(usuario -> {
-					usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
-				});
+				pesquisa.add(u.toUserDTO(true));
 			}
 		}
 
@@ -216,14 +191,14 @@ public class UserService implements IUserService {
 
 	
     public boolean existsByLogin(String login) {
-        log.info("Verificando se usuário existe pelo login no repositório, {}", login);
+        // log.info("Verificando se usuário existe pelo login no repositório, {}", login);
 		if (login == null) return false;
         return userRepository.findByLogin(login) != null;
     }
 
 
     public boolean existsByLoginAndUserName(String login, String userName) {
-        log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
+        // log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
 		if (login == null || userName == null) return false;
         return userRepository.findByLoginAndUserName(login, userName) != null;
     }
@@ -234,7 +209,7 @@ public class UserService implements IUserService {
 	 * @return
 	 */
     public Optional<User> findByLogin(String login) {
-        log.info("Recuperando usuário pelo login no repositório, {}", login);
+        // log.info("Recuperando usuário pelo login no repositório, {}", login);
         return Optional.ofNullable(userRepository.findByLogin(login));
     }
 
@@ -249,79 +224,43 @@ public class UserService implements IUserService {
 		
 		log.info("Recuperando usuário pelo login da api, {}", login);
 		
-		UserRestModel<Usuario> users = carregarUsuariosApi(token);
+		// UserRestModel<Usuario> users = carregarUsuariosApi(token);
+		UserRestModel<Usuario> users = DminerWebService.getInstance().getUsuariosApi(token);
+
 		if (users == null || users.hasError()) {
 			return Optional.empty();
 		}
 
-		Optional<Usuario> findFirst = users.getUsers().parallelStream().filter(user -> 
+		Optional<Usuario> findFirst = users.getUsuarios().parallelStream().filter(user -> 
 			user.getLogin().equals(login)
 		).findFirst();
 		
-		if (findFirst.isPresent()) return Optional.of(findFirst.get().toUser());
+		if (findFirst.isPresent()) return Optional.of(findFirst.get().toUser(true));
         return Optional.empty();
 	}
 
-	@Async
-    public UserRestModel<Usuario> carregarUsuariosApi(String token) {
-    	
-		if (token == null) {
-			return null;
-		}
-
-		log.info("Recuperando todos os usuários na api externa");
-		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
-
-
-    	String uri = "https://www.dminerweb.com.br:8553/api/administrative/client_area/user/select_user";		
-		try {
-			URL url = new URL(uri);
-			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-			connection.setRequestProperty("BAERER_AUTHENTICATION", token);
-			InputStream stream = connection.getInputStream();
-			Scanner scanner = new Scanner(stream);
-			
-			String response = "";
-			while (scanner.hasNext()) {
-				response += scanner.next();
-			}
-			scanner.close();
-			
-			UserRestModel<Usuario> userRestModel = new UserRestModel<Usuario>();
-			if (response.contains("expirou") || response.contains("não fez login") || response.contains("fezologinnosistema") || response.contains("Hum...")) {
-				log.info("Algo errado ao recuperar os usuários da api: {}", response);
-				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
-				return userRestModel;
-			}
-			
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			try {
-				return gson.fromJson(response, new TypeToken<UserRestModel<Usuario>>(){}.getType());
-			} catch (IllegalStateException e) {
-				return null;
-			}
-			
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-        return null;
-    }
+	
     
 
     public List<UserReductDTO> carregarUsuariosApiReductDto(String token, boolean avatar) {
+
         log.info("Recuperando todos os usuários reduzidos na api externa");
         
 		if (token == null) {
 			return null;
 		}
 		
-		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		
+		// UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
 
-        if (userRestModel == null || userRestModel.hasError()) {
+		if (userRestModel == null) {
+			return usuarios;
+		}
+
+        if (userRestModel.hasError()) {
 			log.info("Nenhum usuário carregado da api em: carregarUsuariosApiReductDto");
 			if (userRestModel.hasError()) {
 				userRestModel.getOutput().getMessages().forEach(message -> {
@@ -335,26 +274,10 @@ public class UserService implements IUserService {
         	return usuarios;
         }
         
-		UserRestModel<UserAvatar> usuariosAvatar = null;
-		if (avatar) {
-			usuariosAvatar = getAllAvatarCustomer(token);
-		}
-
-		if (usuariosAvatar != null && avatar) {
-			UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
-			usuariosAvatar = null;
-
-			userRestModel.getUsers().parallelStream().forEach(user -> {
-				UserReductDTO dto = user.toUserReductDTO();
-				dto.setAvatar(getAvatarByUsername(usuariosAvatarTemp, user.getUserName()));
-				usuarios.add(dto);
-			});
-		} else {
-			userRestModel.getUsers().parallelStream().forEach(user -> {
-				UserReductDTO dto = user.toUserReductDTO();
-				usuarios.add(dto);
-			});
-		}
+		userRestModel.getUsuarios().parallelStream().forEach(user -> {
+			UserReductDTO dto = user.toUserReductDTO(avatar);
+			usuarios.add(dto);
+		});
 
     	return usuarios;
     }
@@ -369,37 +292,27 @@ public class UserService implements IUserService {
     public UserDTO buscarUsuarioApi(String login, String token) {
         log.info("Recuperando todos os usuário na api externa");
         
-        UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
-		
+        // UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
+
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
         }
         
-		UserDTO dto = new UserDTO();
-        userRestModel.getOutput().getResult().getUsuarios().forEach(u -> {
+		for (Usuario u : userRestModel.getUsuarios()) {
 			if (login.equals(u.getLogin())) {
-				dto.setLogin(u.getLogin());
-				dto.setUserName(u.getUserName());
-				dto.setAvatar(getAvatarEndpoint(u.getLogin()));
-				dto.setArea(u.getArea());
-				dto.setBanner(getBannerByLogin(login));
-				dto.setBirthDate(u.getBirthDate());
-				dto.setEmail(u.getEmail());
-				dto.setLinkedinUrl(u.getLinkedinUrl());				
-			}
-        });
-		return dto;
+				return u.toUserDTO(true);				
+			}			
+		}
+		return null;
     }
 
 
 	public UserReductDTO buscarUsuarioApiReduct(String login, String token) {
         log.info("Recuperando todos os usuário reduzidos na api externa");
         
-		UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
-		if (userRestModel == null) {
-			log.info("Carregando usuário diretamente da API");
-			userRestModel = carregarUsuariosApi(token);
-		}
+		// UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
+		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
 
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
@@ -412,9 +325,7 @@ public class UserService implements IUserService {
 		UserReductDTO dto = new UserReductDTO();
 		for (Usuario u : userRestModel.getOutput().getResult().getUsuarios()) {
 			if (login.equals(u.getLogin())) {
-				dto.setLogin(u.getLogin());
-				dto.setUserName(u.getUserName());
-				dto.setAvatar(getAvatarEndpoint(u.getLogin()));
+				dto = u.toUserReductDTO(true);
 				return dto;
 			}			
 		}
@@ -441,7 +352,7 @@ public class UserService implements IUserService {
 	}
 
 
-	private String getBannerByLogin(String login) {
+	public String getBannerByLogin(String login) {
 		User user = userRepository.findByLogin(login);
 		if (user == null || user.getBanner() == null) 
 			return null;
@@ -449,76 +360,10 @@ public class UserService implements IUserService {
     }
 
 
-	@Async
-	public UserRestModel<UserAvatar> getAllAvatarCustomer(String token) {
+	public List<UserDTO> getAniversariantes(String token, boolean buscarAvatar) {
 
-		if (token == null) {
-			return null;
-		}
-
-		log.info("Recuperando todos os avatares na api externa");
-		log.info(token.substring(0, 20) + "..." + token.substring(token.length()-20, token.length()));
-
-    	String uri = "https://www.dminerweb.com.br:8553/api/auth/all_avatar_customer";		
-		try {
-			URL url = new URL(uri);
-			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-			connection.setRequestProperty("BAERER_AUTHENTICATION", token);
-			InputStream stream = connection.getInputStream();
-			Scanner scanner = new Scanner(stream);
-			
-			String response = "";
-			while (scanner.hasNext()) {
-				response += scanner.next();
-			}
-			scanner.close();
-			
-			UserRestModel<UserAvatar> userRestModel = new UserRestModel<UserAvatar>();
-			if (retornoTokenInvalidoApi(response)) {
-				log.info("retornoTokenInvalidoApi: {}", response);
-				userRestModel.getOutput().setMessages(Arrays.asList("Token expirado!", "Precisa fazer o login no sistema", token));
-				return userRestModel;
-			}
-			
-			if (retornoInvalidoApi(response)) {
-				log.info("retornoInvalidoApi: {}", response);
-				userRestModel.getOutput().setMessages(Arrays.asList("Verifique se você tem autorização adequada", "Entre em contato com o suporte", token));
-				return userRestModel;
-			}
-
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			try {
-				userRestModel = gson.fromJson(response, new TypeToken<UserRestModel<UserAvatar>>(){}.getType());
-				return userRestModel;
-			} catch (IllegalStateException e) {
-				return null;
-			}
-			
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-        return null;
-	}
-
-	/**
-	 * Busca o avatar de um usuário pelo username
-	 * @param usuarios
-	 * @return avatar em base 64
-	 */
-	private String getAvatarByUsername(UserRestModel<UserAvatar> usuarios, String userName) {
-		UserAvatar userAvatar = usuarios.getUsers().stream().filter(usuario -> 
-			usuario.getUserName().equals(userName)
-		).findFirst().orElse(null);
-		if (userAvatar == null || userAvatar.isCommonAvatar()) {
-			return "data:image/png;base64," + usuarios.getOutput().getResult().getCommonAvatar();
-		}
-		return "data:image/png;base64," + userAvatar.getAvatar();
-	}
-
-	public List<UserDTO> getAniversariantes(String token, boolean buscarAvatar) {		
-		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+		// UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+		UserRestModel<Usuario> usuarios = DminerWebService.getInstance().getUsuariosApi(token);
 
         if (usuarios == null || usuarios.hasError()) {
 			log.info("Erro ao buscar aniversariantes");
@@ -528,25 +373,15 @@ public class UserService implements IUserService {
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();
         usuarios.getOutput().getResult().getUsuarios().forEach(usuario -> {        	
         	if (usuario.getBirthDate() != null && UtilDataHora.isAniversariante(usuario.getBirthDate())) {
-        		aniversariantes.add(usuario.toUserDTO());
+        		aniversariantes.add(usuario.toUserDTO(buscarAvatar));
         	}
         });
         
-		if (buscarAvatar) {
-			log.info("Recuperando os avatares de cada aniversariante");
-			UserRestModel<UserAvatar> usuariosAvatar = getAllAvatarCustomer(token);
-			if (usuariosAvatar != null) {
-				aniversariantes.forEach(aniversariante -> {
-					String avatar = getAvatarByUsername(usuariosAvatar, aniversariante.getUserName());
-					aniversariante.setAvatar(avatar);
-				});
-			}
-		}
 		return aniversariantes;
 	}
 
 	public void atualizarDadosNoBancoComApiExterna(UserRestModel<Usuario> usuarios) {				
-		for (Usuario usuario : usuarios.getUsers()) {
+		for (Usuario usuario : usuarios.getUsuarios()) {
 			User u = new User();
 			if (!existsByLoginAndUserName(usuario.getLogin(), usuario.getUserName())) {
 				if (existsByLogin(usuario.getLogin())) {
@@ -559,43 +394,15 @@ public class UserService implements IUserService {
 		}
 	}
 
-	public void inserirDadosNoBancoComApiExterna() {
-		String token = TokenService.getToken();
-		UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
-		for (Usuario usuario : usuarios.getUsers()) {
-			User u = usuario.toUser();
-			u = persist(u);			
-		}
-	}
+	// public void inserirDadosNoBancoComApiExterna() {
+	// 	String token = TokenService.getToken();
+	// 	UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
+	// 	for (Usuario usuario : usuarios.getUsers()) {
+	// 		User u = usuario.toUser();
+	// 		u = persist(u);			
+	// 	}
+	// }
 
-	private boolean retornoInvalidoApi(String response) {
-
-		response = response.toLowerCase();
-		return (
-			response.contains("expirou") || 
-			response.contains("não fez login") || 
-			response.contains("fezologinnosistema") || 
-			response.contains("hum...") ||
-			response.contains("usuário inativo") ||
-			response.contains("não autorizada") || 
-			response.contains("ocorreu um problema") ||
-			response.contains("não conseguiu acesso") ||
-			response.contains("permissão de uso nesse dia") ||
-			response.contains("acessar o sistema nesse horário") ||
-			response.contains("não pude encontrar esse usuário") ||
-			response.contains("não é um usuário interno da dminer")
-		);		
-	}
-
-	private boolean retornoTokenInvalidoApi(String response) {
-
-		response = response.toLowerCase();
-		return (
-			response.contains("expirou") || 
-			response.contains("não fez login") || 
-			response.contains("fezologinnosistema") || 
-			response.contains("hum...")
-		);		
-	}
+	
 
 }

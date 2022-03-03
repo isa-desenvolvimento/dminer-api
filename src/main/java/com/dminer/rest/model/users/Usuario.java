@@ -25,35 +25,38 @@ public class Usuario {
 	private String email;
 	private String linkedinUrl;
 	private String area;
-	private byte[] avatar;
+	private String avatar;
 	
 	
-	public User toUser() {
+	public User toUser(boolean avatar) {
 		return User
 			.builder()
 			.userName(userName)
 			.login(login)
+			.avatar(avatar == true ? this.avatar : null)
 			.build();				
 	}
 
-	public UserDTO toUserDTO() {
+	public UserDTO toUserDTO(boolean avatar) {
 		return UserDTO
-				.builder()
-				.userName(userName)
-				.area(area)				
-				.birthDate(birthDate)
-				.email(email)
-				.linkedinUrl(linkedinUrl)
-				.login(login)
-				.build();				
+			.builder()
+			.userName(userName)
+			.area(area)				
+			.birthDate(birthDate)
+			.email(email)
+			.linkedinUrl(linkedinUrl)
+			.login(login)
+			.avatar(avatar == true ? this.avatar : null)
+			.build();				
 	}
 
-	public UserReductDTO toUserReductDTO() {
+	public UserReductDTO toUserReductDTO(boolean avatar) {
 		return UserReductDTO
-				.builder()
-				.userName(userName)
-				.login(login)
-				.build();				
+			.builder()
+			.userName(userName)
+			.login(login)
+			.avatar(avatar == true ? this.avatar : null)
+			.build();				
 	}
 
 	

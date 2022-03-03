@@ -14,7 +14,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging> 
 	<name>dminer</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Demo project for Spring Boot</description> 
 	<properties>
 		<java.version>15</java.version>
 		<!-- <hibernate.version>5.4.28.Final</hibernate.version> -->
@@ -165,6 +165,12 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.69</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.cactoos</groupId>
+			<artifactId>cactoos</artifactId>
+			<version>0.43</version>
 		</dependency>
 
 	</dependencies>

@@ -8,8 +8,10 @@ import com.dminer.dto.UserReductDTO;
 import com.dminer.entities.Comment;
 import com.dminer.entities.Post;
 import com.dminer.entities.User;
+import com.dminer.rest.DminerWebService;
 import com.dminer.rest.model.users.UserAvatar;
 import com.dminer.rest.model.users.UserRestModel;
+import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.PostService;
 import com.dminer.services.UserService;
 import com.dminer.utils.UtilDataHora;
@@ -29,6 +31,9 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
     @Autowired
     private PostService postService;
 
+    // @Autowired
+    // private DminerWebService dminerWebService;
+    
 
     @Override
     public Comment dtoToEntity(CommentDTO commentDTO) {
@@ -49,10 +54,6 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         return c;
     }
     
-    /**
-     * Cuidado ao usar este método dentro de um foreach! Para cada comentário 
-     * o avatar do usuário é buscado na api
-     */
     @Override
     public CommentDTO entityToDto(Comment entity) {
         CommentDTO dto = new CommentDTO();
@@ -60,10 +61,11 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         dto.setContent(entity.getContent());
         dto.setDate(UtilDataHora.timestampToStringOrNow(entity.getTimestamp()));
       	dto.setIdPost(entity.getPost().getId());
-        String avatar = userService.getAvatarEndpoint(entity.getUser().getLogin());
-        UserReductDTO user = userConverter.entityToUserReductDTO(entity.getUser());
-        user.setAvatar(avatar);
-        dto.setUser(user);
+        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(entity.getUser().getLogin());
+        if (usuario != null) {
+            UserReductDTO user = usuario.toUserReductDTO(true);
+            dto.setUser(user);
+        }
         return dto;
     }
 
@@ -120,32 +122,4 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         return c;
     }
 
-
-    /**
-     * Tras o avatar do usuário do comentário, dado uma lista de avatares
-     * @param entity
-     * @param allAvatarCustomer
-     * @return
-     */
-    public CommentDTO entityToDto(Comment entity, UserRestModel<UserAvatar> allAvatarCustomer) {
-        CommentDTO dto = new CommentDTO();
-        dto.setId(entity.getId());
-        dto.setContent(entity.getContent());
-        dto.setDate(UtilDataHora.timestampToStringOrNow(entity.getTimestamp()));
-      	dto.setIdPost(entity.getPost().getId());
-        String avatar = getAvatarByUsername(allAvatarCustomer, entity.getUser().getUserName());
-        UserReductDTO user = userConverter.entityToUserReductDTO(entity.getUser(), avatar);
-        dto.setUser(user);
-        return dto;
-    }
-
-    private String getAvatarByUsername(UserRestModel<UserAvatar> usuarios, String userName) {
-		UserAvatar userAvatar = usuarios.getUsers().stream().filter(usuario -> 
-			usuario.getUserName().equals(userName)
-		).findFirst().orElse(null);
-		if (userAvatar == null || userAvatar.isCommonAvatar()) {
-			return "data:image/png;base64," + usuarios.getOutput().getResult().getCommonAvatar();
-		}
-		return "data:image/png;base64," + userAvatar.getAvatar();
-	}
 }

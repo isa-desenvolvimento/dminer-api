@@ -1,5 +1,6 @@
 package com.dminer.controllers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import com.dminer.dto.UserRequestDTO;
 import com.dminer.entities.User;
 import com.dminer.repository.PermissionRepository;
 import com.dminer.response.Response;
+import com.dminer.rest.DminerWebService;
 import com.dminer.rest.model.users.UserRestModel;
 import com.dminer.rest.model.users.Usuario;
 import com.dminer.services.UserService;
@@ -54,12 +56,15 @@ public class UserController {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    // @Autowired
+    // private DminerWebService dminerWebService;
+
     @Autowired
     private Environment env;
 
 
     private User criarNovoUser(String login, String userName) {
-        log.info("criando novo user {}, {}", login, userName);
+        // log.info("criando novo user {}, {}", login, userName);
         
         User user = new User();
         user.setLogin(login);
@@ -118,6 +123,7 @@ public class UserController {
 
 
     @GetMapping(value = "/all")
+    // @GetMapping()
     @Transactional(timeout = 999999)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
@@ -127,7 +133,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
                 
-        UserRestModel<Usuario> users = userService.carregarUsuariosApi(token.getToken());
+        // UserRestModel<Usuario> users = userService.carregarUsuariosApi(token.getToken());
+        UserRestModel<Usuario> users = DminerWebService.getInstance().getUsuariosApi(token.getToken());
 
         if (users == null) {
         	response.addError("Token inválido ou expirado!");
@@ -149,7 +156,13 @@ public class UserController {
         	return ResponseEntity.badRequest().body(response);        	
         }
         
-        List<UserDTO> usersDto = userService.getAllUsersDto(users, token.getToken(), true, true);
+        List<UserDTO> usersDto = new ArrayList<>();
+
+        for (Usuario usuario : users.getUsuarios()) {            
+            UserDTO dto = usuario.toUserDTO(true);
+            dto.setBanner(userService.getBannerByLogin(usuario.getLogin()));
+            usersDto.add(dto);
+        }
 
         response.setData(usersDto);
         return ResponseEntity.ok().body(response);
@@ -290,7 +303,7 @@ public class UserController {
 
         if (keyword.equalsIgnoreCase("null")) keyword = null;
 
-        List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
+        List<UserDTO> userList = userService.search(keyword, token.getToken());
         
         response.setData(userList);
         return ResponseEntity.ok().body(response);
@@ -302,11 +315,7 @@ public class UserController {
     public ResponseEntity<Response<List<UserDTO>>> search(@RequestHeader("x-access-token") Token token, @PathVariable String login, @PathVariable String keyword) {
         
         Response<List<UserDTO>> response = new Response<>();
-        // if (keyword == null || keyword.isBlank()) {
-        //     response.addError("Informe um termo");
-        //     return ResponseEntity.badRequest().body(response);
-        // }
-        
+
         if (token.naoPreenchido()) { 
             response.addError("Token precisa ser informado");    		
     		return ResponseEntity.badRequest().body(response);
@@ -314,7 +323,7 @@ public class UserController {
 
         if (keyword.equalsIgnoreCase("null")) keyword = null;
         
-        List<UserDTO> userList = userService.search(keyword, token.getToken(), true);
+        List<UserDTO> userList = userService.search(keyword, token.getToken());
         
         response.setData(userList);
         return ResponseEntity.ok().body(response);

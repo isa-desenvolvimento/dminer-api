@@ -60,6 +60,12 @@ public class NotificationService implements INotificationService {
     }
     
     public List<Notification> search(String keyword, String login, boolean isProd) {
+        System.out.println("Termo de busca do search do notification");
+        
+        System.out.println(keyword);
+
+
+
         List<Notification> result = new ArrayList<>();
         if (keyword != null) {
             if (isProd) {

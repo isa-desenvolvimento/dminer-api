@@ -77,7 +77,7 @@ public class UserConverter {
     }
 
     private String getAvatarByUsername(UserRestModel<UserAvatar> usuarios, String userName) {
-		UserAvatar userAvatar = usuarios.getUsers().stream().filter(usuario -> 
+		UserAvatar userAvatar = usuarios.getUsuarios().stream().filter(usuario -> 
 			usuario.getUserName().equals(userName)
 		).findFirst().orElse(null);
 		if (userAvatar == null || userAvatar.isCommonAvatar()) {

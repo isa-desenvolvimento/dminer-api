@@ -1,7 +1,6 @@
 package com.dminer.components;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import com.dminer.dto.EventsDTO;
 
@@ -11,7 +10,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
 @Component
-@Slf4j
 @AllArgsConstructor
 public class EventMapper {
 

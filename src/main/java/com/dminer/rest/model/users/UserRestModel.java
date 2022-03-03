@@ -26,20 +26,37 @@ public class UserRestModel<T> {
     	return !output.getMessages().isEmpty(); 
     }
 
-    public boolean isEmptyUsers() {
-        return output.getResult().getUsuarios() == null && output.getResult().getUsuarios().isEmpty();
+    public boolean isEmptyUsuarios() {
+        return this == null || (output.getResult().getUsuarios() == null && output.getResult().getUsuarios().isEmpty());
     }
 
-    public List<T> getUsers() {
-        if (isEmptyUsers()) return new ArrayList<>();
+    public List<T> getUsuarios() {
+        if (isEmptyUsuarios()) {
+            return new ArrayList<>();
+        }
         return output.getResult().getUsuarios();
     }
 
-    public List<UserReductDTO> toUserReductDtoList() {
+    public boolean isEmptyUsersAvatar() {
+        return this == null || (output.getResult().getUsers() == null && output.getResult().getUsers().isEmpty());
+    }
+
+    /**
+     * Recupera os usuários de avatar
+     * @return
+     */
+    public List<T> getUsersAvatar() {
+        if (isEmptyUsersAvatar()) {
+            return new ArrayList<>();
+        }
+        return output.getResult().getUsers();
+    }
+
+    public List<UserReductDTO> fromUsuarioToUserReductDtoList() {
         List<UserReductDTO> reducts = new ArrayList<>();
-        List<Usuario> users = (List<Usuario>) getUsers();
+        List<Usuario> users = (List<Usuario>) getUsuarios();
         for (Usuario user : users) {
-            reducts.add(user.toUserReductDTO());
+            reducts.add(user.toUserReductDTO(true));
         }
         return reducts;
     }

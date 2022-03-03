@@ -1,14 +1,7 @@
 package com.dminer.components;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.dminer.controllers.ServerSendEvents;
-import com.dminer.dto.UserDTO;
 import com.dminer.services.UserService;
-import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;

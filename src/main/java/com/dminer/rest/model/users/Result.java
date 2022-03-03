@@ -17,4 +17,5 @@ import lombok.ToString;
 public class Result<T> {
 	private String commonAvatar;
 	private List<T> usuarios = new ArrayList<>();
+	private List<T> users = new ArrayList<>();
 }
