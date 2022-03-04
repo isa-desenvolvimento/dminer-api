@@ -81,22 +81,29 @@ public class FullCalendarController {
         // notification.setUser();
         dto.getUsers().forEach(user -> {
             log.info("Criando notificação para o usuário: " + user + " a partir de um evento calendário: {}", events);
-            Notification notification = new Notification();
-            notification.setCreateDate(Timestamp.from(Instant.now()));
-            notification.setNotification("Novo evento calendário foi criado: " + dto.getTitle());
-            Optional<User> userTemp = userService.findByLogin(user);
-            if (userTemp.isPresent()) {
-                notification.setUser(userTemp.get());
-                notificationService.persist(notification);
-            } else {
-                log.info("Usuário {} não encontrado na base de dados local", user);
-            }
+            createUserNotification(user, dto.getTitle());            
         });
+
+        createUserNotification(dto.getCreator(), dto.getTitle());
+        
         log.info("Disparando evento de calendário");
         sendEvents.setEventCalendar(dto);
         sendEvents.streamSseCalendar();
         
         return ResponseEntity.ok().body(response);
+    }
+
+    private void createUserNotification(String user, String content) {
+        Notification notification = new Notification();
+        notification.setCreateDate(Timestamp.from(Instant.now()));
+        notification.setNotification("Novo evento calendário foi criado: " + content);
+        Optional<User> userTemp = userService.findByLogin(user);
+        if (userTemp.isPresent()) {
+            notification.setUser(userTemp.get());
+            notificationService.persist(notification);
+        } else {
+            log.info("Usuário {} não encontrado na base de dados local", user);
+        }
     }
 
 
