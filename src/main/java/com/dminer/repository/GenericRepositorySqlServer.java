@@ -242,7 +242,7 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM TUTORIALS e " +
         "WHERE LOWER(CONCAT( " +
-           " e.category, ' ', e.title, ' ', e.permission, ' ', e.content, ' ', " +
+           " e.category_id, ' ', e.title, ' ', e.permission, ' ', e.content, " +
            "' ', convert(varchar(100), e.date, 120))) " +
            "LIKE LOWER('%" +keyword+ "%')";
 
@@ -256,7 +256,7 @@ public class GenericRepositorySqlServer {
             e.setDate(rs.getTimestamp("DATE"));
             e.setPermission(rs.getString("PERMISSION"));    
             e.setImage(rs.getString("IMAGE"));
-            
+
             // Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
             // if (p.isPresent())
             //     e.setPermission(p.get());
