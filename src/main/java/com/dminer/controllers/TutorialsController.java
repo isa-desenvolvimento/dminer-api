@@ -206,9 +206,9 @@ public class TutorialsController {
         if (search.equalsIgnoreCase("null")) search = null;
 
         if (isProd()) {
-            search2 = tutorialsRepositoryPostgres.searchTutorial(search);            
-        } else {
             search2 = tutorialsRepositorySqlServer.searchTutorials(search);
+        } else {
+            search2 = tutorialsRepositoryPostgres.searchTutorial(search);            
         }
 
         if (search2.isEmpty()) {
