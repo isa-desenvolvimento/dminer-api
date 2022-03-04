@@ -215,11 +215,11 @@ public final class DminerWebService {
 
 
 	public Usuario findUsuarioByLogin(String login) {
-		if (usuarios == null || usuarios.hasError() || usuarios.isEmptyUsuarios()) return null;
+		if (usuarios == null || usuarios.hasError() || usuarios.isEmptyUsuarios()) return new Usuario();
 
 		return usuarios.getUsuarios().parallelStream().filter(usuario -> 
 			usuario.getLogin().equals(login)
-		).findFirst().orElse(null);
+		).findFirst().orElse(new Usuario());
 	}
 
 	public String getAvatarByUsername(String userName) {
@@ -227,7 +227,7 @@ public final class DminerWebService {
 
 		Usuario userAvatar = usuarios.getUsuarios().parallelStream().filter(usuario -> 
 			usuario.getUserName().equals(userName)
-		).findFirst().orElse(null);
+		).findFirst().orElse(new Usuario());
 
 		if (userAvatar == null ) {
 			return "data:image/png;base64," + usuarios.getOutput().getResult().getCommonAvatar();

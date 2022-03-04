@@ -59,5 +59,7 @@ public class Usuario {
 			.build();				
 	}
 
-	
+	public boolean isEmpty() {
+		return (userName == null && login == null) || (userName.isBlank() && login.isBlank());
+	}
 }

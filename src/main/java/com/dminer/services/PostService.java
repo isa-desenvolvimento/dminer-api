@@ -71,7 +71,7 @@ public class PostService implements IPostService {
 	}
 
 	public List<Post> search(String keyword, boolean isProd) {
-		log.info("Search em posts {}", keyword);
+		log.info("Search em posts o termo: {}", keyword);
 		if (keyword == null) {
 			return findAll();
 		}

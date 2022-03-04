@@ -317,8 +317,8 @@ public class PostController {
 		});
 
 		Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(post.getLogin());
-		if (usuario != null) {
-
+		if (! usuario.isEmpty()) {
+			System.out.println("usuario post: " + usuario.toString());
 			postDto.setUser(usuario.toUserReductDTO(true));
 		}
 		
@@ -415,9 +415,9 @@ public class PostController {
 
 
 
-	@GetMapping(value = "/search/{id}")
+	@GetMapping(value = "/search/id/{id}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<PostDTO>> searchById(@RequestHeader("x-access-token") Token token, @PathVariable Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
+    public ResponseEntity<Response<PostDTO>> searchById(@RequestHeader("x-access-token") Token token, @PathVariable("id") Integer id, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
         Response<PostDTO> response = new Response<>();
         if (id == null) {
@@ -566,7 +566,7 @@ public class PostController {
 
 	@GetMapping(value = "/search/{keyword}")
     @Transactional(timeout = 50000)
-    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @RequestParam(name = "keyword", required = false) String keyword) {
+    public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @PathVariable(name = "keyword", required = false) String keyword) {
         
         Response<List<PostDTO>> response = new Response<>();
         
