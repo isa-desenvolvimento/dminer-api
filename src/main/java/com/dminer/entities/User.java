@@ -24,7 +24,7 @@ import lombok.ToString;
 @Table(name = "USERS")
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(of = {"login"})
 @Getter
 @Setter
 @ToString

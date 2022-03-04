@@ -187,6 +187,7 @@ public class FullCalendarController {
         List<FullCalendar> calendarios = calendar.get();
         calendarios = calendarios.stream()
         .filter(cal -> cal.getCreator().equals(login))
+        .filter(cal -> cal.getUsers().contains(new User(login, "")))
         .collect(Collectors.toList());
 
         List<FullCalendarDTO> calendariosDto = new ArrayList<>();
