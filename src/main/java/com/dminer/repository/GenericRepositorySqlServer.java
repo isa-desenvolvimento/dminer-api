@@ -223,7 +223,7 @@ public class GenericRepositorySqlServer {
             e.setTitle(rs.getString("TITLE"));
             e.setContent(rs.getString("CONTENT"));
             e.setDate(rs.getTimestamp("DATE"));
-            Optional<User> findById = userRepository.findById(rs.getInt("CREATOR"));
+            Optional<User> findById = userRepository.findById(rs.getInt("CREATOR_ID"));
             if (findById.isPresent())
                 e.setCreator(findById.get());
             
@@ -240,9 +240,9 @@ public class GenericRepositorySqlServer {
     public List<Tutorials> searchTutorials(String keyword) {
         String query =
         "SELECT * " +
-        "FROM BENEFITS e " +
+        "FROM TUTORIALS e " +
         "WHERE LOWER(CONCAT( " +
-           "e.profile, ' ', e.category, ' ', e.title, ' ', e.location, ' ', e.content, ' ', e.profiles, ' ', " +
+           " e.category, ' ', e.title, ' ', e.permission, ' ', e.content, ' ', " +
            "' ', convert(varchar(100), e.date, 120))) " +
            "LIKE LOWER('%" +keyword+ "%')";
 
@@ -255,7 +255,8 @@ public class GenericRepositorySqlServer {
             e.setContent(rs.getString("CONTENT"));
             e.setDate(rs.getTimestamp("DATE"));
             e.setPermission(rs.getString("PERMISSION"));    
-
+            e.setImage(rs.getString("IMAGE"));
+            
             // Optional<Permission> p = permissionRepository.findById(rs.getInt("PERMISSION_ID"));
             // if (p.isPresent())
             //     e.setPermission(p.get());
