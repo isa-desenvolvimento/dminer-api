@@ -193,9 +193,9 @@ public class TutorialsController {
     }
 
     @GetMapping(value = "/search/{search}")
-    public ResponseEntity<Response<TutorialsDTO>> search(@PathVariable("search") String search) {
+    public ResponseEntity<Response<List<TutorialsDTO>>> search(@PathVariable("search") String search) {
         
-        Response<TutorialsDTO> response = new Response<>();
+        Response<List<TutorialsDTO>> response = new Response<>();
         if (search == null) {
             response.getErrors().add("Informe algo para pesquisar");
             return ResponseEntity.badRequest().body(response);
@@ -217,7 +217,7 @@ public class TutorialsController {
         }
         
         search2.forEach(s -> {
-            response.setData(tutorialsConverter.entityToDTO(s));
+            response.getData().add(tutorialsConverter.entityToDTO(s));
         });
         return ResponseEntity.ok().body(response);
     }

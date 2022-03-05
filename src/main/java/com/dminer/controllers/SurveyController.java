@@ -262,16 +262,17 @@ public class SurveyController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
+        if (findByIdSurvey != null) {
+            surveyResponseRepository.deleteById(findByIdSurvey.getId());
+        }
+        
         try {surveyService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Questionário não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
-        SurveyResponses findByIdSurvey = surveyResponseRepository.findByIdSurvey(id);
-        if (findByIdSurvey != null) {
-            surveyResponseRepository.deleteById(findByIdSurvey.getId());
-        }
         response.setData(true);
         return ResponseEntity.ok().body(response);
     }
