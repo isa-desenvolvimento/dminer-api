@@ -42,12 +42,21 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         c.setContent(commentDTO.getContent());
         c.setTimestamp(UtilDataHora.toTimestamp(commentDTO.getDate()));
 
-        Optional<User> user = userService.findByLogin(commentDTO.getUser().getLogin());
-        if (user.isPresent()) {
-            c.setUser(user.get());
+        User user = new User();
+
+        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(commentDTO.getUser().getLogin());
+        if (usuario != null) {
+            user = usuario.toUser(true);
+            c.setUser(user);
+        } else {
+            Optional<User> userTemp = userService.findByLogin(commentDTO.getUser().getLogin());
+            if (userTemp.isPresent()) {
+                user = userTemp.get();
+                c.setUser(user);
+            }
         }
         
-        Optional<Post> post = postService.findById(user.get().getId());
+        Optional<Post> post = postService.findById(user.getId());
         if (post.isPresent()) {
             c.setPost(post.get());
         }
@@ -61,11 +70,13 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         dto.setContent(entity.getContent());
         dto.setDate(UtilDataHora.timestampToStringOrNow(entity.getTimestamp()));
       	dto.setIdPost(entity.getPost().getId());
-        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(entity.getUser().getLogin());
-        if (usuario != null) {
-            UserReductDTO user = usuario.toUserReductDTO(true);
-            dto.setUser(user);
-        }
+        
+        // Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(entity.getUser().getLogin());
+        // if (usuario != null) {
+        //     UserReductDTO user = usuario.toUserReductDTO(true);
+        //     dto.setUser(user);
+        // }
+        dto.setUser(entity.getUser().convertReductDto());
         return dto;
     }
 
@@ -74,9 +85,18 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         Comment c = new Comment();
         c.setContent(requestDto.getContent() != null ? requestDto.getContent() : "");
         c.setTimestamp(UtilDataHora.toTimestamp(requestDto.getDate()));
-        Optional<User> user = userService.findByLogin(requestDto.getLogin());
-        if (user.isPresent()) {
-            c.setUser(user.get());
+        User user = new User();
+
+        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(requestDto.getLogin());
+        if (usuario != null) {
+            user = usuario.toUser(true);
+            c.setUser(user);
+        } else {
+            Optional<User> userTemp = userService.findByLogin(requestDto.getLogin());
+            if (userTemp.isPresent()) {
+                user = userTemp.get();
+                c.setUser(user);
+            }
         }
         Optional<Post> post = postService.findById(requestDto.getIdPost());
         if (post.isPresent()) {

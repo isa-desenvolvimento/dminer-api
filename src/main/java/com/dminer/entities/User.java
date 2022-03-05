@@ -87,6 +87,6 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "Usuário - id: " + id + ", username: " + userName + ", login: " + login + ", avatar: " + (avatar != null ? avatar.substring(0, 20) : "");
+		return "Usuário - id: " + id + ", username: " + userName + ", login: " + login + ", avatar: " + (avatar != null ? avatar.substring(0, 30) : "");
 	}
 }

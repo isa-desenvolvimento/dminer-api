@@ -316,11 +316,21 @@ public class PostController {
 			postDto.getFavorites().add(f.getUser().getLogin());
 		});
 
-		Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(post.getLogin());
-		if (! usuario.isEmpty()) {
-			System.out.println("usuario post: " + usuario.toString());
-			postDto.setUser(usuario.toUserReductDTO(true));
+		UserReductDTO userReductDTO  = new UserReductDTO ();
+
+		if (DminerWebService.getInstance().jaProcessouUsuarios()) {
+			Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(post.getLogin());
+			if (! usuario.isEmpty()) {
+				userReductDTO = usuario.toUserReductDTO(true);
+			}
+		} else {
+			Optional<User> find = userService.findByLogin(post.getLogin());
+			if (find.isPresent()) {
+				userReductDTO = find.get().convertReductDto();
+			}
 		}
+		postDto.setUser(userReductDTO);
+		
 		
 		if (comments != null && !comments.isEmpty()) {
 			comments.forEach(comment -> {
