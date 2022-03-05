@@ -174,7 +174,7 @@ public class TutorialsController {
 
     
     @GetMapping(value = "/find/{id}")
-    public ResponseEntity<Response<TutorialsDTO>> get(@PathVariable("id") Integer id) {
+    public ResponseEntity<Response<TutorialsDTO>> get(@RequestHeader("x-access-adminUser") String perfil, @PathVariable("id") Integer id) {
         
         Response<TutorialsDTO> response = new Response<>();
         if (id == null) {
@@ -188,12 +188,14 @@ public class TutorialsController {
             return ResponseEntity.ok().body(response);
         }
 
-        response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
-        return ResponseEntity.ok().body(response);
+        if (! perfil.equalsIgnoreCase("1") && tutorial.get().getPermission().equalsIgnoreCase("0")) {
+            response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
+        }
+        return ResponseEntity.ok().body(response);            
     }
 
     @GetMapping(value = "/search/{search}")
-    public ResponseEntity<Response<List<TutorialsDTO>>> search(@PathVariable("search") String search) {
+    public ResponseEntity<Response<List<TutorialsDTO>>> search(@RequestHeader("x-access-adminUser") String perfil, @PathVariable("search") String search) {
         
         Response<List<TutorialsDTO>> response = new Response<>();
         if (search == null) {
@@ -216,6 +218,10 @@ public class TutorialsController {
             return ResponseEntity.ok().body(response);
         }
         
+        if (! perfil.equalsIgnoreCase("1")) {
+            search2 = search2.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
+        }
+
         search2.forEach(s -> {
             response.getData().add(tutorialsConverter.entityToDTO(s));
         });

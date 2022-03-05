@@ -10,6 +10,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
 
 import lombok.AllArgsConstructor;
@@ -46,7 +47,8 @@ public class User {
     // @Column(length = 9999999)
 	private String banner; 
 
-	@Transient
+	@Lob
+    @Column()
 	private String avatar;
 	
 
@@ -71,5 +73,20 @@ public class User {
 		.avatar(avatar)
 		.userName(userName)
 		.build();
+	}
+
+	public UserDTO convertDto() {
+		return UserDTO
+		.builder()
+		.login(login)
+		.avatar(avatar)
+		.userName(userName)
+		.banner(banner)
+		.build();
+	}
+
+	@Override
+	public String toString() {
+		return "Usuário - id: " + id + ", username: " + userName + ", login: " + login + ", avatar: " + (avatar != null ? avatar.substring(0, 20) : "");
 	}
 }

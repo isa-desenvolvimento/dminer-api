@@ -296,4 +296,8 @@ public final class DminerWebService {
 		);		
 	}
     
+
+	public boolean jaProcessouUsuarios() {
+		return callAvatares && callUsers && rearranjo;
+	}
 }

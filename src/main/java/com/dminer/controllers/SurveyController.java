@@ -254,9 +254,9 @@ public class SurveyController {
 
 
     @DeleteMapping(value = "/{login}/{id}")
-    public ResponseEntity<Response<Boolean>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
+    public ResponseEntity<Response<SurveyDTO>> delete(@PathVariable("login") String login, @PathVariable("id") Integer id) {
         
-        Response<Boolean> response = new Response<>();
+        Response<SurveyDTO> response = new Response<>();
         if (id == null) {
             response.getErrors().add("Informe um id");
             return ResponseEntity.badRequest().body(response);
@@ -266,14 +266,14 @@ public class SurveyController {
         if (findByIdSurvey != null) {
             surveyResponseRepository.deleteById(findByIdSurvey.getId());
         }
-        
+
         try {surveyService.delete(id);}
         catch (EmptyResultDataAccessException e) {
             response.getErrors().add("Questionário não encontrado");
             return ResponseEntity.badRequest().body(response);
         }
 
-        response.setData(true);
+        response.setData(new SurveyDTO());
         return ResponseEntity.ok().body(response);
     }
 

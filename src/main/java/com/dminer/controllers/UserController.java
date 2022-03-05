@@ -63,22 +63,23 @@ public class UserController {
     private Environment env;
 
 
-    private User criarNovoUser(String login, String userName) {
+    private User criarNovoUser(String login, String userName, String avatar) {
         // log.info("criando novo user {}, {}", login, userName);
         
         User user = new User();
         user.setLogin(login);
         user.setUserName(userName);
         if (userService.existsByLoginAndUserName(login, userName)) {
-            user.setLogin(login);
-            user.setUserName(userName);
-            return user;
+            user = userService.findByLogin(login).get();
+            if (avatar != null && !avatar.isBlank())
+                user.setAvatar(avatar);
         } 
         if (userService.existsByLogin(login)) {
             user = userService.findByLogin(login).get();
             user.setUserName(userName);
-            return userService.persist(user);
-        }        
+            if (avatar != null && !avatar.isBlank())
+                user.setAvatar(avatar);
+        }
         return userService.persist(user);
     }
 
@@ -98,32 +99,30 @@ public class UserController {
     		return ResponseEntity.badRequest().body(response);
         }
 
+        boolean jaExisteNoBanco = false;
         UserDTO userDto = userService.buscarUsuarioApi(login, token.getToken());
         if (userDto == null) {
-            return ResponseEntity.notFound().build();
+            jaExisteNoBanco = userService.existsByLogin(login);
+        }
+
+        if (jaExisteNoBanco) {
+            Optional<User> opt = userService.findByLogin(login);
+            if (opt.isPresent()) {
+                userDto = userConverter.entityToDto(opt.get());
+                response.setData(userDto);
+                return ResponseEntity.ok().body(response);
+            } 
         }
         
-        criarNovoUser(login, userDto.getUserName());
+        criarNovoUser(login, userDto.getUserName(), userDto.getAvatar());
 
-        Optional<User> opt = userService.findByLogin(login);
-        if (opt.isPresent()) {
-            String avatar = userService.getAvatarEndpoint(login);
-            userDto = userConverter.entityToDto(opt.get());
-            userDto.setAvatar(avatar);
-            response.setData(userDto);
-            return ResponseEntity.ok().body(response);
-        } 
-                
-        response.setData(userDto);
-        User userTemp = userService.findByLogin(userDto.getLogin()).get();
-        userTemp.setUserName(userDto.getUserName());
-        userService.persist(userTemp);
+        
+        response.setData(userDto);        
         return ResponseEntity.ok().body(response);
     }
 
 
     @GetMapping(value = "/all")
-    // @GetMapping()
     @Transactional(timeout = 999999)
     public ResponseEntity<Response<List<UserDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
         
@@ -132,9 +131,25 @@ public class UserController {
         	response.addError("Token precisa ser informado");
             return ResponseEntity.badRequest().body(response);
         }
-                
-        // UserRestModel<Usuario> users = userService.carregarUsuariosApi(token.getToken());
-        UserRestModel<Usuario> users = DminerWebService.getInstance().getUsuariosApi(token.getToken());
+        
+        List<UserDTO> usersDto = new ArrayList<>();
+
+        UserRestModel<Usuario> users = null;
+        if (DminerWebService.getInstance().jaProcessouUsuarios() == false) {
+
+            Optional<List<User>> findAll = userService.findAll();
+            if (findAll.isPresent()) {
+                log.info("Recuperando usuários getAll direto no banco");
+                findAll.get().forEach(user -> {
+                    UserDTO dto = user.convertDto();
+                    usersDto.add(dto);
+                });
+                response.setData(usersDto);
+                return ResponseEntity.ok().body(response);
+            }
+        } else {
+            users = DminerWebService.getInstance().getUsuariosApi(token.getToken());
+        }
 
         if (users == null) {
         	response.addError("Token inválido ou expirado!");
@@ -155,8 +170,6 @@ public class UserController {
         if (response.containErrors()) {
         	return ResponseEntity.badRequest().body(response);        	
         }
-        
-        List<UserDTO> usersDto = new ArrayList<>();
 
         for (Usuario usuario : users.getUsuarios()) {            
             UserDTO dto = usuario.toUserDTO(true);
@@ -184,14 +197,30 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReductDto(token.getToken(), false);
+        if (DminerWebService.getInstance().jaProcessouUsuarios() == false) {
+
+            Optional<List<User>> findAll = userService.findAll();
+            if (findAll.isPresent()) {
+                log.info("Recuperando usuários dropdown direto no banco");
+                List<UserReductDTO> usersReduct = new ArrayList<>();
+                findAll.get().forEach(user -> {
+                    UserReductDTO dto = user.convertReductDto();
+                    usersReduct.add(dto);
+                });
+                response.setData(usersReduct);
+                return ResponseEntity.ok().body(response);
+            }
+        }  
+
+        List<UserReductDTO> carregarUsuariosApiReduct = userService.carregarUsuariosApiReductDto(token.getToken(), true);
         if (carregarUsuariosApiReduct.isEmpty()) {
             response.addError("Nenhum usuario encontrado em getDropDown");             
             return ResponseEntity.ok().body(response);
         }
 
         carregarUsuariosApiReduct.forEach(user -> {
-            criarNovoUser(user.getLogin(), user.getUserName());
+            criarNovoUser(user.getLogin(), user.getUserName(), user.getAvatar());
+            user.setAvatar(null);
         });
 
         response.setData(carregarUsuariosApiReduct); 

@@ -52,7 +52,7 @@ public class UserService implements IUserService {
 
     @Override
     public User persist(User user) {
-        log.info("Persistindo usuário: {}", user);
+        log.info("Persistindo usuário: {}", user.toString());
 		return userRepository.save(user);
     }
 
@@ -201,6 +201,11 @@ public class UserService implements IUserService {
         // log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
 		if (login == null || userName == null) return false;
         return userRepository.findByLoginAndUserName(login, userName) != null;
+    }
+
+	public Optional<User> findByLoginAndUserName(String login, String userName) {
+        // log.info("Verificando se usuário existe pelo login no repositório, {} e {}", login, userName);
+		return Optional.ofNullable(userRepository.findByLoginAndUserName(login, userName));
     }
 
     /**
