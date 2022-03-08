@@ -116,7 +116,7 @@ public class UserController {
         
         criarNovoUser(login, userDto.getUserName(), userDto.getAvatar());
 
-        
+        userDto.setBanner(userService.getBannerByLogin(login));
         response.setData(userDto);        
         return ResponseEntity.ok().body(response);
     }
@@ -202,6 +202,8 @@ public class UserController {
             Optional<List<User>> findAll = userService.findAll();
             if (findAll.isPresent()) {
                 log.info("Recuperando usuários dropdown direto no banco");
+
+                
                 List<UserReductDTO> usersReduct = new ArrayList<>();
                 findAll.get().forEach(user -> {
                     UserReductDTO dto = user.convertReductDto();
@@ -220,7 +222,6 @@ public class UserController {
 
         carregarUsuariosApiReduct.forEach(user -> {
             criarNovoUser(user.getLogin(), user.getUserName(), user.getAvatar());
-            user.setAvatar(null);
         });
 
         response.setData(carregarUsuariosApiReduct); 

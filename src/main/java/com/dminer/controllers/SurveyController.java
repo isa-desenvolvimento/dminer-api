@@ -225,7 +225,7 @@ public class SurveyController {
         Optional<List<Survey>> surveysOpt = surveyService.findAll();
         if (surveysOpt.get().isEmpty()) {
             response.getErrors().add("Questionários não encontrados");
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok().body(response);
         }
 
         List<Survey> surveys = surveysOpt.get();

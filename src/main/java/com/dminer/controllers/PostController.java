@@ -128,7 +128,6 @@ public class PostController {
             return ResponseEntity.badRequest().body(response);
         }
 		
-
 		Post post = new Post();
 		post.setAnexo(dto.getAnexo());
 		post.setContent(dto.getContent());		
@@ -153,38 +152,10 @@ public class PostController {
 			}
 		}
 
-		// salvarNotificacoes(token, dto);
-
-		Notification notification = new Notification();
-		notification.setCreateDate(Timestamp.from(Instant.now()));
-		notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post! - " + post.getTitle() + ":" + post.getContent());
-		notification.setAllUsers(true);
-		notificationService.persist(notification);
+		notificationService.newNotificationFromPost(post, dto.getLogin());
 
 		return ResponseEntity.ok().body(response);
 	}
-	
-	@Async
-	private void salvarNotificacoes(Token token, PostRequestDTO dto) {
-		log.info("Salvando notificações de forma assíncrona ");
-		List<UserReductDTO> usuariosApi = userService.carregarUsuariosApiReductDto(token.getToken(), false);
-		if (!usuariosApi.isEmpty()) {
-			usuariosApi.forEach(usuario -> {
-				Notification notification = new Notification();
-				notification.setCreateDate(Timestamp.from(Instant.now()));
-	            notification.setNotification("Usuário " + dto.getLogin() + " fez um novo post!");
-            	Optional<User> userTemp = userService.findByLogin(usuario.getLogin());
-				if (userTemp.isPresent()) {
-					notification.setUser(userTemp.get());
-					notificationService.persist(notification);
-				} else {
-					log.info("Usuário {} não encontrado na base de dados local", usuario);
-				}
-			});
-		}
-		log.info("Fim salvando notificações de forma assíncrona ");
-	}
-	
 	
 	
 	@DeleteMapping(value = "/{id}")
@@ -393,8 +364,8 @@ public class PostController {
 	}
 	
 	
-	// @GetMapping("/all")
-	@GetMapping()
+	@GetMapping("/all")
+	// @GetMapping()
 	public ResponseEntity<Response<List<PostDTO>>> getAll(@RequestHeader("x-access-token") Token token) {
 		
 		Response<List<PostDTO>> response = new Response<>();

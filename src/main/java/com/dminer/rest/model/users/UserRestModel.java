@@ -37,6 +37,13 @@ public class UserRestModel<T> {
         return output.getResult().getUsuarios();
     }
 
+    public void setUsuarios(List<T> collect) {
+        if (isEmptyUsuarios()) {
+            output.getResult().setUsuarios(new ArrayList<>());
+        }
+        output.getResult().setUsuarios(collect);
+    }
+
     public boolean isEmptyUsersAvatar() {
         return this == null || (output.getResult().getUsers() == null && output.getResult().getUsers().isEmpty());
     }

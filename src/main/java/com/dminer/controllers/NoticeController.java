@@ -17,6 +17,7 @@ import com.dminer.entities.Notice;
 import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.NoticeService;
+import com.dminer.services.NotificationService;
 import com.dminer.services.UserService;
 
 import org.slf4j.Logger;
@@ -59,6 +60,9 @@ public class NoticeController {
     private NoticeService noticeService;
     
     @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
     private Environment env;
 
 
@@ -71,12 +75,18 @@ public class NoticeController {
         //validateRequestDto(avisosRequest, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", avisosRequest);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
         }
         
-        Notice events = noticeService.persist(noticeConverter.requestDtoToEntity(avisosRequest));
-        response.setData(noticeConverter.entityToDTO(events));
+        Notice notice = noticeService.persist(noticeConverter.requestDtoToEntity(avisosRequest));
+        response.setData(noticeConverter.entityToDTO(notice));
+
+        avisosRequest.getUsers().forEach(login -> {
+            notificationService.newNotificationFromNotice(notice, login);
+        });
+
+        notificationService.newNotificationFromNotice(notice, avisosRequest.getCreator());
 
         return ResponseEntity.ok().body(response);
     }
@@ -92,12 +102,21 @@ public class NoticeController {
         //validateDto(dto, result);
         if (result.hasErrors()) {
             log.info("Erro validando NoticeDTO: {}", dto);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
         }
 
+        delete(dto.getId());
+
         Notice notice = noticeService.persist(noticeConverter.dtoToEntity(dto));
         response.setData(noticeConverter.entityToDTO(notice));
+
+        dto.getUsers().forEach(user -> {
+            notificationService.newNotificationFromNotice(notice, user.getLogin());
+        });
+
+        notificationService.newNotificationFromNotice(notice, dto.getCreator());
+
         return ResponseEntity.ok().body(response);
     }
 
@@ -141,7 +160,6 @@ public class NoticeController {
 
         try {noticeService.delete(id);}
         catch (EmptyResultDataAccessException e) {
-            response.getErrors().add("Notificação não encontrada");
             return ResponseEntity.ok().body(response);
         }
 

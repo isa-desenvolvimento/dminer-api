@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -142,6 +143,10 @@ public final class DminerWebService {
 			try {
 				usuarios = gson.fromJson(response.body(), new TypeToken<UserRestModel<Usuario>>(){}.getType());
                 log.info("{} usuarios carregados", usuarios.getUsuarios().size());
+
+				List<Usuario> collect = usuarios.getUsuarios().stream().sorted(Comparator.comparing(Usuario::getLogin)).collect(Collectors.toList());
+				usuarios.setUsuarios(collect);
+
 				callUsers = true;
 			} catch (IllegalStateException e) {
 				log.error("Falha ao converter response de usuario");

@@ -8,9 +8,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.HttpsURLConnection;
@@ -22,6 +24,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.dminer.components.AwaitTime;
 import com.dminer.components.TokenService;
 import com.dminer.dto.UserDTO;
 import com.dminer.dto.UserReductDTO;
@@ -65,7 +68,12 @@ public class UserService implements IUserService {
     @Override
     public Optional<List<User>> findAll() {
         log.info("Buscando todos os usuários");
-		return Optional.ofNullable(userRepository.findAll());
+		List<User> allUsers = userRepository.findAll();
+		if (allUsers == null || allUsers.isEmpty()) {
+			return Optional.empty();
+		}
+		allUsers = allUsers.stream().sorted(Comparator.comparing(User::getLogin)).collect(Collectors.toList());
+		return Optional.ofNullable(allUsers);
     }
 
     @Override
@@ -74,50 +82,6 @@ public class UserService implements IUserService {
 		userRepository.deleteById(id);
     }
     	
-
-	// public List<UserDTO> getAllUsersDto(UserRestModel<Usuario> usuarios, String token, boolean avatar, boolean banner) {
-
-	// 	if (usuarios == null || usuarios.hasError()) {
-	// 		log.info("Erro ao buscar usuários da api externa");
-	// 		return null;
-	// 	}
-        
-    //     List<UserDTO> userList = new ArrayList<>();
-    //     usuarios.getUsers().parallelStream().forEach(usuario -> {
-    //         UserDTO userDto = usuario.toUserDTO();
-    //     	userList.add(userDto);
-    //     });
-
-	// 	// se avatar == true, busca os avatares enquanto trata dos banners
-	// 	UserRestModel<UserAvatar> usuariosAvatar = null;
-	// 	if (avatar) {			
-	// 		usuariosAvatar = getAllAvatarCustomer(token);
-	// 		log.info("Buscando avatares: {} registros encontrados", usuariosAvatar.getUsers().size());
-	// 	}
-
-	// 	if (banner) {
-	// 		userList.parallelStream().forEach(usuario -> {
-	// 			String bannerTemp = getBannerByLogin(usuario.getLogin());
-	// 			usuario.setBanner(bannerTemp);
-	// 		});
-	// 	}
-
-	// 	if (avatar && usuariosAvatar != null) {
-	// 		UserRestModel<UserAvatar> usuariosAvatarTemp = usuariosAvatar;
-	// 		usuariosAvatar = null;			
-	// 		userList.parallelStream().forEach(usuario -> {
-	// 			usuario.setAvatar(getAvatarByUsername(usuariosAvatarTemp, usuario.getUserName()));
-	// 		});
-	// 	}
-	// 	return userList;
-	// }
-
-
-	// public List<UserDTO> getAllUsersDto(String token, boolean avatar, boolean banner) {		
-	// 	UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
-	// 	return getAllUsersDto(usuarios, token, avatar, banner);
-	// }
-	
 
 	public List<UserDTO> search(String termo, String token) {
 
@@ -231,6 +195,7 @@ public class UserService implements IUserService {
 		
 		// UserRestModel<Usuario> users = carregarUsuariosApi(token);
 		UserRestModel<Usuario> users = DminerWebService.getInstance().getUsuariosApi(token);
+		AwaitTime.waitUntil(AwaitTime.segundos_3);
 
 		if (users == null || users.hasError()) {
 			return Optional.empty();
@@ -258,6 +223,7 @@ public class UserService implements IUserService {
 		
 		// UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
+		AwaitTime.waitUntil(AwaitTime.segundos_5);
 
         List<UserReductDTO> usuarios = new ArrayList<>();
 
@@ -299,6 +265,7 @@ public class UserService implements IUserService {
         
         // UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
+		AwaitTime.waitUntil(AwaitTime.segundos_3);
 
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
@@ -318,6 +285,7 @@ public class UserService implements IUserService {
         
 		// UserRestModel<Usuario> userRestModel = carregarUsuariosApi(token);
 		UserRestModel<Usuario> userRestModel = DminerWebService.getInstance().getUsuariosApi(token);
+		AwaitTime.waitUntil(AwaitTime.segundos_3);
 
         if (userRestModel == null || userRestModel.hasError()) {
 			return null;
@@ -369,6 +337,8 @@ public class UserService implements IUserService {
 
 		// UserRestModel<Usuario> usuarios = carregarUsuariosApi(token);
 		UserRestModel<Usuario> usuarios = DminerWebService.getInstance().getUsuariosApi(token);
+
+		AwaitTime.waitUntil(AwaitTime.segundos_5);
 
         if (usuarios == null || usuarios.hasError()) {
 			log.info("Erro ao buscar aniversariantes");

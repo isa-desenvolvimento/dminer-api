@@ -1,11 +1,15 @@
 package com.dminer.services;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
+import com.dminer.entities.Post;
 import com.dminer.entities.User;
 import com.dminer.repository.GenericRepositoryPostgres;
 import com.dminer.repository.GenericRepositorySqlServer;
@@ -59,12 +63,37 @@ public class NotificationService implements INotificationService {
 		notificationRepository.deleteById(id);		        
     }
     
+
+    public void newNotificationFromPost(Post post, String login) {
+        Notification notification = new Notification();
+		notification.setCreateDate(Timestamp.from(Instant.now()));
+        notification.setNotification("Usuário " + login + " fez um novo post! - " + post.getTitle() + ":" + post.getContent());
+		notification.setAllUsers(true);
+		persist(notification);
+    }
+
+
+    public void newNotificationFromNotice(Notice notice, String login) {
+        Notification notification = new Notification();
+		notification.setCreateDate(Timestamp.from(Instant.now()));
+        if (notice.getCreator().equalsIgnoreCase(login)) {
+            notification.setNotification("Você criou um novo aviso! - " + notice.getWarning());
+        } else {
+            notification.setNotification("Usuário " + login + " te marcou em um novo aviso! - " + notice.getWarning());
+        }
+		notification.setAllUsers(false);
+        Optional<User> userTemp = userService.findByLogin(login);
+        if (userTemp.isPresent()) {
+            notification.setUser(userTemp.get());
+            persist(notification);
+        } else {
+            log.info("Usuário {} não encontrado na base de dados local", login);
+        }
+    }
+
+
     public List<Notification> search(String keyword, String login, boolean isProd) {
-        System.out.println("Termo de busca do search do notification");
-        
-        System.out.println(keyword);
-
-
+        System.out.println("Termo de busca do search do notification: " + keyword);
 
         List<Notification> result = new ArrayList<>();
         if (keyword != null) {
