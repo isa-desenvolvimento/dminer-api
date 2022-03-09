@@ -97,6 +97,7 @@ public class DocumentController {
                 log.info("Arquivo copiado com sucesso para: {}", link);
                 dto.setContentLink(link);                
             }
+            doc.setContentLink(link);
         }
         doc = documentRepository.save(doc);
         DocumentDTO dtoTemp = documentConverter.entityToDto(doc);
