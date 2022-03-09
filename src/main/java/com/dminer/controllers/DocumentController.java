@@ -88,7 +88,7 @@ public class DocumentController {
             String nomeArquivo = UtilFilesStorage.getNomeArquivo(dto.getContentLink(), "/");
             String link = env.getProperty("diretorio-uploads") + nomeArquivo;
 
-            log.info("Tentando copiar arquivo: {}", link);
+            log.info("Tentando copiar arquivo: {} para {}", dto.getContentLink(), link);
 
             boolean copiou = UtilFilesStorage.copyFiles4(dto.getContentLink(), link);
             if (!copiou) {
