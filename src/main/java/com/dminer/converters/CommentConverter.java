@@ -43,18 +43,23 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         c.setTimestamp(UtilDataHora.toTimestamp(commentDTO.getDate()));
 
         User user = new User();
-
-        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(commentDTO.getUser().getLogin());
-        if (usuario != null) {
-            user = usuario.toUser(true);
+        Optional<User> userTemp = userService.findByLogin(commentDTO.getUser().getLogin());
+        if (userTemp.isPresent()) {
+            user = userTemp.get();
             c.setUser(user);
-        } else {
-            Optional<User> userTemp = userService.findByLogin(commentDTO.getUser().getLogin());
-            if (userTemp.isPresent()) {
-                user = userTemp.get();
-                c.setUser(user);
-            }
         }
+
+        // Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(commentDTO.getUser().getLogin());
+        // if (usuario != null) {
+        //     user = usuario.toUser(true);
+        //     c.setUser(user);
+        // } else {
+        //     Optional<User> userTemp = userService.findByLogin(commentDTO.getUser().getLogin());
+        //     if (userTemp.isPresent()) {
+        //         user = userTemp.get();
+        //         c.setUser(user);
+        //     }
+        // }
         
         Optional<Post> post = postService.findById(user.getId());
         if (post.isPresent()) {
@@ -87,17 +92,23 @@ public class CommentConverter implements Converter<Comment, CommentDTO, CommentR
         c.setTimestamp(UtilDataHora.toTimestamp(requestDto.getDate()));
         User user = new User();
 
-        Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(requestDto.getLogin());
-        if (usuario != null) {
-            user = usuario.toUser(true);
+        Optional<User> userTemp = userService.findByLogin(requestDto.getLogin());
+        if (userTemp.isPresent()) {
+            user = userTemp.get();
             c.setUser(user);
-        } else {
-            Optional<User> userTemp = userService.findByLogin(requestDto.getLogin());
-            if (userTemp.isPresent()) {
-                user = userTemp.get();
-                c.setUser(user);
-            }
         }
+
+        // Usuario usuario = DminerWebService.getInstance().findUsuarioByLogin(requestDto.getLogin());
+        // if (usuario != null) {
+        //     user = usuario.toUser(true);
+        //     c.setUser(user);
+        // } else {
+        //     Optional<User> userTemp = userService.findByLogin(requestDto.getLogin());
+        //     if (userTemp.isPresent()) {
+        //         user = userTemp.get();
+        //         c.setUser(user);
+        //     }
+        // }
         Optional<Post> post = postService.findById(requestDto.getIdPost());
         if (post.isPresent()) {
             c.setPost(post.get());

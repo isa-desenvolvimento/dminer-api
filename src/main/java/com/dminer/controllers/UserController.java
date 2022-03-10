@@ -63,24 +63,29 @@ public class UserController {
     private Environment env;
 
 
-    private User criarNovoUser(String login, String userName, String avatar) {
+    private void criarNovoUser(String login, String userName, String avatar) {
         // log.info("criando novo user {}, {}", login, userName);
         
         User user = new User();
         user.setLogin(login);
         user.setUserName(userName);
         if (userService.existsByLoginAndUserName(login, userName)) {
-            user = userService.findByLogin(login).get();
-            if (avatar != null && !avatar.isBlank())
+            user = userService.findByLoginAndUserName(login, userName).get();
+            if (avatar != null && !avatar.isBlank()) {
                 user.setAvatar(avatar);
+            }
+            userService.persist(user);
+            return;
         } 
         if (userService.existsByLogin(login)) {
             user = userService.findByLogin(login).get();
             user.setUserName(userName);
-            if (avatar != null && !avatar.isBlank())
+            if (avatar != null && !avatar.isBlank()) {
                 user.setAvatar(avatar);
+            }
+            userService.persist(user);
+            return;
         }
-        return userService.persist(user);
     }
 
 
