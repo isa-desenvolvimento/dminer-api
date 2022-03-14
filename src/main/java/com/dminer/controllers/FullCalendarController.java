@@ -84,6 +84,10 @@ public class FullCalendarController {
             createUserNotification(user, dto.getTitle());            
         });
 
+        if (! dto.getUsers().isEmpty()) {
+            createUserCalendarEvent(fullCalendarRequestDTO);
+        }
+
         createUserNotification(dto.getCreator(), dto.getTitle());
         
         log.info("Disparando evento de calendário");
@@ -92,6 +96,21 @@ public class FullCalendarController {
         
         return ResponseEntity.ok().body(response);
     }
+
+    private void createUserCalendarEvent(FullCalendarRequestDTO dto) {
+        
+        List<String> users = dto.getUsers();
+        dto.setUsers(new ArrayList<>());
+
+        users.forEach(user -> {
+            log.info("Criando evento calendário para o usuário: " + user + " a partir de um evento calendário: {}", dto);
+            FullCalendarRequestDTO dtoTemp = dto;
+            dtoTemp.setCreator(user);
+            fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(dtoTemp));
+        });
+        
+    }
+
 
     private void createUserNotification(String user, String content) {
         Notification notification = new Notification();

@@ -88,7 +88,24 @@ public class NoticeController {
 
         notificationService.newNotificationFromNotice(notice, avisosRequest.getCreator());
 
+        if (! avisosRequest.getUsers().isEmpty()) {
+            newNoticeFromUsersList(avisosRequest);
+        }
         return ResponseEntity.ok().body(response);
+    }
+
+
+    private void newNoticeFromUsersList(NoticeRequestDTO avisosRequest) {
+
+        List<String> users = avisosRequest.getUsers();
+        avisosRequest.setUsers(new ArrayList<>());
+
+        users.forEach(login -> {
+            NoticeRequestDTO avisosRequestTemp = avisosRequest;
+            avisosRequestTemp.setCreator(login);
+            noticeService.persist(noticeConverter.requestDtoToEntity(avisosRequestTemp));
+        });
+
     }
 
 
