@@ -249,7 +249,7 @@ public class NoticeController {
         
         Response<List<NoticeDTO>> response = new Response<>();
         if (keyword.equalsIgnoreCase("null")) keyword = null;
-        List<Notice> search = noticeService.search(keyword, isProd());
+        List<Notice> search = noticeService.search(keyword, login, isProd());
         search.forEach(notice -> {
             NoticeDTO dto = noticeConverter.entityToDTO(notice);
             response.getData().add(dto); 

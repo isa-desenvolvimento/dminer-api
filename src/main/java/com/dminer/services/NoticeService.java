@@ -49,11 +49,11 @@ public class NoticeService implements INoticeService {
     }
     
 
-    public List<Notice> search(String keyword, boolean prod) {
+    public List<Notice> search(String keyword, String login, boolean prod) {
         List<Notice> notices = new ArrayList<>();
         if (keyword != null) {
             if (prod) {
-                notices = genericRepositorySqlServer.searchNotice(keyword);
+                notices = genericRepositorySqlServer.searchNotice(keyword, login);
             } else {
                 notices = genericRepositoryPostgres.searchNotice(keyword);
             }

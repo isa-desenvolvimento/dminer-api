@@ -293,7 +293,7 @@ public class GenericRepositorySqlServer {
     }
     
     
-    public List<Notice> searchNotice(String keyword) {
+    public List<Notice> searchNotice(String keyword, String login) {
         String query =
         "SELECT * " +
         "FROM NOTICE e " +
@@ -302,6 +302,7 @@ public class GenericRepositorySqlServer {
            "e.warning, ' ', " +
            "convert(varchar(100), e.date, 120))) " +
            "LIKE LOWER('%" +keyword+ "%') " +
+           "and e.creator = '" +login+ "' " +
            "order by date desc ";
 
         log.info("search = {}", query);
