@@ -70,7 +70,7 @@ public class UserController {
         user.setLogin(login);
         user.setUserName(userName);
         if (userService.existsByLoginAndUserName(login, userName)) {
-            log.info("existe por login e username: {} {}, avatar {}", login, userName, avatar.substring(0, 30));
+            log.info("existe por login e username: {} {}, avatar {}", login, userName, (avatar != null ? avatar.substring(0, 30) : ""));
             user = userService.findByLoginAndUserName(login, userName).get();
             if (avatar != null && !avatar.isBlank()) {
                 user.setAvatar(avatar);
@@ -79,7 +79,7 @@ public class UserController {
             return;
         } 
         if (userService.existsByLogin(login)) {
-            log.info("existe por login: {}, avatar {}", login,  avatar.substring(0, 30));
+            log.info("existe por login: {}, avatar {}", login,  (avatar != null ? avatar.substring(0, 30) : ""));
             user = userService.findByLogin(login).get();
             user.setUserName(userName);
             if (avatar != null && !avatar.isBlank()) {
@@ -88,7 +88,7 @@ public class UserController {
             userService.persist(user);
             return;
         }
-        log.info("NãO existe por login e username: {} {}, avatar {}", login, userName, avatar.substring(0, 30));
+        log.info("NãO existe por login e username: {} {}, avatar {}", login, userName, (avatar != null ? avatar.substring(0, 30) : ""));
         if (avatar != null && !avatar.isBlank()) {
             user.setAvatar(avatar);
         }
