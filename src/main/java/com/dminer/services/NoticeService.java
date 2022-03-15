@@ -61,9 +61,11 @@ public class NoticeService implements INoticeService {
         } else {
             notices = noticeRepository.findAllByOrderByDateDesc();
         }
-        // notices = notices.stream()
-        // .sorted(Comparator.comparing(Notice::getDate).reversed())
-        // .collect(Collectors.toList());
+
+        notices = notices.stream()
+        .filter(u -> u.getCreator().equals(login))
+        .collect(Collectors.toList());
+        
         return notices;
     }
     
