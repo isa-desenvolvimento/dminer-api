@@ -305,7 +305,7 @@ public class GenericRepositorySqlServer {
            "and e.creator = '" +login+ "' " +
            "order by date desc ";
 
-        log.info("search = {}", query);
+        log.info("searchNotice = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
             Notice e = new Notice();
@@ -330,7 +330,8 @@ public class GenericRepositorySqlServer {
            "e.title, ' ')) " +
            "LIKE LOWER('%" + keyword + "%') " +
            "ORDER BY create_date desc" ;
-        log.info("search = {}", query);
+
+        log.info("searchPost = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
@@ -354,7 +355,7 @@ public class GenericRepositorySqlServer {
            "e.title, ' ', " +
            "e.category_id, ' ')) " +           
            " LIKE LOWER('%" + keyword + "%')";
-        log.info("search = {}", query);
+        log.info("searchDocuments = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Document e = new Document();
@@ -430,7 +431,7 @@ public class GenericRepositorySqlServer {
         query += "    and user1_.login = '" + login + "' " ;
         query += " order by reminder_1.date desc  ";
         
-        log.info("search = {}", query);
+        log.info("searchReminder = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Reminder e = new Reminder();
