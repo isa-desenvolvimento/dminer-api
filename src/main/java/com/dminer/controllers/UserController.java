@@ -86,6 +86,10 @@ public class UserController {
             userService.persist(user);
             return;
         }
+        if (avatar != null && !avatar.isBlank()) {
+            user.setAvatar(avatar);
+        }
+        userService.persist(user);
     }
 
 
