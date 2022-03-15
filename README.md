@@ -53,6 +53,11 @@ git git@github.com:isa-desenvolvimento/dminer-api.git
 
 #### 💠O servidor inciará na porta:8081 - acesse <http://localhost:8081/api/swagger-ui.html>
 
+## Populando banco 🚀
+
+Copiar o script que tá no projeto ![script](https://github.com/dminer-git/intranet_backend/blob/main/sql/script-iniciar-projeto.sql)
+Colar no ![dbeaver](https://dbeaver.io/download/), seleciona tudo e dá um control enter.
+
 
 ### 🛠 Tecnologias
 
