@@ -171,13 +171,13 @@ public class BenefitsController {
     
 
     @GetMapping(value = "/search/{keyword}")
-    public ResponseEntity<Response<List<BenefitsDTO>>> search(@PathVariable String keyword) {
+    public ResponseEntity<Response<List<BenefitsDTO>>> search(@RequestHeader("x-access-adminUser") String perfil, @PathVariable String keyword) {
         
         Response<List<BenefitsDTO>> response = new Response<>();
-        if (keyword == null || keyword.isBlank()) {
-            response.addError(MessagesConst.INFORME_TERMO);
-            return ResponseEntity.badRequest().body(response);
-        }
+        // if (keyword == null || keyword.isBlank()) {
+        //     response.addError(MessagesConst.INFORME_TERMO);
+        //     return ResponseEntity.badRequest().body(response);
+        // }
 
         if (keyword.equalsIgnoreCase("null")) keyword = null;
         
@@ -191,6 +191,11 @@ public class BenefitsController {
         entities = entities.stream()
 		.sorted(Comparator.comparing(Benefits::getDate).reversed())
 		.collect(Collectors.toList());
+
+        if (perfil.equalsIgnoreCase("0")) {
+            entities = entities.stream().filter(e -> e.getPermission().getId() == 0).collect(Collectors.toList());
+        }
+
 
         List<BenefitsDTO> ret = new ArrayList<>();
         for (Benefits entity : entities) {        	
