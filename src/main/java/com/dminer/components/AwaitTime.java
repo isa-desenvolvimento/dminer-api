@@ -12,7 +12,7 @@ public class AwaitTime {
         // if (millis <= 0)
         //     return;
         try {
-            System.out.println("Esperando " + (timestamp / 60) + " segundo...");
+            System.out.println("Esperando " + (timestamp / 1000) + " segundos...");
             Thread.sleep(timestamp);
         } catch (InterruptedException e) {
             throw new RuntimeException(e.getMessage(), e);
