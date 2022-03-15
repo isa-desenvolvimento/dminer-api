@@ -1,0 +1,14 @@
+# requisitos mínimos:
+# Docker e Apache Maven (3.6.3 ou superior) instalados
+# Apache Maven: https://maven.apache.org/download.cgi
+# Docker: https://docs.docker.com/engine/install/ubuntu/
+
+#Passo 1 - clonar o e acessar a pasta do projeto
+git clone https://github.com/rhuanpablo13/dminer-api.git
+cd dminer-api
+
+# Passo 2 - executar o build do docker e executar o container
+docker build -t dminer-api .
+docker run -d -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=prod" --name dminer-api
+
+# Passo 3 - acessar o endereço: http://localhost:8080/api ou http://localhost:8080/api/swagger-ui.html
