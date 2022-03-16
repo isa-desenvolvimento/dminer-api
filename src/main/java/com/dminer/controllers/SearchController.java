@@ -169,7 +169,7 @@ public class SearchController {
         }        
 
         // notice
-        List<Notice> notices = noticeService.search(keyword, isProd());
+        List<Notice> notices = noticeService.search(keyword, login, isProd());
         if (!notices.isEmpty()) {
             notices.forEach(u -> {
                 searchDTO.getNoticeList().add(noticeConverter.entityToDTO(u));
