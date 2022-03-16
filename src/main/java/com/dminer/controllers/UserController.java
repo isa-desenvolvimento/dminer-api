@@ -200,9 +200,9 @@ public class UserController {
      * @param token
      * @return Lista de usuários sem o avatar
      */
-    @PostMapping(value = "/dropdown")
+    @PostMapping(value = "/dropdown/{avatar}")
     @Transactional(timeout = 99999)
-    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token) {
+    public ResponseEntity<Response<List<UserReductDTO>>> getDropDown(@RequestHeader("x-access-token") Token token, @PathVariable("avatar") boolean avatar) {
     	
         Response<List<UserReductDTO>> response = new Response<>();
         if (token.naoPreenchido()) { 
@@ -220,7 +220,9 @@ public class UserController {
                 List<UserReductDTO> usersReduct = new ArrayList<>();
                 findAll.get().forEach(user -> {
                     UserReductDTO dto = user.convertReductDto();
-                    dto.setAvatar(null);
+                    if (! avatar) {
+                        dto.setAvatar(null);
+                    }
                     usersReduct.add(dto);
                 });
                 response.setData(usersReduct);
