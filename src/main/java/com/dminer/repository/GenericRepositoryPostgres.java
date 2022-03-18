@@ -484,7 +484,9 @@ public class GenericRepositoryPostgres {
     
     public List<Post> searchPostsByDateOrUser(String date, Optional<User> user) {
         
-        String query = 
+        String query = "";
+
+        query = 
         "SELECT * " +
         "FROM post p FULL OUTER JOIN comment c on c.post_id = p.id ";
         String[] conditions = new String[]{};

@@ -50,6 +50,7 @@ import com.dminer.entities.User;
 import com.dminer.enums.PostType;
 import com.dminer.repository.FavoritesRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
+import com.dminer.repository.GenericRepositorySqlServer;
 import com.dminer.repository.ReactRepository;
 import com.dminer.repository.ReactUserRepository;
 import com.dminer.response.Response;
@@ -101,9 +102,12 @@ public class PostController {
 	@Autowired
 	private CommentConverter commentConverter;    
 	
-	@Autowired
-	private GenericRepositoryPostgres genericRepositoryPostgres;
+	// @Autowired
+	// private GenericRepositoryPostgres genericRepositoryPostgres;
 	
+	@Autowired
+	private GenericRepositorySqlServer genericRepositorySqlServer;
+
 	@Autowired
 	private FavoritesRepository favoritesRepository;
 
@@ -430,7 +434,7 @@ public class PostController {
         
 		optUser.get().setAvatar(userService.getAvatarEndpoint(optUser.get().getLogin()));
         
-        List<Comment> comments = genericRepositoryPostgres.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
+        List<Comment> comments = genericRepositorySqlServer.searchCommentsByPostIdAndDateAndUser(new Post(id), date, optUser);
 		
         PostDTO dto = postToDto(optPost.get(), comments);
 		dto.setReacts(getReacts(optPost.get()));
@@ -471,6 +475,7 @@ public class PostController {
     @Transactional(timeout = 50000)
     public ResponseEntity<Response<List<PostDTO>>> searchAll(@RequestHeader("x-access-token") Token token, @RequestParam(name = "date", required = false) String date, @RequestParam(name = "user", required = false) String user) {
         
+	  List<PostDTO> postsDto = new ArrayList<>();
         Response<List<PostDTO>> response = new Response<>();        
 		Optional<User> userOpt = Optional.empty();
 
@@ -479,21 +484,33 @@ public class PostController {
     		return ResponseEntity.badRequest().body(response);
         }
 
-		if (user != null && !user.isBlank()) {			
-			userOpt = userService.findByLogin(user);
-			if (!userOpt.isPresent()) {
-				response.addError("Nenhum usuário encontrado");
-				return ResponseEntity.ok().body(response);
-			}			
-		}
-        
-        List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
-		List<PostDTO> postsDto = new ArrayList<>();
-        
+	  if (user == null && date == null) {
+		List<Post> posts = postService.findAll();
 		for (Post p : posts) {
 			PostDTO dto = postToDto(p, null);
 			postsDto.add(dto);
 		}
+	
+		response.setData(postsDto);
+		return ResponseEntity.ok().body(response);
+	  }
+
+	  if (user != null && !user.isBlank()) {			
+		userOpt = userService.findByLogin(user);
+		if (!userOpt.isPresent()) {
+			response.addError("Nenhum usuário encontrado");
+			return ResponseEntity.ok().body(response);
+		}			
+	  }
+        
+        // List<Post> posts = genericRepositoryPostgres.searchPostsByDateOrUser(date, userOpt);
+	  List<Post> posts = genericRepositorySqlServer.searchPostsByDateOrUser(date, userOpt);
+	  
+        
+	  for (Post p : posts) {
+		PostDTO dto = postToDto(p, null);
+		postsDto.add(dto);
+	  }
 
         response.setData(postsDto);
         return ResponseEntity.ok().body(response);

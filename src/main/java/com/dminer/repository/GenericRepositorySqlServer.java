@@ -3,6 +3,7 @@ package com.dminer.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
+import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -345,7 +347,76 @@ public class GenericRepositorySqlServer {
         });
     }
     
+    public List<Comment> searchCommentsByPostIdAndDateAndUser(Post post, String date, Optional<User> user) {
+        String query = 
+        "SELECT * " +
+        "FROM comment e WHERE ";
+        String[] conditions = new String[]{};
+
+        conditions = Arrays.append(conditions, " e.post_id=" + post.getId());
+        if (date != null)
+            conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
+        if (user.isPresent())
+            conditions = Arrays.append(conditions, " e.user_id=" + user.get().getId());
+
+        if (!Arrays.isNullOrEmpty(conditions)) {
+            query += String.join(" and ", conditions);
+        }
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Comment e = new Comment();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+            e.setPost(post);
+            if (user.isPresent()) {
+                e.setUser(user.get());
+            } else {
+                Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+                if (findById.isPresent())
+                    e.setUser(findById.get());
+            }
+            return e;
+        });
+    }
+
     
+    public List<Post> searchPostsByDateOrUser(String date, Optional<User> user) {
+        
+        String query = "";
+
+        query = 
+        "SELECT * " +
+        "FROM post p FULL OUTER JOIN comment c on c.post_id = p.id ";
+        String[] conditions = new String[]{};
+
+        if (date != null)
+            conditions = Arrays.append(conditions, " c.timestamp='" + date + "' OR p.create_date='" + date + "'");
+        if (user.isPresent()) {            
+            conditions = Arrays.append(conditions, " c.user_id=" + user.get().getId() + " OR p.login='" + user.get().getLogin() + "'");
+        }
+
+        if (!Arrays.isNullOrEmpty(conditions)) {
+            query += "WHERE " + String.join(" and ", conditions);            
+        }
+
+        log.info("search = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Post e = new Post();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setLogin(rs.getString("LOGIN"));
+            e.setTitle(rs.getString("TITLE"));
+            PostType type = PostType.valueOf(rs.getString("TYPE"));
+            e.setType(type);
+            return e;
+        });
+    }
+
+
     public List<Document> searchDocuments(String keyword) {
         String query = 
         "SELECT * " +

@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import com.dminer.converters.TutorialsConverter;
 import com.dminer.dto.TutorialsRequestDTO;
 import com.dminer.dto.TutorialsDTO;
+import com.dminer.entities.Category;
 import com.dminer.entities.Tutorials;
 import com.dminer.repository.CategoryRepository;
 import com.dminer.repository.GenericRepositoryPostgres;
@@ -115,7 +116,9 @@ public class TutorialsController {
             result.addError(new ObjectError("dto", "Categoria precisa estar preenchido."));
 		} else {
             if(!categoryRepository.existsByName(dto.getCategory())) {
-                result.addError(new ObjectError("dto", "Categoria não é válida."));
+                if(!categoryRepository.existsById(Integer.parseInt(dto.getCategory()))) {
+                    result.addError(new ObjectError("dto", "Categoria não é válida."));
+                }    
             }
         }
 
@@ -168,7 +171,11 @@ public class TutorialsController {
         Tutorials tutorial = tutorialsConverter.dtoToEntity(dto);
 
         tutorial = tutorialsRepository.save(tutorial);
-        response.setData(dto);
+
+        // Optional<Category> findById = categoryRepository.findById(Integer.parseInt(dto.getCategory()));
+        // dto.setCategory(findById.get().getName());
+
+        response.setData(tutorialsConverter.entityToDTO(tutorial));
         return ResponseEntity.ok().body(response);
     }
 
@@ -188,9 +195,15 @@ public class TutorialsController {
             return ResponseEntity.ok().body(response);
         }
 
-        if (! perfil.equalsIgnoreCase("1") && tutorial.get().getPermission().equalsIgnoreCase("0")) {
+        if (perfil.equalsIgnoreCase("1")) {
             response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
+        } else {
+            if (perfil.equalsIgnoreCase("0")  && tutorial.get().getPermission().equalsIgnoreCase("0")) {
+                response.setData(tutorialsConverter.entityToDTO(tutorial.get()));
+            }
         }
+
+        
         return ResponseEntity.ok().body(response);            
     }
 
@@ -218,7 +231,7 @@ public class TutorialsController {
             return ResponseEntity.ok().body(response);
         }
         
-        if (! perfil.equalsIgnoreCase("1")) {
+        if (perfil.equalsIgnoreCase("0")) {
             search2 = search2.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
         }
 
@@ -268,7 +281,7 @@ public class TutorialsController {
 
         List<TutorialsDTO> eventos = new ArrayList<>();
 
-        if (! perfil.equalsIgnoreCase("1")) {
+        if (perfil.equalsIgnoreCase("0")) {
             tutorials = tutorials.stream().filter(d -> d.getPermission().equalsIgnoreCase("0")).collect(Collectors.toList());
         }
 
