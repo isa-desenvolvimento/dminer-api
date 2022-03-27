@@ -53,6 +53,40 @@ git git@github.com:isa-desenvolvimento/dminer-api.git
 
 #### 💠O servidor inciará na porta:8081 - acesse <http://localhost:8081/api/swagger-ui.html>
 
+<<<<<<< HEAD
+=======
+## Populando banco 🚀
+
+Copiar o script que tá no projeto [script](https://github.com/dminer-git/intranet_backend/blob/main/sql/script-iniciar-projeto.sql)
+Colar no [dbeaver](https://dbeaver.io/download/), seleciona tudo e dá um control enter.
+
+```   
+INSERT INTO category (id,"name") VALUES
+(0,'CATEGORY DEFAULT'),
+(1,'CATEGORY MASTER');
+
+INSERT INTO "permission" (id,"name") VALUES
+(0,'USUÁRIO-INTRANET'),
+(1,'ADMINISTRADOR');
+
+INSERT INTO priority (id,"name") VALUES
+(1,'Alta'),
+(2,'Média'),
+(3,'Baixa');
+
+INSERT INTO profile (id,describle) VALUES
+(0,'PROFILE1'),
+(1,'PROFILE2');
+
+INSERT INTO react (id,react) VALUES
+(1,'D-TERMINADO'),
+(2,'D-MAIS'),
+(3,'D-SLUMBRADO'),
+(4,'D-SACREDITADO'),
+(5,'D-IVERTIDO');
+```
+
+>>>>>>> 4a759be32a0bd289b640249a61fd7f5c7180a4f4
 
 ### 🛠 Tecnologias
 
@@ -60,4 +94,8 @@ git git@github.com:isa-desenvolvimento/dminer-api.git
 
 - [Java](https://www.oracle.com/java/technologies/javase/jdk15-archive-downloads.html)
 - [Maven](https://maven.apache.org/docs/3.6.3/release-notes.html) 
+<<<<<<< HEAD
 - [Spring Boot](https://spring.io/projects/spring-boot)
+=======
+- [Spring Boot](https://spring.io/projects/spring-boot)
+>>>>>>> 4a759be32a0bd289b640249a61fd7f5c7180a4f4

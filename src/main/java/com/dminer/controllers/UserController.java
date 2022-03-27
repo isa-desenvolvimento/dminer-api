@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dminer.components.AwaitTime;
 import com.dminer.converters.UserConverter;
 import com.dminer.dto.PermissionUserDTO;
 import com.dminer.dto.Token;
@@ -210,6 +211,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
 
+        AwaitTime.waitUntil(AwaitTime.segundos_3);
+
         if (DminerWebService.getInstance().jaProcessouUsuarios() == false) {
 
             Optional<List<User>> findAll = userService.findAll();
@@ -220,7 +223,7 @@ public class UserController {
                 List<UserReductDTO> usersReduct = new ArrayList<>();
                 findAll.get().forEach(user -> {
                     UserReductDTO dto = user.convertReductDto();
-                    if (! avatar) {
+                    if (avatar == false) {
                         dto.setAvatar(null);
                     }
                     usersReduct.add(dto);
@@ -238,6 +241,9 @@ public class UserController {
 
         carregarUsuariosApiReduct.forEach(user -> {
             criarNovoUser(user.getLogin(), user.getUserName(), user.getAvatar());
+            if (avatar == false) {
+                user.setAvatar(null);
+            }
         });
 
         response.setData(carregarUsuariosApiReduct); 

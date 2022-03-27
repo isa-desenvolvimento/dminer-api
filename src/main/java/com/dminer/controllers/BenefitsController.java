@@ -87,11 +87,11 @@ public class BenefitsController {
 
         Response<BenefitsDTO> response = new Response<>();
 
-        validateDto(dto, result);
-        if (result.hasErrors()) {
-            response.addErrors(result);
-            return ResponseEntity.badRequest().body(response);
-        }
+        //validateDto(dto, result);
+        // if (result.hasErrors()) {
+        //     response.addErrors(result);
+        //     return ResponseEntity.badRequest().body(response);
+        // }
 
         Benefits benefits = benefitsRepository.save(benefitsConverter.dtoToEntity(dto));
         response.setData(benefitsConverter.entityToDto(benefits));
@@ -209,9 +209,9 @@ public class BenefitsController {
 
     private void validateRequestDto(BenefitsRequestDTO dto, BindingResult result) {
         String login = dto.getCreator();
-        if (! validators.existsUserByLogin(login)) {
-            result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
-        }
+        // if (! validators.existsUserByLogin(login)) {
+        //     result.addError(new ObjectError("dto", "Usuário: " + login + " não encontrado."));
+        // }
 
         if (!UtilDataHora.isTimestampValid(dto.getDate())) {
             result.addError(new ObjectError("dto", "Data precisa estar preenchida no formato yyyy-mm-dd hh:mm:ss, porém foi informado: " + dto.getDate()));

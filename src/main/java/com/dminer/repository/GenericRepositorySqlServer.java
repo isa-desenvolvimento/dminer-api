@@ -3,6 +3,7 @@ package com.dminer.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dminer.entities.Benefits;
 import com.dminer.entities.Category;
+import com.dminer.entities.Comment;
 import com.dminer.entities.Document;
 import com.dminer.entities.Events;
 import com.dminer.entities.Notice;
@@ -211,8 +213,7 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM BENEFITS e " +
         "WHERE LOWER(CONCAT( " +
-        "e.title, ' ', e.content, ' ', " +
-           "convert(varchar(100), e.date, 120))) " +
+        "e.title, ' ', e.content, ' ', e.id, ' ' )) " +
            "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
@@ -242,9 +243,8 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM TUTORIALS e " +
         "WHERE LOWER(CONCAT( " +
-           " e.category_id, ' ', e.title, ' ', e.permission, ' ', e.content, " +
-           "' ', convert(varchar(100), e.date, 120))) " +
-           "LIKE LOWER('%" +keyword+ "%')";
+           " e.category_id, ' ', e.title, ' ', e.permission, ' ', e.content, ' ', e.id, ' ' )) " +
+           " LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -327,6 +327,7 @@ public class GenericRepositorySqlServer {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
+           "convert(varchar(10), e.create_date, 120), ' ', " +
            "e.title, ' ')) " +
            "LIKE LOWER('%" + keyword + "%') " +
            "ORDER BY create_date desc" ;
@@ -345,15 +346,86 @@ public class GenericRepositorySqlServer {
         });
     }
     
+    public List<Comment> searchCommentsByPostIdAndDateAndUser(Post post, String date, Optional<User> user) {
+        
+        String keyword = "";
+        if (date !=  null) keyword += date;
+        if (user.isPresent()) keyword += (" " + user.get().getId());
+        String query = 
+        "SELECT * " +
+        "FROM comment e WHERE LOWER(CONCAT( " +
+        " e.post_id, ' ', " +
+        " convert(varchar(10), e.timestamp, 120), ' ', " +
+        " e.user_id, ' ', " +
+        " e.content, ' ' )) " +
+        "LIKE LOWER('%" + keyword + "%') " +
+        "ORDER BY create_date desc" ;
+       
+
+        log.info("searchCommentsByPostIdAndDateAndUser = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Comment e = new Comment();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setTimestamp(rs.getTimestamp("TIMESTAMP"));
+            e.setPost(post);
+            if (user.isPresent()) {
+                e.setUser(user.get());
+            } else {
+                Optional<User> findById = userRepository.findById(rs.getInt("USER_ID"));
+                if (findById.isPresent())
+                    e.setUser(findById.get());
+            }
+            return e;
+        });
+    }
+
     
+    public List<Post> searchPostsByDateOrUser(String date, Optional<User> user) {
+        
+        String query = "";
+
+        query = 
+        "SELECT * " +
+        "FROM post p FULL OUTER JOIN comment c on c.post_id = p.id ";
+        String[] conditions = new String[]{};
+
+        if (date != null)
+            conditions = Arrays.append(
+                conditions, " c.timestamp between " + date + " 00:00:00 and " + date + " 23:59:59 " + " OR p.create_date between " + date + " 00:00:00 and " + date + " 23:59:59 "
+            );
+        if (user.isPresent()) {            
+            conditions = Arrays.append(conditions, " c.user_id=" + user.get().getId() + " OR p.login='" + user.get().getLogin() + "'");
+        }
+
+        if (!Arrays.isNullOrEmpty(conditions)) {
+            query += "WHERE " + String.join(" and ", conditions);            
+        }
+
+        log.info("searchPostsByDateOrUser = {}", query);
+
+        return jdbcOperations.query(query, (rs, rowNum) -> { 
+        	Post e = new Post();
+            e.setId(rs.getInt("ID"));
+            e.setContent(rs.getString("CONTENT"));
+            e.setLogin(rs.getString("LOGIN"));
+            e.setTitle(rs.getString("TITLE"));
+            PostType type = PostType.valueOf(rs.getString("TYPE"));
+            e.setType(type);
+            return e;
+        });
+    }
+
+
     public List<Document> searchDocuments(String keyword) {
         String query = 
         "SELECT * " +
         "FROM DOCUMENT e " +
         "WHERE LOWER(CONCAT( " +
-           "e.content_link, ' ', " +
-           "e.title, ' ', " +
-           "e.category_id, ' ')) " +           
+           " e.content_link, ' ', " +
+           " e.title, ' ', " +
+           " e.category_id, ' ')) " +           
            " LIKE LOWER('%" + keyword + "%')";
         log.info("searchDocuments = {}", query);
 

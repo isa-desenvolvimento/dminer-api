@@ -23,7 +23,7 @@ public class ReminderConverter {
         reminder.setId(dto.getId());
         reminder.setReminderDescrible(dto.getReminder());
         reminder.setDate(UtilDataHora.toTimestamp(dto.getDate()));
-        reminder.setChecked(dto.getChecked() == null ? false : true);
+        reminder.setChecked(dto.getChecked() == null ? false : dto.getChecked());
         Optional<User> findById = userService.findByLogin(dto.getLogin());
         if (findById.isPresent()) {
             reminder.setUser(findById.get());
@@ -36,7 +36,8 @@ public class ReminderConverter {
         Reminder reminder = new Reminder();
         reminder.setReminderDescrible(dto.getReminder());
         reminder.setDate(UtilDataHora.toTimestamp(dto.getDate()));
-        reminder.setChecked(dto.getChecked() == null ? false : true);
+        
+        reminder.setChecked(dto.getChecked() == null ? false : dto.getChecked());
         Optional<User> findById = userService.findByLogin(dto.getLogin());
         if (findById.isPresent()) {
             reminder.setUser(findById.get());

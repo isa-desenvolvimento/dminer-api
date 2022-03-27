@@ -57,18 +57,18 @@ public class Post {
 	@Column
 	private String title;
 	
-	@Column
+	@Column(length = 9999)
 	private String content; 
 
     @Lob
     @Column()
-    // @Column(length = 9999999)
     private String anexo;
     
 	@Column
 	private String login;
     
 	@Column
+	@Builder.Default
 	private Timestamp createDate = Timestamp.from(Instant.now());
 	
 	

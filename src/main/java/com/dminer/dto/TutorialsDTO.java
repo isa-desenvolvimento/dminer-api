@@ -22,4 +22,8 @@ public class TutorialsDTO {
     private String category;
     private String permission;
     private String image;
+
+    public String toString() {
+        return "TutorialDTO = id:" + id + ", title:" + title + ", content:" + content + ", date:" + date + ", category:" + category + ", permission:" + permission + ", image:" + image.substring(0, 30) + "\n"; 
+    }
 }
