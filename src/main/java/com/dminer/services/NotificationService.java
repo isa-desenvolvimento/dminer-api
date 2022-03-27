@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import com.dminer.entities.FullCalendar;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
 import com.dminer.entities.Post;
@@ -88,6 +88,28 @@ public class NotificationService implements INotificationService {
             persist(notification);
         } else {
             log.info("Usuário {} não encontrado na base de dados local", login);
+        }
+    }
+
+
+    /**
+     * Cria uma notificação para cada usuário marcado no evento de calendário
+     * @param user
+     * @param content
+     */
+    public void newNotificationFromCalendarEvent(FullCalendar calendar) {
+        String user = calendar.getCreator();
+        String content = calendar.getTitle();
+
+        Notification notification = new Notification();
+        notification.setCreateDate(Timestamp.from(Instant.now()));
+        notification.setNotification("Novo evento calendário foi criado: " + content);
+        Optional<User> userTemp = userService.findByLogin(user);
+        if (userTemp.isPresent()) {
+            notification.setUser(userTemp.get());
+            persist(notification);
+        } else {
+            log.info("Usuário {} não encontrado na base de dados local", user);
         }
     }
 

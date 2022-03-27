@@ -6,6 +6,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -18,11 +20,17 @@ public class UtilDataHora {
     private static final Logger log = LoggerFactory.getLogger(UtilDataHora.class);
 
 
+    public static LocalDateTime now(ZoneId zoneId) {
+        return LocalDateTime.now(zoneId);
+    }
+
+
     /**
      * Recebe uma data no formato dd/mm/yyyy e verifica se faz ou fez aniversário no mês atual
      * @param String
      * @return
      */
+    
     public static boolean isAniversariante(String dateStr) {
     	Date date = UtilDataHora.stringToDate(dateStr);    	
     	Date currentDate = new Date(currentFirstDayTimestamp().getTime());   	
@@ -234,4 +242,23 @@ public class UtilDataHora {
         return null;
     }
 
+   
+    public static LocalDateTime localDateTime(int year, int month, int day, int hour, int minute, ZoneId zoneId) {
+        return LocalDateTime.of(year, month, day, hour, minute).atZone(zoneId).toLocalDateTime();
+    }
+
+    public static LocalDateTime localDateTime(Timestamp timestamp, ZoneId zoneId) {
+        
+        LocalDateTime localDateTime = timestamp.toLocalDateTime();
+        System.out.println("get localDateTime from: " + localDateTime.getYear() + " - " + localDateTime.getMonthValue() + " - " + localDateTime.getDayOfMonth() + " - " + localDateTime.getHour() + " - " + localDateTime.getMinute());
+
+        return localDateTime(
+            localDateTime.getYear(),
+            localDateTime.getMonthValue(),
+            localDateTime.getDayOfMonth(),
+            localDateTime.getHour(),
+            localDateTime.getMinute(), 
+            zoneId
+        );
+    }
 }

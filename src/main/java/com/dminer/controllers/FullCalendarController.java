@@ -2,9 +2,11 @@ package com.dminer.controllers;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -18,7 +20,11 @@ import com.dminer.entities.User;
 import com.dminer.response.Response;
 import com.dminer.services.FullCalendarService;
 import com.dminer.services.NotificationService;
+import com.dminer.services.TaskDefinitionRunnable;
+import com.dminer.services.TaskSchedulingService;
 import com.dminer.services.UserService;
+import com.dminer.sse.SseEmitterEventsCalendar;
+import com.dminer.utils.UtilDataHora;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +51,7 @@ import lombok.RequiredArgsConstructor;
 public class FullCalendarController {
     
     private static final Logger log = LoggerFactory.getLogger(FullCalendarController.class);
+    private static final ZoneId saoPauloZoneId = ZoneId.of("America/Sao_Paulo");
 
     @Autowired
     private FullCalendarService fullCalendarService;
@@ -52,16 +59,22 @@ public class FullCalendarController {
     @Autowired 
     private FullCalendarConverter fullCalendarConverter;
 
-    @Autowired 
-    private ServerSendEvents sendEvents;
-
     @Autowired
     private NotificationService notificationService;
 
     @Autowired
     private UserService userService;
 
-    
+    @Autowired
+    private SseEmitterEventsCalendar sseEmitterEventsCalendar;
+
+    @Autowired
+    private TaskSchedulingService taskSchedulingService;
+
+    @Autowired
+    private TaskDefinitionRunnable taskDefinitionRunnable;
+
+
 
     @PostMapping
     public ResponseEntity<Response<FullCalendarDTO>> create(@Valid @RequestBody FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
@@ -70,7 +83,7 @@ public class FullCalendarController {
         validateRequestDto(fullCalendarRequestDTO, result);
         if (result.hasErrors()) {
             log.info("Erro validando fullCalendarRequestDTO: {}", fullCalendarRequestDTO);
-            result.getAllErrors().forEach( e -> response.getErrors().add(e.getDefaultMessage()));
+            response.addErrors(result);
             return ResponseEntity.badRequest().body(response);
         }
         
@@ -78,25 +91,34 @@ public class FullCalendarController {
         FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
         response.setData(dto);
 
-        // notification.setUser();
-        dto.getUsers().forEach(user -> {
-            log.info("Criando notificação para o usuário: " + user + " a partir de um evento calendário: {}", events);
-            createUserNotification(user, dto.getTitle());            
-        });
-
         if (! dto.getUsers().isEmpty()) {
             createUserCalendarEvent(fullCalendarRequestDTO);
+            dto.getUsers().forEach(user -> {
+                log.info("Criando notificação para o usuário: " + user + " a partir de um evento calendário: {}", events);
+                createUserNotification(user, dto.getTitle());            
+            });
         }
 
-        createUserNotification(dto.getCreator(), dto.getTitle());
+        notificationService.newNotificationFromCalendarEvent(events);
+
+        String id = UUID.randomUUID().toString();
+        String message = "O evento: " + dto.getTitle() + ", acontecerá em 1 hora";
         
-        log.info("Disparando evento de calendário");
-        sendEvents.setEventCalendar(dto);
-        sendEvents.streamSseCalendar();
+        sseEmitterEventsCalendar.setCalendar(events);
+        taskDefinitionRunnable.setSseEmitterEvent(sseEmitterEventsCalendar, message);
+        Timestamp initTimestamp = UtilDataHora.toTimestamp(dto.getStart());
         
+        taskSchedulingService.scheduleATask(
+            id, taskDefinitionRunnable, initTimestamp, 59, saoPauloZoneId
+        );
+
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * Cria um evento de calendário nos usuários marcados 
+     * @param dto
+     */
     private void createUserCalendarEvent(FullCalendarRequestDTO dto) {
         
         List<String> users = dto.getUsers();
@@ -112,6 +134,11 @@ public class FullCalendarController {
     }
 
 
+    /**
+     * Cria uma notificação para cada usuário marcado no evento de calendário
+     * @param user
+     * @param content
+     */
     private void createUserNotification(String user, String content) {
         Notification notification = new Notification();
         notification.setCreateDate(Timestamp.from(Instant.now()));

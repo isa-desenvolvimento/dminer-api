@@ -1,8 +1,14 @@
 package com.dminer.controllers;
 
+import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.util.UUID;
+
 import com.dminer.entities.TaskDefinition;
-import com.dminer.services.TaskDefinitionBean;
+import com.dminer.services.TaskDefinitionRunnable;
 import com.dminer.services.TaskSchedulingService;
+import com.dminer.sse.SseEmitterEvents;
+import com.dminer.utils.UtilDataHora;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,15 +26,20 @@ public class JobSchedulingController {
     private TaskSchedulingService taskSchedulingService;
 
     @Autowired
-    private TaskDefinitionBean taskDefinitionBean;
+    private TaskDefinitionRunnable taskDefinitionBean;
 
-    @PostMapping(path="/taskdef", consumes = "application/json", produces="application/json")
+    @Autowired
+    private SseEmitterEvents sseEmitterEvents;
+
+    @PostMapping(path="/task-def", consumes = "application/json", produces="application/json")
     public void scheduleATask(@RequestBody TaskDefinition taskDefinition) {
-        taskDefinitionBean.setTaskDefinition(taskDefinition);
-        taskSchedulingService.scheduleATask("1", taskDefinitionBean, taskDefinition.getCronExpression(), taskDefinition.getDelay());
-        
-        
-        // UUIDGenerator.generateUuid()
+
+        taskDefinitionBean.setSseEmitterEvent(sseEmitterEvents, taskDefinition.getData());
+        Timestamp initTimestamp = UtilDataHora.toTimestamp(taskDefinition.getDateTime());
+
+        taskSchedulingService.scheduleATask(
+            UUID.randomUUID().toString(), taskDefinitionBean, initTimestamp, taskDefinition.getMinutesReverse(), ZoneId.of("America/Sao_Paulo")
+        );
     }
 
     @GetMapping(path="/remove/{jobid}")
