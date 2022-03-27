@@ -62,7 +62,6 @@ public class Post {
 
     @Lob
     @Column()
-    // @Column(length = 9999999)
     private String anexo;
     
 	@Column
