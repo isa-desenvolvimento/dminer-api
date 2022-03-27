@@ -57,7 +57,7 @@ public class Post {
 	@Column
 	private String title;
 	
-	@Column
+	@Column(length = 9999)
 	private String content; 
 
     @Lob
@@ -69,6 +69,7 @@ public class Post {
 	private String login;
     
 	@Column
+	@Builder.Default
 	private Timestamp createDate = Timestamp.from(Instant.now());
 	
 	

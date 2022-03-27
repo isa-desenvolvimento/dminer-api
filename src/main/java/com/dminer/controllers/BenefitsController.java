@@ -87,11 +87,11 @@ public class BenefitsController {
 
         Response<BenefitsDTO> response = new Response<>();
 
-        validateDto(dto, result);
-        if (result.hasErrors()) {
-            response.addErrors(result);
-            return ResponseEntity.badRequest().body(response);
-        }
+        //validateDto(dto, result);
+        // if (result.hasErrors()) {
+        //     response.addErrors(result);
+        //     return ResponseEntity.badRequest().body(response);
+        // }
 
         Benefits benefits = benefitsRepository.save(benefitsConverter.dtoToEntity(dto));
         response.setData(benefitsConverter.entityToDto(benefits));

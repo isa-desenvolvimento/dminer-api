@@ -213,8 +213,7 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM BENEFITS e " +
         "WHERE LOWER(CONCAT( " +
-        "e.title, ' ', e.content, ' ', " +
-           "convert(varchar(100), e.date, 120))) " +
+        "e.title, ' ', e.content, ' ', e.id, ' ' )) " +
            "LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
@@ -244,9 +243,8 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM TUTORIALS e " +
         "WHERE LOWER(CONCAT( " +
-           " e.category_id, ' ', e.title, ' ', e.permission, ' ', e.content, " +
-           "' ', convert(varchar(100), e.date, 120))) " +
-           "LIKE LOWER('%" +keyword+ "%')";
+           " e.category_id, ' ', e.title, ' ', e.permission, ' ', e.content, ' ', e.id, ' ' )) " +
+           " LIKE LOWER('%" +keyword+ "%')";
 
         log.info("search = {}", query);
 
@@ -329,6 +327,7 @@ public class GenericRepositorySqlServer {
            "e.content, ' ', " +           
            "e.type, ' ', " +
            "e.login, ' ', " +
+           "convert(varchar(10), e.create_date, 120), ' ', " +
            "e.title, ' ')) " +
            "LIKE LOWER('%" + keyword + "%') " +
            "ORDER BY create_date desc" ;
@@ -348,22 +347,22 @@ public class GenericRepositorySqlServer {
     }
     
     public List<Comment> searchCommentsByPostIdAndDateAndUser(Post post, String date, Optional<User> user) {
+        
+        String keyword = "";
+        if (date !=  null) keyword += date;
+        if (user.isPresent()) keyword += (" " + user.get().getId());
         String query = 
         "SELECT * " +
-        "FROM comment e WHERE ";
-        String[] conditions = new String[]{};
+        "FROM comment e WHERE LOWER(CONCAT( " +
+        " e.post_id, ' ', " +
+        " convert(varchar(10), e.timestamp, 120), ' ', " +
+        " e.user_id, ' ', " +
+        " e.content, ' ' )) " +
+        "LIKE LOWER('%" + keyword + "%') " +
+        "ORDER BY create_date desc" ;
+       
 
-        conditions = Arrays.append(conditions, " e.post_id=" + post.getId());
-        if (date != null)
-            conditions = Arrays.append(conditions, " e.timestamp='" + date + "'");
-        if (user.isPresent())
-            conditions = Arrays.append(conditions, " e.user_id=" + user.get().getId());
-
-        if (!Arrays.isNullOrEmpty(conditions)) {
-            query += String.join(" and ", conditions);
-        }
-
-        log.info("search = {}", query);
+        log.info("searchCommentsByPostIdAndDateAndUser = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Comment e = new Comment();
@@ -393,7 +392,9 @@ public class GenericRepositorySqlServer {
         String[] conditions = new String[]{};
 
         if (date != null)
-            conditions = Arrays.append(conditions, " c.timestamp='" + date + "' OR p.create_date='" + date + "'");
+            conditions = Arrays.append(
+                conditions, " c.timestamp between " + date + " 00:00:00 and " + date + " 23:59:59 " + " OR p.create_date between " + date + " 00:00:00 and " + date + " 23:59:59 "
+            );
         if (user.isPresent()) {            
             conditions = Arrays.append(conditions, " c.user_id=" + user.get().getId() + " OR p.login='" + user.get().getLogin() + "'");
         }
@@ -402,7 +403,7 @@ public class GenericRepositorySqlServer {
             query += "WHERE " + String.join(" and ", conditions);            
         }
 
-        log.info("search = {}", query);
+        log.info("searchPostsByDateOrUser = {}", query);
 
         return jdbcOperations.query(query, (rs, rowNum) -> { 
         	Post e = new Post();
@@ -422,9 +423,9 @@ public class GenericRepositorySqlServer {
         "SELECT * " +
         "FROM DOCUMENT e " +
         "WHERE LOWER(CONCAT( " +
-           "e.content_link, ' ', " +
-           "e.title, ' ', " +
-           "e.category_id, ' ')) " +           
+           " e.content_link, ' ', " +
+           " e.title, ' ', " +
+           " e.category_id, ' ')) " +           
            " LIKE LOWER('%" + keyword + "%')";
         log.info("searchDocuments = {}", query);
 

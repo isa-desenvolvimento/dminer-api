@@ -46,6 +46,9 @@ public class BirthdayController {
         }
 
         List<UserDTO> aniversariantes = userService.getAniversariantes(token.getToken(), true);
+        if (keyword.equalsIgnoreCase("null")) {
+            keyword = null;
+        }
         
         if (keyword != null) {
             aniversariantes = userService.search(aniversariantes, keyword);
