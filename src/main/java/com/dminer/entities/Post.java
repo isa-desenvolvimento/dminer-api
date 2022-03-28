@@ -57,7 +57,8 @@ public class Post {
 	@Column
 	private String title;
 	
-	@Column(length = 9999)
+	@Lob
+    @Column()
 	private String content; 
 
     @Lob
