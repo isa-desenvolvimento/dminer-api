@@ -171,6 +171,14 @@ public class FullCalendarController {
             return ResponseEntity.ok().body(response);
         }
 
+        // se a data fim do evento for null ou maior que a data atual
+        // pode adicionar a fila de disparos de eventos
+        if (calendar.get().getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
+            if (! taskSchedulingService.exists(calendar.get().getId().toString())) {
+                generateTaskSchedule(calendar.get());
+            }
+        }
+
         response.setData(fullCalendarConverter.entityToDto(calendar.get()));
         return ResponseEntity.ok().body(response);
     }
@@ -196,6 +204,8 @@ public class FullCalendarController {
             response.getErrors().add("Calendário não encontrado");
             return ResponseEntity.ok().body(response);
         }
+
+        taskSchedulingService.removeScheduledTask(calendar.get().getId().toString());
 
         response.setData(fullCalendarConverter.entityToDto(calendar.get()));
         return ResponseEntity.ok().body(response);
