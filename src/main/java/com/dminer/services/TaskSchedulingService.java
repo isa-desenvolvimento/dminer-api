@@ -56,6 +56,11 @@ public class TaskSchedulingService {
         }
     }
 
+    public boolean exists(String jobId) {
+        ScheduledFuture<?> scheduledTask = jobsMap.get(jobId);
+        return (scheduledTask != null);
+    }
+    
     private boolean isSameYearMonthDayHour(LocalDateTime localDateTime1, LocalDateTime localDateTime2) {
         return 
         localDateTime1.getYear() == localDateTime2.getYear() && 

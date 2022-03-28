@@ -2,6 +2,7 @@ package com.dminer.controllers;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,19 +101,21 @@ public class FullCalendarController {
         }
 
         notificationService.newNotificationFromCalendarEvent(events);
+        generateTaskSchedule(events);
 
-        String id = UUID.randomUUID().toString();
-        String message = "O evento: " + dto.getTitle() + ", acontecerá em 1 hora";
+        return ResponseEntity.ok().body(response);
+    }
+
+    private void generateTaskSchedule(FullCalendar events) {
+        String id = events.getId().toString();
+        String message = "O evento: " + events.getTitle() + ", acontecerá em 1 hora";
         
         sseEmitterEventsCalendar.setCalendar(events);
         taskDefinitionRunnable.setSseEmitterEvent(sseEmitterEventsCalendar, message);
-        Timestamp initTimestamp = UtilDataHora.toTimestamp(dto.getStart());
         
         taskSchedulingService.scheduleATask(
-            id, taskDefinitionRunnable, initTimestamp, 59, saoPauloZoneId
+            id, taskDefinitionRunnable, events.getStart(), 59, saoPauloZoneId
         );
-
-        return ResponseEntity.ok().body(response);
     }
 
     /**
@@ -211,9 +214,18 @@ public class FullCalendarController {
         }
 
         List<FullCalendarDTO> calendarios = new ArrayList<>();
-        calendar.get().forEach(u -> {
-            calendarios.add(fullCalendarConverter.entityToDto(u));
+        calendar.get().forEach(event -> {
+            calendarios.add(fullCalendarConverter.entityToDto(event));
+
+            // se a data fim do evento for null ou maior que a data atual
+            // pode adicionar a fila de disparos de eventos
+            if (event.getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
+                if (! taskSchedulingService.exists(event.getId().toString())) {
+                    generateTaskSchedule(event);
+                }
+            }
         });
+
         response.setData(calendarios);
         return ResponseEntity.ok().body(response);
     }
@@ -237,8 +249,17 @@ public class FullCalendarController {
 
         List<FullCalendarDTO> calendariosDto = new ArrayList<>();
         
-        calendarios.forEach(u -> {
-            calendariosDto.add(fullCalendarConverter.entityToDto(u));
+        calendarios.forEach(event -> {
+            calendariosDto.add(fullCalendarConverter.entityToDto(event));
+
+            // se a data fim do evento for null ou maior que a data atual
+            // pode adicionar a fila de disparos de eventos
+            if (event.getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
+                if (! taskSchedulingService.exists(event.getId().toString())) {
+                    generateTaskSchedule(event);
+                }
+            }
+
         });
         
         response.setData(calendariosDto);

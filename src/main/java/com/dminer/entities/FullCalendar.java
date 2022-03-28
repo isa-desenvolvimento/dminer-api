@@ -1,6 +1,7 @@
 package com.dminer.entities;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,5 +60,6 @@ public class FullCalendar {
     // @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private List<User> users = new ArrayList<>();
+
 
 }
