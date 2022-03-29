@@ -16,4 +16,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     public List<Notification> search(String keyword);
 
     public List<Notification> findByUserOrAllUsersOrderByCreateDateDesc(User user, boolean allUsers);
+
+    public List<Notification> findByUserOrderByCreateDateDesc(User user);
 }

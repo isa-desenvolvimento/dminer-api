@@ -30,7 +30,8 @@ public class SseEmitterEventsCalendar implements SseEmitterEvents {
                 emitter.send(json);
                 emitter.complete();
                 if (calendar != null) {
-                    notificationService.newNotificationFromCalendarEvent(calendar);
+                    boolean allUsers = calendar.getUsers().isEmpty() ? true : false;
+                    notificationService.newNotificationFromCalendarEvent(calendar.getCreator(), json, allUsers);
                 }
                 Thread.sleep(3000);
             }catch (Exception ex) {

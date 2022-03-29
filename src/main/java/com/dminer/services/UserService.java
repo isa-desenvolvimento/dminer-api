@@ -341,8 +341,15 @@ public class UserService implements IUserService {
 		AwaitTime.waitUntil(AwaitTime.segundos_5);
 
         if (usuarios == null || usuarios.hasError()) {
-			log.info("Erro ao buscar aniversariantes");
-			return null;
+			log.info("Erro ao buscar aniversariantes ");
+			usuarios.getOutput().getMessages().forEach(e -> log.info(e));
+			// return null;
+
+			// findAll().get().forEach(usuario -> {
+			// 	if (usuario.get != null && UtilDataHora.isAniversariante(usuario.getBirthDate())) {
+			// 		aniversariantes.add(usuario.toUserDTO(buscarAvatar));
+			// 	}
+			// });
 		}
         
         List<UserDTO> aniversariantes = new ArrayList<UserDTO>();

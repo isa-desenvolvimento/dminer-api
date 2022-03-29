@@ -66,41 +66,36 @@ public final class DminerWebService {
 	
 	public UserRestModel<Usuario> getUsuariosApi(String token) {
 		
-		try {
-			log.info("getUsuariosApi");
-			ExecutorService threadpool = Executors.newCachedThreadPool();
-			Future<UserRestModel<Usuario>> futureTask = threadpool.submit(() -> carregarUsuarios(token));
-			while (!futureTask.isDone()) {
-				// System.out.println("FutureTask is not finished yet..."); 
-			}
-			log.info("resultUsuarios");
-			UserRestModel<Usuario> result = futureTask.get();			
-			threadpool.shutdown();
-
-
-			ExecutorService threadpool2 = Executors.newCachedThreadPool();
-			Future<UserRestModel<UserAvatar>> futureTask2 = threadpool2.submit(() -> carregarAvatares(token));
-			while (!futureTask2.isDone()) {
-				// System.out.println("FutureTask is not finished yet...");
-			}
-			log.info("resultUsuarios");
-			UserRestModel<UserAvatar> result2 = futureTask2.get();
-			threadpool2.shutdown();
-			log.info("resultAvatares");
-
-
-
-			ExecutorService threadpool3 = Executors.newCachedThreadPool();
-			Future<Void> futureTask3 = threadpool3.submit(() -> associateAvatarWithUser());
-			while (!futureTask3.isDone()) {
-				// System.out.println("FutureTask is not finished yet...");
-			}
-			log.info("associateAvatarWithUser");
-			threadpool3.shutdown();
-
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+		log.info("getUsuariosApi");
+		ExecutorService threadpool = Executors.newCachedThreadPool();
+		Future<UserRestModel<Usuario>> futureTask = threadpool.submit(() -> carregarUsuarios(token));
+		while (!futureTask.isDone()) {
+			// System.out.println("FutureTask is not finished yet..."); 
 		}
+		log.info("resultUsuarios");
+		// UserRestModel<Usuario> result = futureTask.get();			
+		threadpool.shutdown();
+
+
+		ExecutorService threadpool2 = Executors.newCachedThreadPool();
+		Future<UserRestModel<UserAvatar>> futureTask2 = threadpool2.submit(() -> carregarAvatares(token));
+		while (!futureTask2.isDone()) {
+			// System.out.println("FutureTask is not finished yet...");
+		}
+		log.info("resultUsuarios");
+		// UserRestModel<UserAvatar> result2 = futureTask2.get();
+		threadpool2.shutdown();
+		log.info("resultAvatares");
+
+
+
+		ExecutorService threadpool3 = Executors.newCachedThreadPool();
+		Future<Void> futureTask3 = threadpool3.submit(() -> associateAvatarWithUser());
+		while (!futureTask3.isDone()) {
+			// System.out.println("FutureTask is not finished yet...");
+		}
+		log.info("associateAvatarWithUser");
+		threadpool3.shutdown();
 
 		return usuarios;
 	}

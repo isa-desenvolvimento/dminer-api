@@ -460,7 +460,7 @@ public class GenericRepositorySqlServer {
     					"   users user1_  " +
     					"where " +
     					"   notificati0_.user_id=user1_.id  " +
-    					"   and (user1_.login='" + login + "' or notificati0_.all_users = 1) " ;
+    					"   and (user1_.login='" + login + "' or ( notificati0_.all_users = 1 and user1_.login='" + login + "') " ;
                         
     					
     	if (keyword != null) {

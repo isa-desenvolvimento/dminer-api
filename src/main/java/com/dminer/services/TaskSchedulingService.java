@@ -39,13 +39,13 @@ public class TaskSchedulingService {
         // se o evento for agendado para a data de hoje com diferença de apenas minutos, 
         // já pode disparar a thread
         // se não, precisa agendar na schedule
-        if (isSameYearMonthDayHour(startEvent, now)) {
-            tasklet.run();
-        } else {
+        // if (isSameYearMonthDayHour(startEvent, now)) {
+        //     tasklet.run();
+        // } else {
             startEvent = startEvent.minus(reverseMinutes, ChronoUnit.MINUTES);
             ScheduledFuture<?> scheduledTask = taskScheduler.schedule(tasklet, startEvent.atZone(zoneId).toInstant());
             jobsMap.put(jobId, scheduledTask);
-        }
+        // }
     }
 
     public void removeScheduledTask(String jobId) {

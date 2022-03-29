@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.dminer.converters.FullCalendarConverter;
+import com.dminer.dto.FullCalendarRequestDTO;
 import com.dminer.entities.FullCalendar;
 import com.dminer.entities.Notice;
 import com.dminer.entities.Notification;
@@ -37,6 +39,13 @@ public class NotificationService implements INotificationService {
 
     @Autowired
     private GenericRepositorySqlServer genericRepositorySqlServer;
+
+    @Autowired 
+    private FullCalendarService fullCalendarService;
+
+    @Autowired 
+    private FullCalendarConverter fullCalendarConverter;
+
 
     
     @Override
@@ -93,24 +102,41 @@ public class NotificationService implements INotificationService {
 
 
     /**
-     * Cria uma notificação para cada usuário marcado no evento de calendário
+     * Cria uma notificação para o usuário que criou o evento calendário
      * @param user
      * @param content
      */
-    public void newNotificationFromCalendarEvent(FullCalendar calendar) {
-        String user = calendar.getCreator();
-        String content = calendar.getTitle();
+    public void newNotificationFromCalendarEvent(String user, String message, boolean allUsers) {
 
         Notification notification = new Notification();
         notification.setCreateDate(Timestamp.from(Instant.now()));
-        notification.setNotification("Novo evento calendário foi criado: " + content);
+        notification.setNotification(message);
+        notification.setAllUsers(allUsers);
         Optional<User> userTemp = userService.findByLogin(user);
         if (userTemp.isPresent()) {
             notification.setUser(userTemp.get());
             persist(notification);
         } else {
             log.info("Usuário {} não encontrado na base de dados local", user);
-        }
+        }        
+    }
+
+    /**
+     * Cria um evento de calendário nos usuários marcados 
+     * @param dto
+     */
+    public void createUserCalendarEventByUsersCalendar(FullCalendarRequestDTO dto) {
+        
+        List<String> users = dto.getUsers();
+        dto.setUsers(new ArrayList<>());
+
+        users.forEach(user -> {
+            log.info("Criando evento calendário para o usuário: " + user + " a partir de um evento calendário: {}", dto);
+            FullCalendarRequestDTO dtoTemp = dto;
+            dtoTemp.setCreator(user);
+            fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(dtoTemp));
+        });
+        
     }
 
 
@@ -128,7 +154,11 @@ public class NotificationService implements INotificationService {
             Optional<User> user = userService.findByLogin(login);
             if (user.isPresent()) {
                 result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
-                System.out.println("Notificações: " + result.size());
+                // result = notificationRepository.findByUserOrderByCreateDateDesc(user.get());               
+                System.out.println("Notificações by user: " + result.size());
+            } else {
+                result = notificationRepository.findByUserOrAllUsersOrderByCreateDateDesc(user.get(), true);
+                System.out.println("Notificações all users: " + result.size());
             }
         }
         return result;

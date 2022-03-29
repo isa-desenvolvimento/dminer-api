@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,9 @@ public class FullCalendarController {
     private static final Logger log = LoggerFactory.getLogger(FullCalendarController.class);
     private static final ZoneId saoPauloZoneId = ZoneId.of("America/Sao_Paulo");
 
+    private static final int minutesTask = 1;
+
+
     @Autowired
     private FullCalendarService fullCalendarService;
 
@@ -88,71 +92,43 @@ public class FullCalendarController {
             return ResponseEntity.badRequest().body(response);
         }
         
+        // persistindo evento calendário
         FullCalendar events = fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(fullCalendarRequestDTO));
+        
+        // convertendo em dto
         FullCalendarDTO dto = fullCalendarConverter.entityToDto(events);
-        response.setData(dto);
-
+        
+        // se marcou algum usuário no evento, então não notifica todos os usuários, somente os marcados
+        boolean allUsers = true;
         if (! dto.getUsers().isEmpty()) {
-            createUserCalendarEvent(fullCalendarRequestDTO);
-            dto.getUsers().forEach(user -> {
-                log.info("Criando notificação para o usuário: " + user + " a partir de um evento calendário: {}", events);
-                createUserNotification(user, dto.getTitle());            
-            });
+            notificationService.createUserCalendarEventByUsersCalendar(fullCalendarRequestDTO);
+        } else {
+            allUsers = false;
         }
 
-        notificationService.newNotificationFromCalendarEvent(events);
+        // cria uma notificação para o usuário que criou o evento
+        notificationService.newNotificationFromCalendarEvent(events.getCreator(), "Você criou um novo evento calendário: " + events.getTitle(), allUsers);
         generateTaskSchedule(events);
 
+        response.setData(dto);
         return ResponseEntity.ok().body(response);
     }
 
+    /**
+     * Cria uma nova schedule job
+     * @param events
+     */
     private void generateTaskSchedule(FullCalendar events) {
+
         String id = events.getId().toString();
-        String message = "O evento: " + events.getTitle() + ", acontecerá em 1 hora";
+        String message = "O evento: " + events.getTitle() + ", acontecerá em: " + minutesTask + " minutos";
         
         sseEmitterEventsCalendar.setCalendar(events);
         taskDefinitionRunnable.setSseEmitterEvent(sseEmitterEventsCalendar, message);
         
         taskSchedulingService.scheduleATask(
-            id, taskDefinitionRunnable, events.getStart(), 59, saoPauloZoneId
+            id, taskDefinitionRunnable, events.getStart(), minutesTask, saoPauloZoneId
         );
-    }
-
-    /**
-     * Cria um evento de calendário nos usuários marcados 
-     * @param dto
-     */
-    private void createUserCalendarEvent(FullCalendarRequestDTO dto) {
-        
-        List<String> users = dto.getUsers();
-        dto.setUsers(new ArrayList<>());
-
-        users.forEach(user -> {
-            log.info("Criando evento calendário para o usuário: " + user + " a partir de um evento calendário: {}", dto);
-            FullCalendarRequestDTO dtoTemp = dto;
-            dtoTemp.setCreator(user);
-            fullCalendarService.persist(fullCalendarConverter.requestDtoToEntity(dtoTemp));
-        });
-        
-    }
-
-
-    /**
-     * Cria uma notificação para cada usuário marcado no evento de calendário
-     * @param user
-     * @param content
-     */
-    private void createUserNotification(String user, String content) {
-        Notification notification = new Notification();
-        notification.setCreateDate(Timestamp.from(Instant.now()));
-        notification.setNotification("Novo evento calendário foi criado: " + content);
-        Optional<User> userTemp = userService.findByLogin(user);
-        if (userTemp.isPresent()) {
-            notification.setUser(userTemp.get());
-            notificationService.persist(notification);
-        } else {
-            log.info("Usuário {} não encontrado na base de dados local", user);
-        }
     }
 
 
@@ -171,14 +147,7 @@ public class FullCalendarController {
             return ResponseEntity.ok().body(response);
         }
 
-        // se a data fim do evento for null ou maior que a data atual
-        // pode adicionar a fila de disparos de eventos
-        if (calendar.get().getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
-            if (! taskSchedulingService.exists(calendar.get().getId().toString())) {
-                generateTaskSchedule(calendar.get());
-            }
-        }
-
+        loadEventsTasks(calendar.get());
         response.setData(fullCalendarConverter.entityToDto(calendar.get()));
         return ResponseEntity.ok().body(response);
     }
@@ -226,14 +195,7 @@ public class FullCalendarController {
         List<FullCalendarDTO> calendarios = new ArrayList<>();
         calendar.get().forEach(event -> {
             calendarios.add(fullCalendarConverter.entityToDto(event));
-
-            // se a data fim do evento for null ou maior que a data atual
-            // pode adicionar a fila de disparos de eventos
-            if (event.getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
-                if (! taskSchedulingService.exists(event.getId().toString())) {
-                    generateTaskSchedule(event);
-                }
-            }
+            loadEventsTasks(event);
         });
 
         response.setData(calendarios);
@@ -261,21 +223,23 @@ public class FullCalendarController {
         
         calendarios.forEach(event -> {
             calendariosDto.add(fullCalendarConverter.entityToDto(event));
-
-            // se a data fim do evento for null ou maior que a data atual
-            // pode adicionar a fila de disparos de eventos
-            if (event.getEnd().toLocalDateTime().isAfter(LocalDateTime.now())) {
-                if (! taskSchedulingService.exists(event.getId().toString())) {
-                    generateTaskSchedule(event);
-                }
-            }
-
+            loadEventsTasks(event);
         });
         
         response.setData(calendariosDto);
         return ResponseEntity.ok().body(response);
     }
 
+
+    private void loadEventsTasks(FullCalendar event) {
+        // se a data inicio do evento for null ou maior que a data atual
+        // pode adicionar a fila de disparos de eventos
+        if (event.getStart().toLocalDateTime().isAfter(LocalDateTime.now())) {
+            if (! taskSchedulingService.exists(event.getId().toString())) {
+                generateTaskSchedule(event);
+            }
+        }
+    }
 
 
     private void validateRequestDto(FullCalendarRequestDTO fullCalendarRequestDTO, BindingResult result) {
