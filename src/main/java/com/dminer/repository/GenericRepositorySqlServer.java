@@ -393,7 +393,7 @@ public class GenericRepositorySqlServer {
 
         if (date != null)
             conditions = Arrays.append(
-                conditions, " c.timestamp between " + date + " 00:00:00 and " + date + " 23:59:59 " + " OR p.create_date between " + date + " 00:00:00 and " + date + " 23:59:59 "
+                conditions, " c.timestamp between '" + date + " 00:00:00' and '" + date + " 23:59:59' " + " OR p.create_date between '" + date + " 00:00:00' and '" + date + " 23:59:59' "
             );
         if (user.isPresent()) {            
             conditions = Arrays.append(conditions, " c.user_id=" + user.get().getId() + " OR p.login='" + user.get().getLogin() + "'");
